@@ -18,15 +18,22 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.os.Bundle;
+import android.os.Looper;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.commons.SensorsProvider;
+import com.google.android.gms.wearable.DataClient;
+import com.google.android.gms.wearable.MessageClient;
+import com.google.android.gms.wearable.MessageEvent;
+import com.google.android.gms.wearable.Wearable;
+
 import java.util.Random;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MessageClient.OnMessageReceivedListener {
     private static final String[] SENSOR_PERMISSIONS = {
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION,
@@ -58,21 +65,16 @@ public class MainActivity extends AppCompatActivity {
 
     private Button moreSensorsButton;
 
-    private void initializeAttributesFromUI() {
-        userStateSummary = (Button) findViewById(R.id.userStateSummary);
-        useStateProgressBar = (ProgressBar) findViewById(R.id.userStateProgressBar);
-        userStateMessage = (TextView) findViewById(R.id.userStateMessage);
+    @Override
+    public void onMessageReceived(MessageEvent messageEvent) {
+//        if (messageEvent.getPath().equals(VOICE_TRANSCRIPTION_MESSAGE_PATH)) {
+//            Intent startIntent = new Intent(this, MainActivity.class);
+//            startIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//            startIntent.putExtra("VOICE_DATA", messageEvent.getData());
+//            startActivity(this, startIntent);
+//        }
 
-        hearRateText = (TextView) findViewById(R.id.hearRateText);
-        stepCounterText = (TextView) findViewById(R.id.stepCounterText);
-
-        moreSensorsButton = (Button) findViewById(R.id.moreSensorsButton);
-        moreSensorsButton = (Button) findViewById(R.id.moreSensorsButton);
-        moreSensorsButton.setOnClickListener(v -> {
-            Intent intent = new Intent(
-                    this, DetailedSensorsList.class);;
-            startActivity(intent);
-        });
+        Toast.makeText(this, "HE RECIIDO UN MENSAJE", Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -82,6 +84,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         initializeAttributesFromUI();
+
+//        Looper myLooper;
+//        Wearable.WearableOptions options = new Wearable.WearableOptions.Builder().setLooper(myLooper).build();
+        DataClient dataClient = Wearable.getDataClient(this);
+
 
         userStateSummary.setClickable(false);
         userStateSummary.setText("EN BUEN ESTADO");
@@ -113,6 +120,22 @@ public class MainActivity extends AppCompatActivity {
         sensorsProvider = new SensorsProvider(this);
     }
 
+    private void initializeAttributesFromUI() {
+        userStateSummary = (Button) findViewById(R.id.userStateSummary);
+        useStateProgressBar = (ProgressBar) findViewById(R.id.userStateProgressBar);
+        userStateMessage = (TextView) findViewById(R.id.userStateMessage);
+
+        hearRateText = (TextView) findViewById(R.id.hearRateText);
+        stepCounterText = (TextView) findViewById(R.id.stepCounterText);
+
+        moreSensorsButton = (Button) findViewById(R.id.moreSensorsButton);
+        moreSensorsButton = (Button) findViewById(R.id.moreSensorsButton);
+        moreSensorsButton.setOnClickListener(v -> {
+            Intent intent = new Intent(
+                    this, DetailedSensorsList.class);;
+            startActivity(intent);
+        });
+    }
 
 
     @Override

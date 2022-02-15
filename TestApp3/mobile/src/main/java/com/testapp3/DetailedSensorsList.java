@@ -2,21 +2,15 @@ package com.testapp3;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.widget.Adapter;
-import android.widget.ArrayAdapter;
-import android.widget.ListAdapter;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.example.commons.SensorsProvider;
 
 public class DetailedSensorsList extends AppCompatActivity {
 

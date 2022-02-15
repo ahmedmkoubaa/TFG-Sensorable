@@ -1,28 +1,21 @@
-package com.testapp3;
+package com.example.commons;
 
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
-import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
-import android.hardware.SensorListener;
 import android.hardware.SensorManager;
 import android.location.Criteria;
-import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
-import android.os.Bundle;
-import android.widget.Button;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+
+import java.util.List;
 
 public class SensorsProvider  {
     private static final String[] SENSOR_PERMISSIONS = {
@@ -46,10 +39,17 @@ public class SensorsProvider  {
     public SensorsProvider(Activity context) {
         this.context = context;
         requestPermissionsAndInform(false);
+
+        initializeProviderLocation();
+        initializeSensorManager();
+    }
+
+    public List<Sensor> getSensorList() {
+        initializeSensorManager();
+        return sensorManager.getSensorList(Sensor.TYPE_ALL);
     }
 
     private void initializeProviderLocation() {
-
         try {
             locationManager =
                     (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);

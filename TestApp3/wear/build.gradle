@@ -30,6 +30,8 @@ dependencies {
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
     implementation 'androidx.wear:wear:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.3'
+    implementation project(path: ':commons')
+    implementation project(path: ':commons')
     compileOnly 'com.google.android.wearable:wearable:2.8.1'
     wearApp project(":wear")
 }

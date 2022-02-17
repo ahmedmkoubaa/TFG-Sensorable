@@ -1,12 +1,14 @@
 package com.sensorable;
 
 import android.content.Intent;
+import android.os.Bundle;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.example.commons.SensorDataMessage;
 import com.google.android.gms.wearable.Channel;
@@ -28,7 +30,20 @@ public class DataTransmissionService extends WearableListenerService {
     public void onMessageReceived(@NonNull MessageEvent messageEvent) {
         super.onMessageReceived(messageEvent);
         SensorDataMessage.SensorMessage message = SensorDataMessage.decodeMessage(messageEvent.getData());
-        Toast.makeText(this, "RECIBIDO (t:" + message.getSensorType() + ", v:" + message.getValue() + ")", Toast.LENGTH_LONG).show();
+
+        sendMessageToActivity(message);
+//        Toast.makeText(this, "RECIBIDO (t:" + message.getSensorType() + ", v:" + message.getValue() + ")", Toast.LENGTH_LONG).show();
+    }
+
+    private void sendMessageToActivity(SensorDataMessage.SensorMessage msg) {
+        Intent intent = new Intent("SensorDataUpdates");
+        // You can also include some extra data.
+
+        Bundle sensorMesssages = new Bundle();
+        sensorMesssages.putParcelable("SensorMessage", msg);
+
+        intent.putExtra("WEAR_OS_COLLECTED_DATA", sensorMesssages);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
     @Override

@@ -3,10 +3,13 @@ package com.sensorable;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -24,6 +27,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.commons.SensorDataMessage;
 import com.example.commons.SensorsProvider;
 import com.google.android.gms.wearable.DataClient;
 import com.google.android.gms.wearable.MessageClient;
@@ -31,6 +35,7 @@ import com.google.android.gms.wearable.MessageEvent;
 import com.google.android.gms.wearable.Wearable;
 import com.google.android.gms.wearable.WearableListenerService;
 
+import java.security.Provider;
 import java.util.Random;
 
 
@@ -66,7 +71,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 
     private Button moreSensorsButton;
     private DataTransmissionService service;
-
+    private BroadcastReceiver mMessageReceiver;
 
 
     @Override
@@ -77,11 +82,8 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 
         initializeAttributesFromUI();
 
-//        Looper myLooper;
-//        Wearable.WearableOptions options = new Wearable.WearableOptions.Builder().setLooper(myLooper).build();
-        DataClient dataClient = Wearable.getDataClient(this);
-        service = new DataTransmissionService();
-        startService(new Intent(this, DataTransmissionService.class));
+
+
 
 
 
@@ -113,6 +115,38 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 //        initializeSensorHeartRate();
 //        initializeSensorStepCounter();
         sensorsProvider = new SensorsProvider(this);
+    }
+
+    private void initializeDataTransmissionService() {
+        // start new data transmission service to collect data from wear os
+        service = new DataTransmissionService();
+        startService(new Intent(this, DataTransmissionService.class));
+
+        // handle messages from our service to this activity
+        mMessageReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Bundle b = intent.getBundleExtra("WEAR_OS_COLLECTED_DATA");
+                SensorDataMessage.SensorMessage message = b.getParcelable("SensorMessage");
+
+                switch (message.getSensorType()) {
+                    case Sensor.TYPE_HEART_RATE:
+                        hearRateText.setText(message.getValue());
+                        break;
+
+                    case Sensor.TYPE_STEP_COUNTER:
+                        stepCounterText.setText(message.getValue());
+                        break;
+
+                    default:
+                        Toast.makeText(context, "Sensor recibido no reconocido", Toast.LENGTH_SHORT).show();
+                        break;
+                }
+            }
+        };
+
+        LocalBroadcastManager.getInstance(MainActivity.this).registerReceiver(
+                mMessageReceiver, new IntentFilter("SensorDataUpdates"));
     }
 
     private void initializeAttributesFromUI() {

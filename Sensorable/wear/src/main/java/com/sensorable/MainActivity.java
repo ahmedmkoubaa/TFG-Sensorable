@@ -19,13 +19,9 @@ public class MainActivity extends WearableActivity {
     private TextView heartText;
     private TextView lightText;
     private SensorsProvider sensorsProvider;
-    private TextView infoText;
     private Button send, sendStepCounter;
 
-    private static final String WEAR_DATA_RECEPTION = "wear_data_reception";
-    private static final String WEAR_DATA_RECEPTION_MESSAGE_PATH = "/wear_data_reception";
 
-    private CapabilityInfo capabilityInfo;
     private SensorDataSender sensorSender;
     private String lastHeartRateValue = "-1";
 
@@ -35,7 +31,6 @@ public class MainActivity extends WearableActivity {
         setContentView(R.layout.activity_main);
         heartText = (TextView) findViewById(R.id.heartRateText);
         lightText = (TextView) findViewById(R.id.temperatureText);
-        infoText = (TextView) findViewById(R.id.infoText);
         send = (Button) findViewById(R.id.buttonSendHeartRate);
         sendStepCounter = (Button) findViewById(R.id.buttonSendStepCounter);
 

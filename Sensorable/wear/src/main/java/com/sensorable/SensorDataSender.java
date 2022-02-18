@@ -33,12 +33,12 @@ public class SensorDataSender {
     public SensorDataSender(Activity context) {
         this.context = context;
     }
+
     public void sendMessage(int sensorType, String value) {
         sendMessage(new SensorDataMessage.SensorMessage(sensorType, value));
     }
+
     public void sendMessage(final SensorDataMessage.SensorMessage message) {
-
-
         executorService.execute(new Runnable() {
             @Override
             public void run() {

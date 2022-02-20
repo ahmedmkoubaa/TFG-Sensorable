@@ -11,7 +11,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.commons.SensorsProvider;
-import com.google.android.gms.wearable.CapabilityInfo;
 
 
 public class MainActivity extends WearableActivity {
@@ -22,8 +21,8 @@ public class MainActivity extends WearableActivity {
     private Button send, sendStepCounter;
 
 
-    private SensorDataSender sensorSender;
-    private String lastHeartRateValue = "-1";
+    private WearSensorDataSender sensorSender;
+    private float[] lastHeartRateValue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,13 +43,15 @@ public class MainActivity extends WearableActivity {
         sendStepCounter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                sensorSender.sendMessage(Sensor.TYPE_STEP_COUNTER, "MUCHOS");
+                float value[] = new float[1];
+                value[0] = 12312;
+                sensorSender.sendMessage(Sensor.TYPE_STEP_COUNTER, value);
             }
         });
 
 
         sensorsProvider = new SensorsProvider(this);
-        sensorSender = new SensorDataSender(this);
+        sensorSender = new WearSensorDataSender(this);
 
     }
 
@@ -63,8 +64,8 @@ public class MainActivity extends WearableActivity {
             public void onSensorChanged(SensorEvent sensorEvent) {
                 String values = " " + sensorEvent.values[0] + " ppm";
                 heartText.setText(values);
-                lastHeartRateValue = values;
-//                sensorSender.sendMessage(Sensor.TYPE_HEART_RATE, values);
+                lastHeartRateValue = sensorEvent.values;
+                sensorSender.sendMessage(Sensor.TYPE_HEART_RATE, sensorEvent.values);
             }
 
             @Override

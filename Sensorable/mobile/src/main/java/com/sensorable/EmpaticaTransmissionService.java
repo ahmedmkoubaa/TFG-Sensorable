@@ -4,7 +4,6 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -17,11 +16,10 @@ import com.empatica.empalink.config.EmpaSensorType;
 import com.empatica.empalink.config.EmpaStatus;
 import com.empatica.empalink.delegate.EmpaDataDelegate;
 import com.empatica.empalink.delegate.EmpaStatusDelegate;
-import com.example.commons.SensorDataMessage;
+import com.example.commons.DeviceType;
+import com.example.commons.EmpaticaSensorType;
+import com.example.commons.SensorTransmissionCoder;
 
-import java.security.Provider;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -46,15 +44,19 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
     }
 
 
-    private void sendMessageToActivity(String msg) {
+    private void sendMessageToActivity(SensorTransmissionCoder.SensorMessage msg) {
         Intent intent = new Intent("EmpaticaDataUpdates");
         // You can also include some extra data.
 
         Bundle sensorMesssages = new Bundle();
-        sensorMesssages.putString("EmpaticaMessage", msg);
+        sensorMesssages.putParcelable("EmpaticaMessage", msg);
 
         intent.putExtra("EMPATICA_DATA_COLLECTED", sensorMesssages);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
+
+    private void sendMessageToActivity(int sensorType, float[] values) {
+        sendMessageToActivity(new SensorTransmissionCoder.SensorMessage(DeviceType.EMPATICA, sensorType, values));
     }
 
 
@@ -66,38 +68,38 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
 
     @Override
     public void didReceiveGSR(float gsr, double timestamp) {
-
+        float values[] = {gsr};
+        sendMessageToActivity(EmpaticaSensorType.GSR, values);
     }
 
     @Override
     public void didReceiveBVP(float bvp, double timestamp) {
-
+        float values[] = {bvp};
+        sendMessageToActivity(EmpaticaSensorType.BVP, values);
     }
 
     @Override
     public void didReceiveIBI(float ibi, double timestamp) {
-
+        float values[] = {ibi};
+        sendMessageToActivity(EmpaticaSensorType.IBI, values);
     }
 
     @Override
     public void didReceiveTemperature(float t, double timestamp) {
-//        Toast.makeText(this, "recibo temperatura " + t, Toast.LENGTH_SHORT).show();
-//        stepCounterText.setText("temperatura " + t);
-//        updateLabel(stepCounterText, "t: " + t);
-
-//        Toast.makeText(this, "t: " + t, Toast.LENGTH_SHORT).show();
-        sendMessageToActivity("temp: " + t);
+        float values[] = {t};
+        sendMessageToActivity(EmpaticaSensorType.TEMPERATURE, values);
     }
 
     @Override
     public void didReceiveAcceleration(int x, int y, int z, double timestamp) {
-//        Toast.makeText(this, "recibo acelerómetro " + x + " " + y + " " + z, Toast.LENGTH_SHORT).show();
+        float values[] = {x, y, z};
+        sendMessageToActivity(EmpaticaSensorType.ACCELEROMETER, values);
     }
 
     @Override
     public void didReceiveBatteryLevel(float level, double timestamp) {
-        sendMessageToActivity("batería " + level);
-//        Toast.makeText(MainActivity.this, "receiving battery " + level, Toast.LENGTH_SHORT).show();
+        float values[] = {level};
+        sendMessageToActivity(EmpaticaSensorType.BATTERY_LEVEL, values);
     }
 
     @Override
@@ -108,11 +110,7 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
 
     @Override
     public void didUpdateStatus(EmpaStatus status) {
-        // Update the UI
-//        Toast.makeText(MainActivity.this, "UpdateState: " + status.name(), Toast.LENGTH_LONG).show();
-//        updateLabel(stepCounterText, status.name());
 
-//        Toast.makeText(this, status.name(), Toast.LENGTH_SHORT).show();
         // The device manager is ready for use
         if (status == EmpaStatus.READY) {
             Toast.makeText(this,  status.name() + " - Turn on your device", Toast.LENGTH_SHORT).show();
@@ -120,19 +118,14 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
             // Start scanning
             deviceManager.startScanning();
 
-//            Toast.makeText(this, status.name(), Toast.LENGTH_SHORT).show();
-//            updateLabel(stepCounterText, status.name());
-
-
             // The device manager has established a connection
         } else if (status == EmpaStatus.CONNECTED) {
 //            Toast.makeText(this, status.name(), Toast.LENGTH_SHORT).show();
-//            updateLabel(stepCounterText, status.name());
-            // The device manager disconnected from a device
+            // The device manager connected to a device
 
         } else if (status == EmpaStatus.DISCONNECTED) {
-//            updateLabel(stepCounterText, status.name());
 //            Toast.makeText(this, status.name(), Toast.LENGTH_SHORT).show();
+            // The device manager manager disconnected from a device
         }
     }
 

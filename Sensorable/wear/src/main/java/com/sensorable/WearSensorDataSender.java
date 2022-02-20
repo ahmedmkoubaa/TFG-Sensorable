@@ -1,12 +1,12 @@
 package com.sensorable;
 
 import android.app.Activity;
-import android.hardware.Sensor;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
-import com.example.commons.SensorDataMessage;
+import com.example.commons.DeviceType;
+import com.example.commons.SensorTransmissionCoder;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -16,13 +16,12 @@ import com.google.android.gms.wearable.CapabilityInfo;
 import com.google.android.gms.wearable.Node;
 import com.google.android.gms.wearable.Wearable;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class SensorDataSender {
+public class WearSensorDataSender {
     private Activity context;
     private CapabilityInfo capabilityInfo;
     private ExecutorService executorService = Executors.newFixedThreadPool(1);
@@ -30,15 +29,15 @@ public class SensorDataSender {
     private static final String WEAR_DATA_RECEPTION = "wear_data_reception";
     private static final String WEAR_DATA_RECEPTION_MESSAGE_PATH = "/wear_data_reception";
 
-    public SensorDataSender(Activity context) {
+    public WearSensorDataSender(Activity context) {
         this.context = context;
     }
 
-    public void sendMessage(int sensorType, String value) {
-        sendMessage(new SensorDataMessage.SensorMessage(sensorType, value));
+    public void sendMessage(int sensorType, float[] value) {
+        sendMessage(new SensorTransmissionCoder.SensorMessage(DeviceType.WEAROS, sensorType, value));
     }
 
-    public void sendMessage(final SensorDataMessage.SensorMessage message) {
+    public void sendMessage(final SensorTransmissionCoder.SensorMessage message) {
         executorService.execute(new Runnable() {
             @Override
             public void run() {
@@ -58,7 +57,7 @@ public class SensorDataSender {
                 String bestNode = pickBestNodeId(capabilityInfo.getNodes());
 
                 if (bestNode != null) {
-                    byte[] sensorData = SensorDataMessage.codeMessage(message);
+                    byte[] sensorData = SensorTransmissionCoder.codeMessage(message);
 
                     Task<Integer> sendTask =
                             Wearable.getMessageClient(context).

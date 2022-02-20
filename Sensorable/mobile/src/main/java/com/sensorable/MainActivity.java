@@ -26,11 +26,12 @@ import com.empatica.empalink.config.EmpaSensorType;
 import com.empatica.empalink.config.EmpaStatus;
 import com.empatica.empalink.delegate.EmpaDataDelegate;
 import com.empatica.empalink.delegate.EmpaStatusDelegate;
-import com.example.commons.SensorDataMessage;
+import com.example.commons.SensorTransmissionCoder;
 import com.example.commons.SensorsProvider;
 import com.google.android.gms.wearable.MessageClient;
 import com.google.android.gms.wearable.MessageEvent;
 
+import java.util.Arrays;
 import java.util.Random;
 
 
@@ -100,7 +101,9 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
             @Override
             public void onReceive(Context context, Intent intent) {
                 Bundle b = intent.getBundleExtra("EMPATICA_DATA_COLLECTED");
-                String s = b.getString("EmpaticaMessage");
+                SensorTransmissionCoder.SensorMessage message = b.getParcelable("EmpaticaMessage");
+                String s = "Recibido " + Arrays.toString(message.getValue());
+
                 Toast.makeText(context, s, Toast.LENGTH_SHORT).show();
             }
         };
@@ -118,16 +121,19 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         wearOsReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                Bundle b = intent.getBundleExtra("WEAR_OS_COLLECTED_DATA");
-                SensorDataMessage.SensorMessage message = b.getParcelable("SensorMessage");
+                Bundle b = intent.getBundleExtra("WEAR_DATA_COLLECTED");
+                SensorTransmissionCoder.SensorMessage message = b.getParcelable("SensorMessage");
+                String value;
 
                 switch (message.getSensorType()) {
                     case Sensor.TYPE_HEART_RATE:
-                        hearRateText.setText(message.getValue());
+                        value = message.getValue()[0] + " ppm";
+                        hearRateText.setText(value);
                         break;
 
                     case Sensor.TYPE_STEP_COUNTER:
-                        stepCounterText.setText(message.getValue());
+                        value = message.getValue()[0] + "steps";
+                        stepCounterText.setText(value);
                         break;
 
                     default:

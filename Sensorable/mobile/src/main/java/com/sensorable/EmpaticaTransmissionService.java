@@ -48,14 +48,15 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
         Intent intent = new Intent("EmpaticaDataUpdates");
         // You can also include some extra data.
 
-        Bundle sensorMesssages = new Bundle();
-        sensorMesssages.putParcelable("EmpaticaMessage", msg);
+        Bundle empaticaBundle = new Bundle();
+        empaticaBundle.putParcelable("EmpaticaMessage", msg);
 
-        intent.putExtra("EMPATICA_DATA_COLLECTED", sensorMesssages);
+        intent.putExtra("EMPATICA_DATA_COLLECTED", empaticaBundle);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
     private void sendMessageToActivity(int sensorType, float[] values) {
+//        Toast.makeText(this, "EMPATICA SEND", Toast.LENGTH_SHORT).show();
         sendMessageToActivity(new SensorTransmissionCoder.SensorMessage(DeviceType.EMPATICA, sensorType, values));
     }
 

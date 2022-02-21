@@ -45,6 +45,7 @@ public class MainActivity extends WearableActivity {
             public void onClick(View view) {
                 float value[] = new float[1];
                 value[0] = 12312;
+                Toast.makeText(MainActivity.this, "enviando step counter", Toast.LENGTH_LONG).show();
                 sensorSender.sendMessage(Sensor.TYPE_STEP_COUNTER, value);
             }
         });

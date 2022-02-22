@@ -1,4 +1,0 @@
-include ':commons'
-include ':wear'
-include ':mobile'
-rootProject.name = "My Application"

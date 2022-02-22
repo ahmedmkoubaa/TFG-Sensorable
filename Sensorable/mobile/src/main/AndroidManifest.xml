@@ -17,26 +17,31 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MyApplication"
         tools:replace="android:theme">
-
-        <activity android:name="com.sensorable.DetailedSensorsList"></activity>
-        <activity android:name="com.sensorable.MainActivity">
+        <activity android:name=".BluetoothOptions"></activity>
+        <!-- Activities that the application is composed by -->
+        <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".DetailedSensorsList" />
+        <activity android:name=".AdvancedMenu" /> <!-- Services deployed by the applicaton -->
         <service android:name=".WearTransmissionService">
             <intent-filter>
+
                 <!-- listeners receive events that match the action and data filters -->
                 <action android:name="com.google.android.gms.wearable.DATA_CHANGED" />
                 <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" />
                 <action android:name="com.google.android.gms.wearable.CAPABILITY_CHANGED" />
                 <action android:name="com.google.android.gms.wearable.CHANNEL_EVENT" />
-                <data android:scheme="wear" android:host="*" />
+
+                <data
+                    android:host="*"
+                    android:scheme="wear" />
             </intent-filter>
         </service>
-
         <service android:name=".EmpaticaTransmissionService" />
     </application>
 

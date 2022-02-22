@@ -2,11 +2,14 @@ package com.sensorable;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,6 +22,7 @@ public class DetailedSensorsList extends AppCompatActivity {
     private TextView humidityTextView;
     private TextView proximityTextView;
     private TextView lightTextView;
+    private Button advancedMenuButton;
 
     private SensorsProvider sensorsProvider;
 
@@ -30,13 +34,25 @@ public class DetailedSensorsList extends AppCompatActivity {
 
         // We can pass messages from an intent to other, for now we wont
 
+       initializeAttributtesFromUI();
+
+        sensorsProvider = new SensorsProvider(this);
+    }
+
+    private void initializeAttributtesFromUI() {
         acceleromterTextView = (TextView) findViewById(R.id.acceleromterText);
         temperatureTextView = (TextView) findViewById(R.id.temperatureText);
         humidityTextView = (TextView) findViewById(R.id.humidityText);
         proximityTextView = (TextView) findViewById(R.id.proximityText);
         lightTextView = (TextView) findViewById(R.id.lightText);
+        advancedMenuButton = (Button) findViewById(R.id.advancedMenuButton);
+        advancedMenuButton.setOnClickListener(v -> {
+            startActivity(new Intent(
+                    this,
+                    AdvancedMenu.class)
+            );
+        });
 
-        sensorsProvider = new SensorsProvider(this);
     }
 
     @Override

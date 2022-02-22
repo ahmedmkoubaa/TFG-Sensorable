@@ -3,6 +3,7 @@ package com.sensorable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.location.Location;
 import android.os.Bundle;
 import android.widget.LinearLayout;
 
@@ -36,7 +37,7 @@ public class AdvancedMenu extends AppCompatActivity {
         locationLayout.setOnClickListener(v -> {
             startActivity(new Intent(
                     this,
-                    DetailedSensorsList.class)
+                    LocationOptionsOpenStreetMap.class)
             );
         });
 

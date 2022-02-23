@@ -19,13 +19,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.empatica.empalink.ConnectionNotAllowedException;
-import com.empatica.empalink.EmpaDeviceManager;
-import com.empatica.empalink.EmpaticaDevice;
-import com.empatica.empalink.config.EmpaSensorType;
-import com.empatica.empalink.config.EmpaStatus;
-import com.empatica.empalink.delegate.EmpaDataDelegate;
-import com.empatica.empalink.delegate.EmpaStatusDelegate;
 import com.example.commons.SensorTransmissionCoder;
 import com.example.commons.SensorsProvider;
 import com.google.android.gms.wearable.MessageClient;
@@ -66,7 +59,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 
         initializeAttributesFromUI();
 //        initializeDataTransmissionService();
-        initializeEmpaticaTransmissionService();
+//        initializeEmpaticaTransmissionService();
 
         userStateSummary.setClickable(false);
         userStateSummary.setText("EN BUEN ESTADO");
@@ -147,7 +140,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
     private void initializeAttributesFromUI() {
         userStateSummary = (Button) findViewById(R.id.userStateSummary);
         useStateProgressBar = (ProgressBar) findViewById(R.id.userStateProgressBar);
-        userStateMessage = (TextView) findViewById(R.id.userStateMessage);
+        userStateMessage = (TextView) findViewById(R.id.text);
 
         hearRateText = (TextView) findViewById(R.id.hearRateText);
         stepCounterText = (TextView) findViewById(R.id.stepCounterText);
@@ -156,7 +149,8 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         moreSensorsButton = (Button) findViewById(R.id.moreSensorsButton);
         moreSensorsButton.setOnClickListener(v -> {
             Intent intent = new Intent(
-                    this, DetailedSensorsList.class);;
+                    this,
+                    DetailedSensorsList.class);
             startActivity(intent);
         });
     }

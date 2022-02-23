@@ -3,7 +3,6 @@ package com.sensorable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
-import android.location.Location;
 import android.os.Bundle;
 import android.widget.LinearLayout;
 
@@ -22,7 +21,7 @@ public class AdvancedMenu extends AppCompatActivity {
         bluetoothLayout.setOnClickListener(v -> {
             startActivity(new Intent(
                     this,
-                    BluetoothOptions.class)
+                    BluetoothOptionsActivity.class)
             );
         });
 
@@ -37,7 +36,7 @@ public class AdvancedMenu extends AppCompatActivity {
         locationLayout.setOnClickListener(v -> {
             startActivity(new Intent(
                     this,
-                    LocationOptionsOpenStreetMap.class)
+                    LocationOptionsActivity.class)
             );
         });
 

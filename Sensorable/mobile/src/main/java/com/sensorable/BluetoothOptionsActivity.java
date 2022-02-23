@@ -8,7 +8,7 @@ import android.widget.ListView;
 
 import java.util.ArrayList;
 
-public class BluetoothOptions extends AppCompatActivity {
+public class BluetoothOptionsActivity extends AppCompatActivity {
 
     private ListView bluetoothFoundDevices;
 

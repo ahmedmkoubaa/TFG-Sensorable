@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="150dp"
+    android:layout_margin="0dp"
+    android:background="@android:color/transparent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="10dp"
+        android:background="@drawable/customborder"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/locationTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="0dp"
+            android:text="OFICINAS DE CODEKO"
+            android:textSize="26sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:foregroundGravity="center_vertical"
+            android:gravity="clip_vertical|center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/locationAddress"
+                android:layout_width="162dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:ems="10"
+                android:foregroundGravity="center_vertical"
+                android:gravity="clip_vertical|center_vertical"
+                android:inputType="textMultiLine"
+                android:text="Calle Lepanto 5B, Gabia Chica, 11082"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/locationTag"
+                android:layout_width="wrap_content"
+                android:layout_height="85dp"
+                android:layout_weight="1"
+                android:gravity="center_vertical"
+                android:text="TRABAJO"
+                android:textSize="18sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+
+</LinearLayout>

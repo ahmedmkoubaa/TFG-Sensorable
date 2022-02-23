@@ -24,7 +24,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MyApplication"
         tools:replace="android:theme">
-        <activity android:name=".LocationOptionsOpenStreetMap"></activity>
+        <activity android:name=".LocationOptionsActivity"></activity>
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").
@@ -37,10 +37,7 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
-        <activity
-            android:name=".LocationOptions"
-            android:label="@string/title_activity_location_options" />
-        <activity android:name=".BluetoothOptions" /> <!-- Activities that the application is composed by -->
+        <activity android:name=".BluetoothOptionsActivity" /> <!-- Activities that the application is composed by -->
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

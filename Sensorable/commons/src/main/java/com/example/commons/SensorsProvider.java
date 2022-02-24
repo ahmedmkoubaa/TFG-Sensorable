@@ -133,7 +133,7 @@ public class SensorsProvider  {
                     requestPermissionsAndInform(false);
                 }
 
-                locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER, 0, 0, listener);
+                locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER, 1000, 0, listener);
             }
         }
     }

@@ -2,8 +2,10 @@ package com.sensorable;
 
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -13,10 +15,14 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
 
-
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.osmdroid.config.Configuration;
 
@@ -46,17 +52,19 @@ public class LocationOptionsActivity extends AppCompatActivity {
     private static final int LOCATION_REQ_CODE = 1;
 
 
-
-
     private MapController mapController;
     private MapView map;
-    private Marker mapMarker;
+
     private ListView knownLocationsList;
 
     private Button listButton;
     private Button mapButton;
 
+    private FloatingActionButton addLocationButton;
+    private ArrayList<KnownLocation> locArray;
+    private ArrayAdapter knownLocationsAdapter;
 
+    private ActivityResultLauncher<Intent> someActivityResultLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,6 +90,59 @@ public class LocationOptionsActivity extends AppCompatActivity {
 
         initializeSwitchButtons();
 
+        initializeAddLocationButton();
+
+        initializeActivityLauncher();
+
+    }
+
+    private void initializeActivityLauncher() {
+        // You can do the assignment inside onAttach or onCreate, i.e, before the activity is displayed
+         someActivityResultLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                new ActivityResultCallback<ActivityResult>() {
+                    @Override
+                    public void onActivityResult(ActivityResult result) {
+                        if (result.getResultCode() == Activity.RESULT_OK) {
+                            // There are no request codes
+                            Intent data = result.getData();
+
+                            String title, address, tag;
+                            title = data.getStringExtra("title");
+                            address = data.getStringExtra("address");
+                            tag = data.getStringExtra("tag");
+
+                            String latitude = data.getStringExtra("latitude");
+                            String longitude = data.getStringExtra("longitude");
+                            String altitude = data.getStringExtra("latitude");
+
+                            GeoPoint point = new GeoPoint(Float.parseFloat(latitude), Float.parseFloat(longitude), Float.parseFloat(altitude));
+
+
+                            knownLocationsAdapter.add(new KnownLocation(title, address, point, tag));
+                            knownLocationsAdapter.setNotifyOnChange(true);
+
+                            for (KnownLocation k: locArray) {
+                                setMarker(k.getPoint());
+                            }
+
+                        }
+                    }
+                });
+    }
+
+    private void initializeAddLocationButton() {
+        addLocationButton = (FloatingActionButton) findViewById(R.id.addLocationButton);
+        addLocationButton.setOnClickListener(v-> {
+            openAddLocationActivity();
+        });
+    }
+
+
+
+    public void openAddLocationActivity() {
+        Intent intent = new Intent(this, AddLocationActivity.class);
+        someActivityResultLauncher.launch(intent);
     }
 
     private void initializeSwitchButtons() {
@@ -111,7 +172,7 @@ public class LocationOptionsActivity extends AppCompatActivity {
     private void initializeKnownLocationList() {
 
         knownLocationsList = (ListView) findViewById(R.id.knownLocationsList);
-        ArrayList<KnownLocation> locArray = new ArrayList<>();
+        locArray = new ArrayList<>();
         locArray.add(new KnownLocation("casa de tia pepi", "avenida de la victoria, 43, 3, C, 18013", new GeoPoint(37,0), "FAMILIA"));
         locArray.add(new KnownLocation("casa de tia pepi", "avenida de la victoria, 43, 3, C, 18013", new GeoPoint(37,0), "FAMILIA"));
         locArray.add(new KnownLocation("casa de tia pepi", "avenida de la victoria, 43, 3, C, 18013", new GeoPoint(37,0), "FAMILIA"));
@@ -120,8 +181,8 @@ public class LocationOptionsActivity extends AppCompatActivity {
 
 
 
-        ArrayAdapter adapter = new KnownLocationsAdapter(this, R.layout.known_location_layout, locArray);
-        knownLocationsList.setAdapter(adapter);
+        knownLocationsAdapter = new KnownLocationsAdapter(this, R.layout.known_location_layout, locArray);
+        knownLocationsList.setAdapter(knownLocationsAdapter);
 
 //        knownLocationsList = (ListView) findViewById(R.id.knownLocationsList);
 //        ArrayList<BluetoothDevice> bleArray = new ArrayList<BluetoothDevice>();
@@ -137,11 +198,7 @@ public class LocationOptionsActivity extends AppCompatActivity {
     }
 
     private void initializeMarker() {
-        if (map != null) {
-            mapMarker = new Marker(map);
-        } else {
-            throw new Error("Using non initialied map in: initializeMarker()");
-        }
+
     }
 
     private void initializeMapController() {
@@ -162,7 +219,7 @@ public class LocationOptionsActivity extends AppCompatActivity {
 
         initializeMapController();
         initializeMapEvents();
-        initializeMarker();
+
     }
 
     private void initializeMapEvents() {
@@ -191,9 +248,10 @@ public class LocationOptionsActivity extends AppCompatActivity {
 
     private void setMarker(GeoPoint point) {
         // this is how to display a position
-        mapMarker.setPosition(point);
-        mapMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-        map.getOverlays().add(mapMarker);
+        Marker marker = new Marker(map);
+        marker.setPosition(point);
+        marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+        map.getOverlays().add(marker);
         mapController.setZoom(16);
         mapController.setCenter(point);
     }

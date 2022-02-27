@@ -64,7 +64,7 @@ public class LocationOptionsActivity extends AppCompatActivity {
     private ArrayList<KnownLocation> locArray;
     private ArrayAdapter knownLocationsAdapter;
 
-    private ActivityResultLauncher<Intent> someActivityResultLauncher;
+    private ActivityResultLauncher<Intent> activityLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,7 +98,7 @@ public class LocationOptionsActivity extends AppCompatActivity {
 
     private void initializeActivityLauncher() {
         // You can do the assignment inside onAttach or onCreate, i.e, before the activity is displayed
-         someActivityResultLauncher = registerForActivityResult(
+         activityLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 new ActivityResultCallback<ActivityResult>() {
                     @Override
@@ -142,7 +142,7 @@ public class LocationOptionsActivity extends AppCompatActivity {
 
     public void openAddLocationActivity() {
         Intent intent = new Intent(this, AddLocationActivity.class);
-        someActivityResultLauncher.launch(intent);
+        activityLauncher.launch(intent);
     }
 
     private void initializeSwitchButtons() {

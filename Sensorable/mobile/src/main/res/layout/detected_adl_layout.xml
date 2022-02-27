@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="5dp"
+    android:layout_marginStart="10dp"
+    android:layout_marginTop="10dp"
+    android:layout_marginBottom="10dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/customborder"
+        android:orientation="vertical"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_editor_absoluteX="175dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/adlTitle"
+                android:layout_width="257dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="3dp"
+                android:text="Title of ADL"
+                android:textSize="22sp" />
+
+            <TextView
+                android:id="@+id/adlTimestamp"
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:layout_margin="3dp"
+                android:layout_weight="1"
+                android:text="hh:mm"
+                android:textAlignment="textEnd"
+                android:textSize="22sp" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/adlDescription"
+            android:layout_width="match_parent"
+            android:layout_height="89dp"
+            android:layout_margin="3dp"
+            android:ems="10"
+            android:gravity="start|top"
+            android:inputType="textMultiLine"
+            android:text="This is the description of the detected adl, it can be so so long and we don't have any limitations,. I don't know if this is the best structure to represent a simple description."
+            android:textSize="18sp" />
+
+        <Button
+            android:id="@+id/seeStatsButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="3dp"
+            android:text="VER ESTADÍSTICAS DETALLADAS" />
+
+        <TextView
+            android:id="@+id/adlStats"
+            android:layout_width="match_parent"
+            android:layout_height="109dp"
+            android:layout_marginRight="3dp"
+            android:padding="3dp"
+            android:text="Those are the ADL stats. Here we'll find some states related to time duration, start time, end time, distance, bpm, starting location, ending location"
+            android:textAlignment="center"
+            android:textSize="18sp"
+            android:visibility="gone" />
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

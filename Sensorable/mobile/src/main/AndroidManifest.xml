@@ -24,7 +24,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MyApplication"
         tools:replace="android:theme">
-        <activity android:name=".AddLocationActivity"></activity>
+        <activity android:name=".AdlSummaryActivity"></activity>
+        <activity android:name=".AddLocationActivity" />
         <activity android:name=".LocationOptionsActivity" />
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.

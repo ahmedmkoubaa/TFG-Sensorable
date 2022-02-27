@@ -24,7 +24,14 @@ public class SensorsProvider  {
             Manifest.permission.INTERNET,
             Manifest.permission.BODY_SENSORS,
             Manifest.permission.ACTIVITY_RECOGNITION
+
     };
+
+    /*
+
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />*/
 
 
     private final int LOCATION_REQ_CODE = 1;
@@ -126,7 +133,7 @@ public class SensorsProvider  {
                     requestPermissionsAndInform(false);
                 }
 
-                locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER, 0, 0, listener);
+                locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER, 1000, 0, listener);
             }
         }
     }

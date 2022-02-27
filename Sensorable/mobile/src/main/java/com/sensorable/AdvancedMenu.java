@@ -21,14 +21,14 @@ public class AdvancedMenu extends AppCompatActivity {
         bluetoothLayout.setOnClickListener(v -> {
             startActivity(new Intent(
                     this,
-                    BluetoothOptions.class)
+                    BluetoothOptionsActivity.class)
             );
         });
 
         adlsLayout = (LinearLayout) findViewById(R.id.adlOptions);
         adlsLayout.setOnClickListener(v -> {
             startActivity(new Intent(
-                    this, DetailedSensorsList.class)
+                    this, AdlSummaryActivity.class)
             );
         });
 
@@ -36,7 +36,7 @@ public class AdvancedMenu extends AppCompatActivity {
         locationLayout.setOnClickListener(v -> {
             startActivity(new Intent(
                     this,
-                    DetailedSensorsList.class)
+                    LocationOptionsActivity.class)
             );
         });
 

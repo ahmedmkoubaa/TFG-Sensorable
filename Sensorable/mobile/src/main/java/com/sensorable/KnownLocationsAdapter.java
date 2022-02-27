@@ -11,13 +11,15 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.osmdroid.util.GeoPoint;
+
 import java.util.ArrayList;
 
-public class BluetoothDeviceAdapter extends ArrayAdapter<BluetoothDevice> {
+public class KnownLocationsAdapter extends ArrayAdapter<KnownLocation> {
     private final int resource;
     private Context context;
 
-    public BluetoothDeviceAdapter(@NonNull Context context, int resource, @NonNull ArrayList<BluetoothDevice> objects) {
+    public KnownLocationsAdapter(@NonNull Context context, int resource, @NonNull ArrayList<KnownLocation> objects) {
         super(context, resource, objects);
         this.context = context;
         this.resource = resource;
@@ -26,20 +28,24 @@ public class BluetoothDeviceAdapter extends ArrayAdapter<BluetoothDevice> {
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        String name = this.getItem(position).getName();
-        String mac  = this.getItem(position).getMac();
-        boolean trusted = this.getItem(position).getTrusted();
+        String title = this.getItem(position).getTitle();
+        String address = this.getItem(position).getAddress();
+        String tag = this.getItem(position).getTag();
+
+
 
         LayoutInflater inflater = LayoutInflater.from(context);
         convertView = inflater.inflate(this.resource, parent, false);
 
-        TextView deviceName = (TextView) convertView.findViewById(R.id.deviceName);
-        TextView deviceMAC = (TextView) convertView.findViewById(R.id.deviceMAC);
-        Switch deviceTrusted = (Switch) convertView.findViewById(R.id.deviceTrsusted);
+        TextView titleText, addressText, tagText;
 
-        deviceName.setText(name);
-        deviceMAC.setText(mac);
-        deviceTrusted.setChecked(trusted);
+        titleText = (TextView) convertView.findViewById(R.id.locationTitle);
+        addressText = (TextView) convertView.findViewById(R.id.locationAddress);
+        tagText = (TextView) convertView.findViewById(R.id.locationTag);
+
+        titleText.setText(title);
+        addressText.setText(address);
+        tagText.setText(tag);
 
         return convertView;
     }

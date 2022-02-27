@@ -28,7 +28,7 @@ public class AdvancedMenu extends AppCompatActivity {
         adlsLayout = (LinearLayout) findViewById(R.id.adlOptions);
         adlsLayout.setOnClickListener(v -> {
             startActivity(new Intent(
-                    this, DetailedSensorsList.class)
+                    this, AdlSummaryActivity.class)
             );
         });
 

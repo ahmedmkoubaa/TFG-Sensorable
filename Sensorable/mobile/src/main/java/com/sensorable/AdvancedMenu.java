@@ -21,7 +21,7 @@ public class AdvancedMenu extends AppCompatActivity {
         bluetoothLayout.setOnClickListener(v -> {
             startActivity(new Intent(
                     this,
-                    BluetoothOptions.class)
+                    BluetoothOptionsActivity.class)
             );
         });
 
@@ -36,7 +36,7 @@ public class AdvancedMenu extends AppCompatActivity {
         locationLayout.setOnClickListener(v -> {
             startActivity(new Intent(
                     this,
-                    DetailedSensorsList.class)
+                    LocationOptionsActivity.class)
             );
         });
 

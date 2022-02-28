@@ -2,9 +2,10 @@ package com.sensorable;
 
 import android.app.Service;
 import android.content.Intent;
+
 import android.os.Bundle;
 import android.os.IBinder;
-import android.widget.Toast;
+
 
 import androidx.annotation.Nullable;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
@@ -16,6 +17,7 @@ import com.empatica.empalink.config.EmpaSensorType;
 import com.empatica.empalink.config.EmpaStatus;
 import com.empatica.empalink.delegate.EmpaDataDelegate;
 import com.empatica.empalink.delegate.EmpaStatusDelegate;
+
 import com.example.commons.DeviceType;
 import com.example.commons.EmpaticaSensorType;
 import com.example.commons.SensorTransmissionCoder;
@@ -31,7 +33,7 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Toast.makeText(this, "EMPATICA", Toast.LENGTH_SHORT).show();
+        sendInfoMessage("EMPATICE SERVICE");
 
 
         // Create a new EmpaDeviceManager. MainActivity is both its data and status delegate.
@@ -39,6 +41,8 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
 
         // Initialize the Device Manager using your API key. You need to have Internet access at this point.
         deviceManager.authenticateWithAPIKey(EMPATICA_API_KEY);
+
+
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -49,16 +53,69 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
 
         Bundle empaticaBundle = new Bundle();
         empaticaBundle.putParcelable("EmpaticaMessage", msg);
+        empaticaBundle.getParcelableArrayList("EmpaticaMessage");
 
         intent.putExtra("EMPATICA_DATA_COLLECTED", empaticaBundle);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
     private void sendMessageToActivity(int sensorType, float[] values) {
-//        Toast.makeText(this, "EMPATICA SEND", Toast.LENGTH_SHORT).show();
         sendMessageToActivity(new SensorTransmissionCoder.SensorMessage(DeviceType.EMPATICA, sensorType, values));
     }
 
+    private void sendInfoMessage(String msg) {
+        Intent intent = new Intent("INFO");
+        intent.putExtra("msg", msg);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
+
+
+    @Override
+    public void didUpdateStatus(EmpaStatus status) {
+
+        // The device manager is ready for use
+        if (status == EmpaStatus.READY) {
+
+
+            sendInfoMessage("ENCIENDE LA PULSERA");
+            // Start scanning
+            deviceManager.startScanning();
+
+            // The device manager has established a connection
+        } else if (status == EmpaStatus.CONNECTED) {
+            sendInfoMessage("CONNECTED");
+
+            // The device manager connected to a device
+
+        } else if (status == EmpaStatus.DISCONNECTED) {
+            sendInfoMessage("DISCONNECTED");
+
+            // The device manager manager disconnected from a device
+        }
+    }
+
+
+    @Override
+    public void didDiscoverDevice(EmpaticaDevice bluetoothDevice, String deviceName, int rssi, boolean allowed) {
+        // Check if the discovered device can be used with your API key. If allowed is always false,
+        // the device is not linked with your API key. Please check your developer area at
+        // https://www.empatica.com/connect/developer.php
+
+        sendInfoMessage("DISCOVERED " + deviceName);
+
+        if (allowed) {
+            // Stop scanning. The first allowed device will do.
+            deviceManager.stopScanning();
+            try {
+                // Connect to the device
+                deviceManager.connectDevice(bluetoothDevice);
+
+            } catch (ConnectionNotAllowedException e) {
+                // This should happen only if you try to connect when allowed == false.
+                sendInfoMessage("Sorry, you can't connect to this device");
+            }
+        }
+    }
 
     @Nullable
     @Override
@@ -75,112 +132,68 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
     @Override
     public void didReceiveBVP(float bvp, double timestamp) {
         float values[] = {bvp};
-        sendMessageToActivity(EmpaticaSensorType.BVP, values);
+//        sendMessageToActivity(EmpaticaSensorType.BVP, values);
     }
 
     @Override
     public void didReceiveIBI(float ibi, double timestamp) {
         float values[] = {ibi};
-        sendMessageToActivity(EmpaticaSensorType.IBI, values);
+//        sendMessageToActivity(EmpaticaSensorType.IBI, values);
     }
 
     @Override
     public void didReceiveTemperature(float t, double timestamp) {
         float values[] = {t};
-        sendMessageToActivity(EmpaticaSensorType.TEMPERATURE, values);
+//        sendMessageToActivity(EmpaticaSensorType.TEMPERATURE, values);
     }
 
     @Override
     public void didReceiveAcceleration(int x, int y, int z, double timestamp) {
         float values[] = {x, y, z};
-        sendMessageToActivity(EmpaticaSensorType.ACCELEROMETER, values);
+//        sendMessageToActivity(EmpaticaSensorType.ACCELEROMETER, values);
     }
 
     @Override
     public void didReceiveBatteryLevel(float level, double timestamp) {
         float values[] = {level};
-        sendMessageToActivity(EmpaticaSensorType.BATTERY_LEVEL, values);
+//        sendMessageToActivity(EmpaticaSensorType.BATTERY_LEVEL, values);
     }
 
     @Override
     public void didReceiveTag(double timestamp) {
-
+        sendInfoMessage("RECEIVED TAG");
     }
-
-
-    @Override
-    public void didUpdateStatus(EmpaStatus status) {
-
-        // The device manager is ready for use
-        if (status == EmpaStatus.READY) {
-            Toast.makeText(this,  status.name() + " - Turn on your device", Toast.LENGTH_SHORT).show();
-
-            // Start scanning
-            deviceManager.startScanning();
-
-            // The device manager has established a connection
-        } else if (status == EmpaStatus.CONNECTED) {
-//            Toast.makeText(this, status.name(), Toast.LENGTH_SHORT).show();
-            // The device manager connected to a device
-
-        } else if (status == EmpaStatus.DISCONNECTED) {
-//            Toast.makeText(this, status.name(), Toast.LENGTH_SHORT).show();
-            // The device manager manager disconnected from a device
-        }
-    }
-
 
 
     @Override
     public void didEstablishConnection() {
-
+        sendInfoMessage("CONECCTION ESTABLISHED");
     }
 
     @Override
     public void didUpdateSensorStatus(int status, EmpaSensorType type) {
-
-    }
-
-    @Override
-    public void didDiscoverDevice(EmpaticaDevice bluetoothDevice, String deviceName, int rssi, boolean allowed) {
-        // Check if the discovered device can be used with your API key. If allowed is always false,
-        // the device is not linked with your API key. Please check your developer area at
-        // https://www.empatica.com/connect/developer.php
-
-        Toast.makeText(this, "didDiscoverDevice " + deviceName + " allowed: " + allowed, Toast.LENGTH_SHORT).show();
-
-        if (allowed) {
-            // Stop scanning. The first allowed device will do.
-            deviceManager.stopScanning();
-            try {
-                // Connect to the device
-//                toast("connected yes");
-                deviceManager.connectDevice(bluetoothDevice);
-                Toast.makeText(this, "connected yes", Toast.LENGTH_SHORT).show();
-            } catch (ConnectionNotAllowedException e) {
-                // This should happen only if you try to connect when allowed == false.
-                Toast.makeText(this, "Sorry, you can't connect to this device", Toast.LENGTH_SHORT).show();
-            }
-        }
+        sendInfoMessage("UPDATE SENSORS");
     }
 
     @Override
     public void didFailedScanning(int errorCode) {
-        Toast.makeText(this, "NO SE ENCONTRÓ NADA " + errorCode, Toast.LENGTH_SHORT).show();
+        sendInfoMessage("NOTHING FOUND");
     }
 
     @Override
     public void didRequestEnableBluetooth() {
 
+        sendInfoMessage("ENCIENDE EL BLUETOOTH POR FAVOR");
     }
 
     @Override
     public void bluetoothStateChanged() {
-
+        sendInfoMessage("Bluetooth state changed");
     }
 
     @Override
     public void didUpdateOnWristStatus(int status) {
 
+        sendInfoMessage("WRIST STATUS CHANGED");
     }
 }

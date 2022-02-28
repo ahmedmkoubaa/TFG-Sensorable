@@ -16,6 +16,8 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
 
     <application
         android:allowBackup="true"
@@ -25,26 +27,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MyApplication"
         tools:replace="android:theme">
-        <service
-            android:name=".AdlDetectionService"
-            android:enabled="true"
-            android:exported="true"></service>
+
+
 
         <activity android:name=".AdlSummaryActivity" />
         <activity android:name=".AddLocationActivity" />
         <activity android:name=".LocationOptionsActivity" />
-        <!--
-             The API key for Google Maps-based APIs is defined as a string resource.
-             (See the file "res/values/google_maps_api.xml").
-             Note that the API key is linked to the encryption key used to sign the APK.
-             You need a different API key for each encryption key, including the release key that is used to
-             sign the APK for publishing.
-             You can define the keys for the debug and release targets in src/debug/ and src/release/.
-        -->
-        <meta-data
-            android:name="com.google.android.geo.API_KEY"
-            android:value="@string/google_maps_key" />
-
         <activity android:name=".BluetoothOptionsActivity" /> <!-- Activities that the application is composed by -->
         <activity android:name=".MainActivity">
             <intent-filter>
@@ -54,7 +42,14 @@
             </intent-filter>
         </activity>
         <activity android:name=".DetailedSensorsList" />
-        <activity android:name=".AdvancedMenu" /> <!-- Services deployed by the applicaton -->
+        <activity android:name=".AdvancedMenu" />
+
+        <!-- Services deployed by the applicaton -->
+        <service
+            android:name=".AdlDetectionService"
+            android:enabled="true"
+            android:exported="true">
+        </service>
         <service android:name=".WearTransmissionService">
             <intent-filter>
 
@@ -69,7 +64,11 @@
                     android:scheme="wear" />
             </intent-filter>
         </service>
-        <service android:name=".EmpaticaTransmissionService" />
+        <service android:name=".EmpaticaTransmissionService"
+            android:enabled="true"
+            android:exported="true">
+        </service>
+
     </application>
 
 </manifest>

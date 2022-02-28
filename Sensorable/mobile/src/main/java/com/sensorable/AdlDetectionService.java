@@ -12,6 +12,10 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import com.example.commons.SensorTransmissionCoder;
+
+import java.util.ArrayList;
+
 public class AdlDetectionService extends Service {
 
     private BroadcastReceiver mobileReceiver;
@@ -19,8 +23,6 @@ public class AdlDetectionService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Toast.makeText(this, "ADL DETECTION SERVICE", Toast.LENGTH_SHORT).show();
-
-        sendMessageToActivity("Hi, I'm ADL service");
         initializeMobileReciver();
 
         return super.onStartCommand(intent, flags, startId);
@@ -42,15 +44,14 @@ public class AdlDetectionService extends Service {
         mobileReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                Toast.makeText(context, "mobile: received" +
-                                intent.getBundleExtra("MOBILE_DATA_COLLECTED")
-                                        .getString("MobileMessage"),
-                        Toast.LENGTH_SHORT).show();
+                Bundle b = intent.getBundleExtra("MOBILE_DATA_COLLECTED");
+                ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage = b.getParcelableArrayList("MobileMessage");
+                Toast.makeText(context, "ADL DETECTOR: " + arrayMessage.size() + " elementos ", Toast.LENGTH_LONG).show();
             }
         };
 
         LocalBroadcastManager.getInstance(this).registerReceiver(
-                mobileReceiver, new IntentFilter("MobileUpdates"));
+                mobileReceiver, new IntentFilter("MOBILE_SENDS_SENSOR_DATA"));
     }
 
 

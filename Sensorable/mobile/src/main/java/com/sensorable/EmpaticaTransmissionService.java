@@ -22,10 +22,13 @@ import com.example.commons.DeviceType;
 import com.example.commons.EmpaticaSensorType;
 import com.example.commons.SensorTransmissionCoder;
 
+import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class EmpaticaTransmissionService extends Service implements EmpaDataDelegate, EmpaStatusDelegate {
+    private ArrayList<SensorTransmissionCoder.SensorMessage> sensorMessagesBuffer;
+    private final static int MAX_BUFFER_SIZE = 512;
 
     private EmpaDeviceManager deviceManager;
     private static final String EMPATICA_API_KEY = "e910f7a73ce74dbd99b774b9f6010ab5";
@@ -42,21 +45,30 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
         // Initialize the Device Manager using your API key. You need to have Internet access at this point.
         deviceManager.authenticateWithAPIKey(EMPATICA_API_KEY);
 
+        // Initialize array buffer to send a bunch of messages insted of doing a single sending per sensor read
+        sensorMessagesBuffer = new ArrayList<>();
+
 
         return super.onStartCommand(intent, flags, startId);
     }
 
 
     private void sendMessageToActivity(SensorTransmissionCoder.SensorMessage msg) {
-        Intent intent = new Intent("EmpaticaDataUpdates");
-        // You can also include some extra data.
 
-        Bundle empaticaBundle = new Bundle();
-        empaticaBundle.putParcelable("EmpaticaMessage", msg);
-        empaticaBundle.getParcelableArrayList("EmpaticaMessage");
+        sensorMessagesBuffer.add(msg);
+        if (sensorMessagesBuffer.size() >= MAX_BUFFER_SIZE) {
+            Intent intent = new Intent("EmpaticaDataUpdates");
+            // You can also include some extra data.
 
-        intent.putExtra("EMPATICA_DATA_COLLECTED", empaticaBundle);
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+            Bundle empaticaBundle = new Bundle();
+            empaticaBundle.putParcelableArrayList("EmpaticaMessage", new ArrayList<>(sensorMessagesBuffer));
+
+            intent.putExtra("EMPATICA_DATA_COLLECTED", empaticaBundle);
+            LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+
+            // reset buffer
+            sensorMessagesBuffer.clear();
+        }
     }
 
     private void sendMessageToActivity(int sensorType, float[] values) {
@@ -132,31 +144,31 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
     @Override
     public void didReceiveBVP(float bvp, double timestamp) {
         float values[] = {bvp};
-//        sendMessageToActivity(EmpaticaSensorType.BVP, values);
+        sendMessageToActivity(EmpaticaSensorType.BVP, values);
     }
 
     @Override
     public void didReceiveIBI(float ibi, double timestamp) {
         float values[] = {ibi};
-//        sendMessageToActivity(EmpaticaSensorType.IBI, values);
+        sendMessageToActivity(EmpaticaSensorType.IBI, values);
     }
 
     @Override
     public void didReceiveTemperature(float t, double timestamp) {
         float values[] = {t};
-//        sendMessageToActivity(EmpaticaSensorType.TEMPERATURE, values);
+        sendMessageToActivity(EmpaticaSensorType.TEMPERATURE, values);
     }
 
     @Override
     public void didReceiveAcceleration(int x, int y, int z, double timestamp) {
         float values[] = {x, y, z};
-//        sendMessageToActivity(EmpaticaSensorType.ACCELEROMETER, values);
+        sendMessageToActivity(EmpaticaSensorType.ACCELEROMETER, values);
     }
 
     @Override
     public void didReceiveBatteryLevel(float level, double timestamp) {
         float values[] = {level};
-//        sendMessageToActivity(EmpaticaSensorType.BATTERY_LEVEL, values);
+        sendMessageToActivity(EmpaticaSensorType.BATTERY_LEVEL, values);
     }
 
     @Override
@@ -167,7 +179,7 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
 
     @Override
     public void didEstablishConnection() {
-        sendInfoMessage("CONECCTION ESTABLISHED");
+        sendInfoMessage("CONNECTION ESTABLISHED");
     }
 
     @Override

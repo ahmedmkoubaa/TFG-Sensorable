@@ -27,7 +27,6 @@ public class SensorTransmissionCoder {
         private int sensorType;
         private float[] value;
         private int deviceType;
-
         private long timestamp;
 
         private void initializeSensorMessage(int deviceType, int sensorType, float[] value, long timestamp) {

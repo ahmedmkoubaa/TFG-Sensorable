@@ -68,6 +68,9 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         }
     }
 
+    private final static int MAX_SENSOR_BUFFER_SIZE = 2048;
+    private ArrayList<SensorTransmissionCoder.SensorMessage> sensorMessagesBuffer;
+
     private Button userStateSummary;
     private ProgressBar useStateProgressBar;
     private TextView userStateMessage;
@@ -100,9 +103,11 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         requestPermissionsAndInform(true);
 
         initializeAttributesFromUI();
+        sensorMessagesBuffer = new ArrayList<>();
+
 //        initializeWearOsTranmissionService();
         initializeEmpaticaTransmissionService();
-//        initializeAdlDetectionService();
+        initializeAdlDetectionService();
 
         initializeInfoReceiver();
 
@@ -128,16 +133,30 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 
     }
 
+    private void sendSensorDataToAdlDetectionService(ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage) {
+        sensorMessagesBuffer.addAll(arrayMessage);
+        sendSensorDataToAdlDetectionService();
+    }
+    private void sendSensorDataToAdlDetectionService(SensorTransmissionCoder.SensorMessage msg) {
+        sensorMessagesBuffer.add(msg);
+        sendSensorDataToAdlDetectionService();
 
-    private void sendMessageToActivity(String msg) {
-        Intent intent = new Intent("MobileUpdates");
-        // You can also include some extra data.
+    }
 
-        Bundle empaticaBundle = new Bundle();
-        empaticaBundle.putString("MobileMessage", msg);
+    private void sendSensorDataToAdlDetectionService() {
+        if (sensorMessagesBuffer.size() >= MAX_SENSOR_BUFFER_SIZE) {
+            Intent intent = new Intent("MOBILE_SENDS_SENSOR_DATA");
+            // You can also include some extra data.
 
-        intent.putExtra("MOBILE_DATA_COLLECTED", empaticaBundle);
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+            Bundle empaticaBundle = new Bundle();
+            empaticaBundle.putParcelableArrayList("MobileMessage", new ArrayList<>(sensorMessagesBuffer));
+
+            intent.putExtra("MOBILE_DATA_COLLECTED", empaticaBundle);
+            LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+
+            // reset buffer
+            sensorMessagesBuffer.clear();
+        }
     }
 
     private void initializeAdlDetectionService() {
@@ -151,8 +170,6 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
                         intent.getBundleExtra("ADL_DATA_COLLECTED")
                                 .getString("AdlMessage"),
                         Toast.LENGTH_SHORT).show();
-
-                sendMessageToActivity("Hi I'm mobile");
             }
         };
 
@@ -172,13 +189,10 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
             @Override
             public void onReceive(Context context, Intent intent) {
                 Bundle b = intent.getBundleExtra("EMPATICA_DATA_COLLECTED");
-                SensorTransmissionCoder.SensorMessage message = b.getParcelable("EmpaticaMessage");
-                String s = "Recibido " + message.toString();
+                ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage = b.getParcelableArrayList("EmpaticaMessage");
+                sendSensorDataToAdlDetectionService(arrayMessage);
+                Toast.makeText(context, "He recibido " + arrayMessage.size() + " elementos ", Toast.LENGTH_LONG).show();
 
-
-//                hearRateText.setText(" " + message.getTimestamp());
-
-                Toast.makeText(context, s, Toast.LENGTH_SHORT).show();
             }
         };
 
@@ -269,6 +283,14 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
             @Override
             public void onSensorChanged(SensorEvent sensorEvent) {
                 hearRateText.setText((int) sensorEvent.values[0] + " ppm");
+                SensorTransmissionCoder.SensorMessage msg =
+                        new SensorTransmissionCoder.SensorMessage(
+                                DeviceType.MOBILE,
+                                Sensor.TYPE_HEART_RATE,
+                                sensorEvent.values
+                        );
+
+                sendSensorDataToAdlDetectionService(msg);
             }
 
             @Override
@@ -286,6 +308,15 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
             @Override
             public void onSensorChanged(SensorEvent sensorEvent) {
                 stepCounterText.setText((int) sensorEvent.values[0] + " pasos");
+
+                SensorTransmissionCoder.SensorMessage msg =
+                        new SensorTransmissionCoder.SensorMessage(
+                                DeviceType.MOBILE,
+                                Sensor.TYPE_STEP_COUNTER,
+                                sensorEvent.values
+                        );
+
+                sendSensorDataToAdlDetectionService(msg);
             }
 
             @Override

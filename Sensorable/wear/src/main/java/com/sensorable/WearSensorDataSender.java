@@ -41,8 +41,9 @@ public class WearSensorDataSender {
         executorService.execute(new Runnable() {
             @Override
             public void run() {
-                //some code here
+
                 try {
+
                     capabilityInfo = Tasks.await(
                             Wearable.getCapabilityClient(context).getCapability(
                                     WEAR_DATA_RECEPTION, CapabilityClient.FILTER_REACHABLE));

@@ -21,13 +21,6 @@ public class AdlSummaryActivity extends AppCompatActivity {
         setContentView(R.layout.activity_adl_summary);
 
         initializeAttributesFromUI();
-
-        // Next tasks we have to achieve:
-        // - create a layout list
-        // - crate a data structure for item list
-        // - create a item list adapter
-        // - create an arrayList and pass it to new adapter
-        // - pass adapter to the listView
     }
 
     private void initializeAttributesFromUI() {

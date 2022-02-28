@@ -43,12 +43,13 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
     private TextView hearRateText, stepCounterText;
 
     private SensorsProvider sensorsProvider;
-
     private Button moreSensorsButton;
-    private WearTransmissionService service;
+
+    private WearTransmissionService wearOsService;
     private EmpaticaTransmissionService empaticaService;
     private BroadcastReceiver wearOsReceiver;
     private BroadcastReceiver empaticaReceiver;
+    private AdlDetectionService adlDetectionService;
 
 
     @Override
@@ -60,6 +61,8 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         initializeAttributesFromUI();
 //        initializeDataTransmissionService();
 //        initializeEmpaticaTransmissionService();
+        initializeAdlDetectionService();
+
 
         userStateSummary.setClickable(false);
         userStateSummary.setText("EN BUEN ESTADO");
@@ -81,6 +84,40 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 
 
     }
+
+
+    private void sendMessageToActivity(String msg) {
+        Intent intent = new Intent("MobileUpdates");
+        // You can also include some extra data.
+
+        Bundle empaticaBundle = new Bundle();
+        empaticaBundle.putString("MobileMessage", msg);
+
+        intent.putExtra("MOBILE_DATA_COLLECTED", empaticaBundle);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
+
+    private void initializeAdlDetectionService() {
+        adlDetectionService = new AdlDetectionService();
+        startService(new Intent(this, AdlDetectionService.class));
+
+        BroadcastReceiver exampleReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Toast.makeText(context, "mobile: received" +
+                        intent.getBundleExtra("ADL_DATA_COLLECTED")
+                                .getString("AdlMessage"),
+                        Toast.LENGTH_SHORT).show();
+
+                sendMessageToActivity("Hi I'm mobile");
+            }
+        };
+
+        LocalBroadcastManager.getInstance(MainActivity.this).registerReceiver(
+                exampleReceiver, new IntentFilter("AdlUpdates"));
+    }
+
+
 
     private void initializeEmpaticaTransmissionService() {
         empaticaService = new EmpaticaTransmissionService();
@@ -104,7 +141,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 
     private void initializeDataTransmissionService() {
         // start new data transmission service to collect data from wear os
-        service = new WearTransmissionService();
+        wearOsService = new WearTransmissionService();
         startService(new Intent(this, WearTransmissionService.class));
 
         // handle messages from our service to this activity

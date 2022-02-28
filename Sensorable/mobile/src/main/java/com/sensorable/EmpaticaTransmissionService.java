@@ -39,7 +39,6 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
 
         // Initialize the Device Manager using your API key. You need to have Internet access at this point.
         deviceManager.authenticateWithAPIKey(EMPATICA_API_KEY);
-
         return super.onStartCommand(intent, flags, startId);
     }
 

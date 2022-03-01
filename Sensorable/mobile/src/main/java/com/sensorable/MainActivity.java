@@ -106,7 +106,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         sensorMessagesBuffer = new ArrayList<>();
 
 //        initializeWearOsTranmissionService();
-        initializeEmpaticaTransmissionService();
+//        initializeEmpaticaTransmissionService();
         initializeAdlDetectionService();
 
         initializeInfoReceiver();
@@ -279,7 +279,8 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
     }
 
     private void initializeSensors() {
-        SensorEventListener heartRateListener =  new SensorEventListener() {
+
+        sensorsProvider.subscribeToSensor(Sensor.TYPE_HEART_RATE, new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent sensorEvent) {
                 hearRateText.setText((int) sensorEvent.values[0] + " ppm");
@@ -301,10 +302,10 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
                         Toast.LENGTH_SHORT
                 ).show();
             }
-        };
-        sensorsProvider.subscribeToSensor(Sensor.TYPE_HEART_RATE, heartRateListener, SensorManager.SENSOR_DELAY_NORMAL);
+        }, SensorManager.SENSOR_DELAY_NORMAL);
 
-        SensorEventListener stepCounterListener = new SensorEventListener() {
+
+        sensorsProvider.subscribeToSensor(Sensor.TYPE_STEP_COUNTER, new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent sensorEvent) {
                 stepCounterText.setText((int) sensorEvent.values[0] + " pasos");
@@ -321,17 +322,32 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 
             @Override
             public void onAccuracyChanged(Sensor sensor, int i) {
-                if (i <= 0) {
-                    Toast.makeText(
-                            MainActivity.this,
-                            "Step counter Sensor not available" ,
-                            Toast.LENGTH_SHORT
-                    ).show();
-                }
+            }
+        }, SensorManager.SENSOR_DELAY_NORMAL);
+
+
+        SensorEventListener transmissionListener = new SensorEventListener() {
+            @Override
+            public void onSensorChanged(SensorEvent sensorEvent) {
+                SensorTransmissionCoder.SensorMessage msg =
+                        new SensorTransmissionCoder.SensorMessage(
+                                DeviceType.MOBILE,
+                                sensorEvent.sensor.getType(),
+                                sensorEvent.values
+                        );
+
+                sendSensorDataToAdlDetectionService(msg);
+            }
+
+            @Override
+            public void onAccuracyChanged(Sensor sensor, int i) {
 
             }
         };
-        sensorsProvider.subscribeToSensor(Sensor.TYPE_STEP_COUNTER, stepCounterListener, SensorManager.SENSOR_DELAY_NORMAL);
+
+        sensorsProvider.subscribeToSensor(Sensor.TYPE_PROXIMITY, transmissionListener, SensorManager.SENSOR_DELAY_NORMAL);
+        sensorsProvider.subscribeToSensor(Sensor.TYPE_LIGHT, transmissionListener , SensorManager.SENSOR_DELAY_NORMAL);
+        sensorsProvider.subscribeToSensor(Sensor.TYPE_ACCELEROMETER, transmissionListener , SensorManager.SENSOR_DELAY_NORMAL);
     }
 
 

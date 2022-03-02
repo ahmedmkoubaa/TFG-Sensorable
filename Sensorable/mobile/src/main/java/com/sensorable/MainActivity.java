@@ -16,6 +16,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -68,7 +69,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         }
     }
 
-    private final static int MAX_SENSOR_BUFFER_SIZE = 2048;
+    private final static int MAX_SENSOR_BUFFER_SIZE = 512;
     private ArrayList<SensorTransmissionCoder.SensorMessage> sensorMessagesBuffer;
 
     private Button userStateSummary;
@@ -85,10 +86,6 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
     private BroadcastReceiver empaticaReceiver;
     private BroadcastReceiver infoReceiver;
     private AdlDetectionService adlDetectionService;
-
-    private EmpaDeviceManager deviceManager;
-    private static final String EMPATICA_API_KEY = "e910f7a73ce74dbd99b774b9f6010ab5";
-    private ExecutorService executorService = Executors.newFixedThreadPool(1);
 
     private Map<Long, ArrayList<SensorTransmissionCoder.SensorMessage>> collectedData =
             new HashMap<Long, ArrayList<SensorTransmissionCoder.SensorMessage>>();
@@ -145,6 +142,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 
     private void sendSensorDataToAdlDetectionService() {
         if (sensorMessagesBuffer.size() >= MAX_SENSOR_BUFFER_SIZE) {
+
             Intent intent = new Intent("MOBILE_SENDS_SENSOR_DATA");
             // You can also include some extra data.
 
@@ -345,7 +343,24 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
             }
         };
 
-        sensorsProvider.subscribeToSensor(Sensor.TYPE_PROXIMITY, transmissionListener, SensorManager.SENSOR_DELAY_NORMAL);
+        sensorsProvider.subscribeToSensor(Sensor.TYPE_PROXIMITY,  new SensorEventListener() {
+            @Override
+            public void onSensorChanged(SensorEvent sensorEvent) {
+                SensorTransmissionCoder.SensorMessage msg =
+                        new SensorTransmissionCoder.SensorMessage(
+                                DeviceType.MOBILE,
+                                sensorEvent.sensor.getType(),
+                                sensorEvent.values
+                        );
+
+                sendSensorDataToAdlDetectionService(msg);
+            }
+
+            @Override
+            public void onAccuracyChanged(Sensor sensor, int i) {
+
+            }
+        }, SensorManager.SENSOR_DELAY_NORMAL);
         sensorsProvider.subscribeToSensor(Sensor.TYPE_LIGHT, transmissionListener , SensorManager.SENSOR_DELAY_NORMAL);
         sensorsProvider.subscribeToSensor(Sensor.TYPE_ACCELEROMETER, transmissionListener , SensorManager.SENSOR_DELAY_NORMAL);
     }

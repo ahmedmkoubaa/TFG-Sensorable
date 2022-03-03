@@ -189,7 +189,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
                 Bundle b = intent.getBundleExtra("EMPATICA_DATA_COLLECTED");
                 ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage = b.getParcelableArrayList("EmpaticaMessage");
                 sendSensorDataToAdlDetectionService(arrayMessage);
-                Toast.makeText(context, "He recibido " + arrayMessage.size() + " elementos ", Toast.LENGTH_LONG).show();
+//                Toast.makeText(context, "He recibido " + arrayMessage.size() + " elementos ", Toast.LENGTH_LONG).show();
 
             }
         };
@@ -294,11 +294,11 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 
             @Override
             public void onAccuracyChanged(Sensor sensor, int i) {
-                Toast.makeText(
+        /*        Toast.makeText(
                         MainActivity.this,
                         i <= 0 ? "Sensor not available" : ("Accuracy value is: " + i) ,
                         Toast.LENGTH_SHORT
-                ).show();
+                ).show();*/
             }
         }, SensorManager.SENSOR_DELAY_NORMAL);
 

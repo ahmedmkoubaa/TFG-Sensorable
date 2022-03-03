@@ -108,7 +108,7 @@ public class AdlDetectionService extends Service {
             public void onReceive(Context context, Intent intent) {
                 Bundle b = intent.getBundleExtra("MOBILE_DATA_COLLECTED");
                 ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage = b.getParcelableArrayList("MobileMessage");
-                Toast.makeText(context, "ADL DETECTOR: " + arrayMessage.size() + " elementos ", Toast.LENGTH_LONG).show();
+//                Toast.makeText(context, "ADL DETECTOR: " + arrayMessage.size() + " elementos ", Toast.LENGTH_LONG).show();
                 detectAdls(arrayMessage);
             }
         };
@@ -281,7 +281,7 @@ public class AdlDetectionService extends Service {
             }
         }
 
-        Toast.makeText(this, "HECHO CON " + data.size() + " valores", Toast.LENGTH_SHORT).show();
+//        Toast.makeText(this, "HECHO CON " + data.size() + " valores", Toast.LENGTH_SHORT).show();
         return categorization;
     }
 

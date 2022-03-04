@@ -8,6 +8,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -123,6 +124,7 @@ public class DetailedSensorsList extends AppCompatActivity {
             public void onSensorChanged(SensorEvent sensorEvent) {
                 String values = sensorEvent.values[0] + " lm";
                 lightTextView.setText(values);
+                Log.i("SENSORS", "LIGHT CHANGED " + sensorEvent.values[0]);
             }
 
             @Override

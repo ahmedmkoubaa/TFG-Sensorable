@@ -7,6 +7,8 @@ import java.lang.reflect.Array;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 
 public class SensorTransmissionCoder {
     private static Charset charset = StandardCharsets.US_ASCII;
@@ -25,14 +27,28 @@ public class SensorTransmissionCoder {
         private int sensorType;
         private float[] value;
         private int deviceType;
+        private long timestamp;
 
-        public SensorMessage(int deviceType, int sensorType, float[] value) {
+        private void initializeSensorMessage(int deviceType, int sensorType, float[] value, long timestamp) {
             this.sensorType = sensorType;
             this.value = value;
             this.deviceType = deviceType;
+            this.timestamp =  timestamp;
+
         }
 
-        public int getDeviceType() {return deviceType; }
+        public SensorMessage(int deviceType, int sensorType, float[] value) {
+            initializeSensorMessage(deviceType, sensorType, value, new Date().getTime());
+        }
+
+        public SensorMessage(int deviceType, int sensorType, float[] value, long timestamp) {
+            initializeSensorMessage(deviceType, sensorType, value, timestamp);
+        }
+
+        public int getDeviceType() {
+            return deviceType;
+        }
+
         public int getSensorType() {
             return sensorType;
         }
@@ -41,14 +57,22 @@ public class SensorTransmissionCoder {
             return value;
         }
 
+        public long getTimestamp() {
+            return timestamp;
+        }
+
         public String toString() {
-            return sensorType + FIELDS_SEPARATOR + value;
+            return deviceType + FIELDS_SEPARATOR +
+                    sensorType + FIELDS_SEPARATOR +
+                    Arrays.toString(value) + FIELDS_SEPARATOR +
+                    timestamp;
         }
 
         protected SensorMessage(Parcel in) {
             deviceType = in.readInt();
             sensorType = in.readInt();
             value = decodeValue(in.readString());
+            timestamp = in.readLong();
         }
 
         public static final Creator<SensorMessage> CREATOR = new Creator<SensorMessage>() {
@@ -73,6 +97,7 @@ public class SensorTransmissionCoder {
             parcel.writeInt(deviceType);
             parcel.writeInt(sensorType);
             parcel.writeString(codeValue(value));
+            parcel.writeLong(timestamp);
         }
     }
 
@@ -104,9 +129,10 @@ public class SensorTransmissionCoder {
 
     // it receives the necessary data to form a SensorMessage and it
     // transforms it to String and later to bytes
-    public static byte[] codeMessage(int device, int sensorType, float[] value) {
+    public static byte[] codeMessage(int device, int sensorType, float[] value, float timestamp) {
         String msg = device + FIELDS_SEPARATOR + sensorType + FIELDS_SEPARATOR;
         msg += codeValue(value);
+        msg += FIELDS_SEPARATOR + timestamp;
 
         byte[] sensorData = msg.getBytes(charset);
         return sensorData;
@@ -117,7 +143,8 @@ public class SensorTransmissionCoder {
         return codeMessage(
                 sensorMessage.getDeviceType(),
                 sensorMessage.getSensorType(),
-                sensorMessage.getValue()
+                sensorMessage.getValue(),
+                sensorMessage.getTimestamp()
         );
     }
 
@@ -128,9 +155,10 @@ public class SensorTransmissionCoder {
         int deviceType = Integer.parseInt(splitedMessage[0]);
         int sensorType = Integer.parseInt(splitedMessage[1]);
         float[] value = decodeValue(splitedMessage[2]);
+        long timestamp = Long.parseLong(splitedMessage[3]);
 
 
-        return (new SensorMessage(deviceType, sensorType, value));
+        return (new SensorMessage(deviceType, sensorType, value, timestamp));
     }
 
 

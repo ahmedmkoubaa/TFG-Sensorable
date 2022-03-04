@@ -31,7 +31,7 @@ public class SensorsProvider  {
 
 
     private final int LOCATION_REQ_CODE = 1;
-    private Activity context;
+    private Activity c;
 
     // this gives us the location
     private LocationManager locationManager;
@@ -40,7 +40,7 @@ public class SensorsProvider  {
     private SensorManager sensorManager;
 
     public SensorsProvider(Activity context) {
-        this.context = context;
+        this.c = context;
         requestPermissionsAndInform(false);
 
         initializeProviderLocation();
@@ -55,7 +55,7 @@ public class SensorsProvider  {
     private void initializeProviderLocation() {
         try {
             locationManager =
-                    (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+                    (LocationManager) c.getSystemService(Context.LOCATION_SERVICE);
 
         } catch (Exception e) {
             if (!canAccessLocation()) {
@@ -77,16 +77,16 @@ public class SensorsProvider  {
 
             // If no suitable provider is found, null is returned.
             if (providerName != null) {
-                Toast.makeText(context, "Tenemos un provider", Toast.LENGTH_SHORT).show();
+                Toast.makeText(c, "Tenemos un provider", Toast.LENGTH_SHORT).show();
             }
         } else {
-            Toast.makeText(context, "Es necesario obtener los permisos, reinicie la app", Toast.LENGTH_SHORT).show();
+            Toast.makeText(c, "Es necesario obtener los permisos, reinicie la app", Toast.LENGTH_SHORT).show();
         }
     }
 
     private void initializeSensorManager () {
         if ( sensorManager == null ) {
-            sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
+            sensorManager = (SensorManager) c.getSystemService(Context.SENSOR_SERVICE);
         }
     }
 
@@ -111,21 +111,21 @@ public class SensorsProvider  {
         // location provider is enabled each time the activity resumes from the stopped state.
         if (!hasLocationManager()) {
             locationManager =
-                    (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+                    (LocationManager) c.getSystemService(Context.LOCATION_SERVICE);
         }
 
         final boolean gpsEnabled = locationManager.isProviderEnabled(locationManager.GPS_PROVIDER);
 
         if (!gpsEnabled) {
-            Toast.makeText(context, "Please turn on location", Toast.LENGTH_SHORT).show();
+            Toast.makeText(c, "Please turn on location", Toast.LENGTH_SHORT).show();
         } else {
             if (canAccessLocation()) {
-                if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                    ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.checkSelfPermission(c, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                    ActivityCompat.checkSelfPermission(c, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
                     // TODO: Consider calling
                     //    ActivityCompat#requestPermissions
-                    Toast.makeText(context, "Permisos de ubicación no disponibles", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(c, "Permisos de ubicación no disponibles", Toast.LENGTH_SHORT).show();
                     requestPermissionsAndInform(false);
                 }
 
@@ -141,10 +141,10 @@ public class SensorsProvider  {
     // Check if location perms are available
     // Returns true if those permissions are available and false if not
     private boolean canAccessLocation() {
-        return (context.checkSelfPermission(
+        return (c.checkSelfPermission(
                 Manifest.permission.ACCESS_FINE_LOCATION) ==
                 PackageManager.PERMISSION_GRANTED) ||
-                (context.checkSelfPermission(
+                (c.checkSelfPermission(
                         Manifest.permission.ACCESS_COARSE_LOCATION) ==
                         PackageManager.PERMISSION_GRANTED);
     }
@@ -153,9 +153,9 @@ public class SensorsProvider  {
         requestPermissionsAndInform(true);
     }
     private void requestPermissionsAndInform(Boolean inform) {
-        context.requestPermissions(SENSOR_PERMISSIONS, LOCATION_REQ_CODE);
+        c.requestPermissions(SENSOR_PERMISSIONS, LOCATION_REQ_CODE);
         if (inform) {
-            Toast.makeText(context, "Permisos solicitados y aparentemente concedidos", Toast.LENGTH_SHORT).show();
+            Toast.makeText(c, "Permisos solicitados y aparentemente concedidos", Toast.LENGTH_SHORT).show();
         }
     }
 

@@ -3,9 +3,11 @@ package com.sensorable;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -36,6 +38,7 @@ import com.example.commons.SensorsProvider;
 import com.google.android.gms.wearable.MessageClient;
 import com.google.android.gms.wearable.MessageEvent;
 
+import java.lang.ref.WeakReference;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -81,11 +84,18 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
     private Button moreSensorsButton;
 
     private WearTransmissionService wearOsService;
-    private EmpaticaTransmissionService empaticaService;
     private BroadcastReceiver wearOsReceiver;
+
+    private EmpaticaTransmissionService empaticaService;
     private BroadcastReceiver empaticaReceiver;
-    private BroadcastReceiver infoReceiver;
+
+    private MobileSensorsProviderService mobileSensorsService;
+    private BroadcastReceiver mobileSensorsReceiver;
+
     private AdlDetectionService adlDetectionService;
+
+    private BroadcastReceiver infoReceiver;
+
 
     private Map<Long, ArrayList<SensorTransmissionCoder.SensorMessage>> collectedData =
             new HashMap<Long, ArrayList<SensorTransmissionCoder.SensorMessage>>();
@@ -105,6 +115,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 //        initializeWearOsTranmissionService();
 //        initializeEmpaticaTransmissionService();
         initializeAdlDetectionService();
+        initializeMobileSensorsProviderService();
 
         initializeInfoReceiver();
 
@@ -125,10 +136,13 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         // this system valoration will be developed in the near future
 
 
+/*
         sensorsProvider = new SensorsProvider(this);
+*/
 
 
     }
+
 
     private void sendSensorDataToAdlDetectionService(ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage) {
         sensorMessagesBuffer.addAll(arrayMessage);
@@ -138,6 +152,54 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         sensorMessagesBuffer.add(msg);
         sendSensorDataToAdlDetectionService();
 
+    }
+
+    private void initializeMobileSensorsProviderService() {
+        requestPermissionsAndInform(false);
+        int [] toCollectSensors = {
+                Sensor.TYPE_STEP_COUNTER,
+                Sensor.TYPE_HEART_RATE,
+                Sensor.TYPE_ACCELEROMETER
+        };
+        mobileSensorsService =
+                new MobileSensorsProviderService(
+                        new WeakReference<Activity>(this),
+                        toCollectSensors,
+                        SensorManager.SENSOR_DELAY_NORMAL
+                );
+
+        startService(new Intent(this, MobileSensorsProviderService.class));
+
+        mobileSensorsReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Bundle b = intent.getBundleExtra("SENSORS_PROVIDER_DATA_COLLECTED");
+                ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage = b.getParcelableArrayList("SensorsProviderMessage");
+                sendSensorDataToAdlDetectionService(arrayMessage);
+
+                Toast.makeText(context, "Received mobile sensors", Toast.LENGTH_SHORT).show();
+                Log.i("MOBILE_SENSORS_RECEIVER", "Received a buffer of sensors " + arrayMessage.size());
+
+                for (SensorTransmissionCoder.SensorMessage s: arrayMessage) {
+                    switch (s.getSensorType()) {
+                        case Sensor.TYPE_HEART_RATE:
+                            hearRateText.setText(s.getValue()[0] + " PPM");
+                            break;
+                        case Sensor.TYPE_STEP_COUNTER:
+                            stepCounterText.setText(s.getValue()[0] + " PASOS");
+                            break;
+                        case Sensor.TYPE_ACCELEROMETER:
+                            ((TextView)findViewById(R.id.acceleromterText)).setText(Arrays.toString(s.getValue()));
+                            break;
+                        default:
+                            Toast.makeText(context, "unexpected mobile sensor " + s.getSensorType(), Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+        };
+
+        LocalBroadcastManager.getInstance(MainActivity.this).registerReceiver(
+                mobileSensorsReceiver, new IntentFilter("MobileSensorsProviderUpdates"));
     }
 
     private void sendSensorDataToAdlDetectionService() {
@@ -161,7 +223,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         adlDetectionService = new AdlDetectionService();
         startService(new Intent(this, AdlDetectionService.class));
 
-        BroadcastReceiver exampleReceiver = new BroadcastReceiver() {
+        BroadcastReceiver adlDetectorService = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 Toast.makeText(context, "mobile: received" +
@@ -172,7 +234,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         };
 
         LocalBroadcastManager.getInstance(MainActivity.this).registerReceiver(
-                exampleReceiver, new IntentFilter("AdlUpdates"));
+                adlDetectorService, new IntentFilter("AdlUpdates"));
     }
 
 
@@ -272,8 +334,6 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
     @Override
     protected void onStart() {
         super.onStart();
-
-       initializeSensors();
     }
 
     private void initializeSensors() {

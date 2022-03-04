@@ -29,7 +29,6 @@
         tools:replace="android:theme">
 
 
-
         <activity android:name=".AdlSummaryActivity" />
         <activity android:name=".AddLocationActivity" />
         <activity android:name=".LocationOptionsActivity" />
@@ -42,14 +41,15 @@
             </intent-filter>
         </activity>
         <activity android:name=".DetailedSensorsList" />
-        <activity android:name=".AdvancedMenu" />
-
-        <!-- Services deployed by the applicaton -->
+        <activity android:name=".AdvancedMenu" /> <!-- Services deployed by the applicaton -->
         <service
             android:name=".AdlDetectionService"
             android:enabled="true"
-            android:exported="true">
-        </service>
+            android:exported="true"></service>
+        <service
+            android:name=".MobileSensorsProviderService"
+            android:enabled="true"
+            android:exported="true"></service>
         <service android:name=".WearTransmissionService">
             <intent-filter>
 
@@ -64,11 +64,10 @@
                     android:scheme="wear" />
             </intent-filter>
         </service>
-        <service android:name=".EmpaticaTransmissionService"
+        <service
+            android:name=".EmpaticaTransmissionService"
             android:enabled="true"
-            android:exported="true">
-        </service>
-
+            android:exported="true"></service>
     </application>
 
 </manifest>

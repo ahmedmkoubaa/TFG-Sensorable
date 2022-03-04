@@ -6,45 +6,37 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import android.Manifest;
+import android.app.Activity;
+import android.bluetooth.BluetoothDevice;
+import android.companion.AssociationRequest;
+import android.companion.BluetoothDeviceFilter;
+import android.companion.CompanionDeviceManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.IntentSender;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.empatica.empalink.ConnectionNotAllowedException;
-import com.empatica.empalink.EmpaDeviceManager;
-import com.empatica.empalink.EmpaticaDevice;
-import com.empatica.empalink.config.EmpaSensorType;
-import com.empatica.empalink.config.EmpaStatus;
-import com.empatica.empalink.delegate.EmpaDataDelegate;
-import com.empatica.empalink.delegate.EmpaStatusDelegate;
 import com.example.commons.DeviceType;
-import com.example.commons.EmpaticaSensorType;
 import com.example.commons.SensorTransmissionCoder;
 import com.example.commons.SensorsProvider;
 import com.google.android.gms.wearable.MessageClient;
 import com.google.android.gms.wearable.MessageEvent;
 
-import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 
 public class MainActivity extends AppCompatActivity implements MessageClient.OnMessageReceivedListener {
@@ -55,9 +47,11 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
             Manifest.permission.BODY_SENSORS,
             Manifest.permission.ACTIVITY_RECOGNITION,
             Manifest.permission.BLUETOOTH,
-            Manifest.permission.BLUETOOTH_ADMIN
+            Manifest.permission.BLUETOOTH_ADMIN,
+            Manifest.permission.BLUETOOTH_CONNECT
     };
     private final static int LOCATION_REQ_CODE = 1;
+    private final static int SELECT_DEVICE_REQUEST_CODE = 0;
 
     private void requestPermissionsAndInform() {
         requestPermissionsAndInform(true);
@@ -97,7 +91,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        requestPermissionsAndInform(true);
+        requestPermissionsAndInform(false);
 
         initializeAttributesFromUI();
         sensorMessagesBuffer = new ArrayList<>();
@@ -105,6 +99,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 //        initializeWearOsTranmissionService();
 //        initializeEmpaticaTransmissionService();
         initializeAdlDetectionService();
+        initializeBluetoothDetection();
 
         initializeInfoReceiver();
 
@@ -128,6 +123,65 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         sensorsProvider = new SensorsProvider(this);
 
 
+    }
+
+    private void initializeBluetoothDetection() {
+        CompanionDeviceManager deviceManager =
+                (CompanionDeviceManager) getSystemService(
+                        Context.COMPANION_DEVICE_SERVICE
+                );
+
+
+        BluetoothDeviceFilter deviceFilter =
+                new BluetoothDeviceFilter.Builder().build();
+
+        AssociationRequest pairingRequest = new AssociationRequest.Builder()
+                .addDeviceFilter(deviceFilter)
+                .setSingleDevice(false)
+                .build();
+
+        deviceManager.associate(pairingRequest,
+                new CompanionDeviceManager.Callback() {
+                    @Override
+                    public void onDeviceFound(IntentSender chooserLauncher) {
+                        Log.i("BLUETOOTH_DETECTOR", "found a device");
+                        try {
+                            startIntentSenderForResult(chooserLauncher,
+                                    SELECT_DEVICE_REQUEST_CODE, null, 0, 0, 0);
+                        } catch (IntentSender.SendIntentException e) {
+                            // failed to send the intent
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(CharSequence error) {
+                        // handle failure to find the companion device
+                        Log.i("BLUETOOTH_DETECTOR", "error trying to found a device");
+                    }
+                }, null);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (requestCode == SELECT_DEVICE_REQUEST_CODE) {
+            Toast.makeText(this, "Found a device", Toast.LENGTH_SHORT).show();
+            if (resultCode == Activity.RESULT_OK && data != null) {
+                Toast.makeText(this, "It went all well", Toast.LENGTH_SHORT).show();
+
+                BluetoothDevice deviceToPair = data.getParcelableExtra(
+                        CompanionDeviceManager.EXTRA_DEVICE
+                );
+
+                if (deviceToPair != null) {
+                    Toast.makeText(this, "We can do a bond", Toast.LENGTH_SHORT).show();
+
+                    deviceToPair.createBond();
+                    // ... Continue interacting with the paired device.
+                }
+            }
+        } else {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
     }
 
     private void sendSensorDataToAdlDetectionService(ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage) {

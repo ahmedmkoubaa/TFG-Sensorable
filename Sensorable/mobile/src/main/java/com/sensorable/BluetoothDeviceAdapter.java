@@ -13,11 +13,11 @@ import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
 
-public class BluetoothDeviceAdapter extends ArrayAdapter<BluetoothDevice> {
+public class BluetoothDeviceAdapter extends ArrayAdapter<BluetootDetectedDevice> {
     private final int resource;
     private Context context;
 
-    public BluetoothDeviceAdapter(@NonNull Context context, int resource, @NonNull ArrayList<BluetoothDevice> objects) {
+    public BluetoothDeviceAdapter(@NonNull Context context, int resource, @NonNull ArrayList<BluetootDetectedDevice> objects) {
         super(context, resource, objects);
         this.context = context;
         this.resource = resource;

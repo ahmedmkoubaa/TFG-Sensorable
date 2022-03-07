@@ -18,7 +18,6 @@ public class WearTransmissionService extends WearableListenerService {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-
         Toast.makeText(this, "WEAR SERVICE", Toast.LENGTH_SHORT).show();
         return super.onStartCommand(intent, flags, startId);
     }

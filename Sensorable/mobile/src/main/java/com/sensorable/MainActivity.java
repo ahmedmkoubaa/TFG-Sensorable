@@ -6,16 +6,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import android.Manifest;
-import android.app.Activity;
-import android.bluetooth.BluetoothDevice;
-import android.companion.AssociationRequest;
-import android.companion.BluetoothDeviceFilter;
-import android.companion.CompanionDeviceManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.IntentSender;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -27,6 +21,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.commons.BluetoothDevicesProvider;
 import com.example.commons.DeviceType;
 import com.example.commons.SensorTransmissionCoder;
 import com.example.commons.SensorsProvider;
@@ -34,8 +29,6 @@ import com.google.android.gms.wearable.MessageClient;
 import com.google.android.gms.wearable.MessageEvent;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Random;
 
 
@@ -50,8 +43,10 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
             Manifest.permission.BLUETOOTH_ADMIN,
             Manifest.permission.BLUETOOTH_CONNECT
     };
+
     private final static int LOCATION_REQ_CODE = 1;
     private final static int SELECT_DEVICE_REQUEST_CODE = 0;
+    private final static int REQUEST_ENABLE_BT = 2;
 
     private void requestPermissionsAndInform() {
         requestPermissionsAndInform(true);
@@ -76,13 +71,14 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 
     private WearTransmissionService wearOsService;
     private EmpaticaTransmissionService empaticaService;
+    private AdlDetectionService adlDetectionService;
+
     private BroadcastReceiver wearOsReceiver;
     private BroadcastReceiver empaticaReceiver;
     private BroadcastReceiver infoReceiver;
-    private AdlDetectionService adlDetectionService;
 
-    private Map<Long, ArrayList<SensorTransmissionCoder.SensorMessage>> collectedData =
-            new HashMap<Long, ArrayList<SensorTransmissionCoder.SensorMessage>>();
+    private BluetoothDevicesProvider bluetoothProvider;
+
 
 
     @Override
@@ -102,6 +98,17 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         initializeBluetoothDetection();
 
         initializeInfoReceiver();
+
+    /*    Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+
+                //your code
+                Toast.makeText(MainActivity.this, "REPITIENDO " + (new Date().getTime() % 200) , Toast.LENGTH_SHORT).show();
+                handler.postDelayed(this,5000);
+            }
+        },20000);*/
 
 
         userStateSummary.setClickable(false);
@@ -125,63 +132,44 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 
     }
 
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+    }
+
+
     private void initializeBluetoothDetection() {
-        CompanionDeviceManager deviceManager =
-                (CompanionDeviceManager) getSystemService(
-                        Context.COMPANION_DEVICE_SERVICE
-                );
+        bluetoothProvider = new BluetoothDevicesProvider(this);
+        if (!bluetoothProvider.isEnabled()) {
+            bluetoothProvider.turnOnBluetooth();
+        } else {
+            Toast.makeText(this, "BLUETOOTH IS ENABLED", Toast.LENGTH_SHORT).show();
+        }
 
-
-        BluetoothDeviceFilter deviceFilter =
-                new BluetoothDeviceFilter.Builder().build();
-
-        AssociationRequest pairingRequest = new AssociationRequest.Builder()
-                .addDeviceFilter(deviceFilter)
-                .setSingleDevice(false)
-                .build();
-
-        deviceManager.associate(pairingRequest,
-                new CompanionDeviceManager.Callback() {
-                    @Override
-                    public void onDeviceFound(IntentSender chooserLauncher) {
-                        Log.i("BLUETOOTH_DETECTOR", "found a device");
-                        try {
-                            startIntentSenderForResult(chooserLauncher,
-                                    SELECT_DEVICE_REQUEST_CODE, null, 0, 0, 0);
-                        } catch (IntentSender.SendIntentException e) {
-                            // failed to send the intent
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(CharSequence error) {
-                        // handle failure to find the companion device
-                        Log.i("BLUETOOTH_DETECTOR", "error trying to found a device");
-                    }
-                }, null);
+        bluetoothProvider.startScan();
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        if (requestCode == SELECT_DEVICE_REQUEST_CODE) {
-            Toast.makeText(this, "Found a device", Toast.LENGTH_SHORT).show();
-            if (resultCode == Activity.RESULT_OK && data != null) {
-                Toast.makeText(this, "It went all well", Toast.LENGTH_SHORT).show();
+        switch (requestCode) {
+            case BluetoothDevicesProvider.SELECT_DEVICE_REQUEST_CODE:
+                Log.i("BLUETOOTH_PROVIDER", "on activity result for companion found device");
+                bluetoothProvider.onActivityResultCompanionFoundDevice(requestCode, resultCode, data);
+                break;
 
-                BluetoothDevice deviceToPair = data.getParcelableExtra(
-                        CompanionDeviceManager.EXTRA_DEVICE
-                );
+            case BluetoothDevicesProvider.REQUEST_ENABLE_BT:
+                Log.i("BLUETOOTH_PROVIDER", "on activity result for turn on bluetooth");
+                bluetoothProvider.onActivityResultTurnOnBluetooth(requestCode, resultCode, data);
+                break;
+            default:
+                Log.i("ON_ACTIVITY_RESULT DEFAULT", "on activity result for companion found device");
 
-                if (deviceToPair != null) {
-                    Toast.makeText(this, "We can do a bond", Toast.LENGTH_SHORT).show();
-
-                    deviceToPair.createBond();
-                    // ... Continue interacting with the paired device.
-                }
-            }
-        } else {
-            super.onActivityResult(requestCode, resultCode, data);
+                super.onActivityResult(requestCode, resultCode, data);
+                break;
         }
+
     }
 
     private void sendSensorDataToAdlDetectionService(ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage) {

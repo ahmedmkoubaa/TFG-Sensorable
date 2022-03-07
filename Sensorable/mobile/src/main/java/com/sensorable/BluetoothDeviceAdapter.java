@@ -1,6 +1,8 @@
 package com.sensorable;
 
+import android.bluetooth.BluetoothDevice;
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,24 +13,29 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.example.commons.BluetoothDevicesProvider;
+
 import java.util.ArrayList;
 
-public class BluetoothDeviceAdapter extends ArrayAdapter<BluetootDetectedDevice> {
+public class BluetoothDeviceAdapter extends ArrayAdapter<BluetoothDevice> {
     private final int resource;
     private Context context;
 
-    public BluetoothDeviceAdapter(@NonNull Context context, int resource, @NonNull ArrayList<BluetootDetectedDevice> objects) {
+    public BluetoothDeviceAdapter(@NonNull Context context, int resource, @NonNull ArrayList<BluetoothDevice> objects) {
         super(context, resource, objects);
         this.context = context;
         this.resource = resource;
+
+
     }
 
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+
         String name = this.getItem(position).getName();
-        String mac  = this.getItem(position).getMac();
-        boolean trusted = this.getItem(position).getTrusted();
+        String mac  = this.getItem(position).getAddress();
+        boolean connected = this.getItem(position).getBondState() == BluetoothDevice.BOND_BONDED;
 
         LayoutInflater inflater = LayoutInflater.from(context);
         convertView = inflater.inflate(this.resource, parent, false);
@@ -36,10 +43,19 @@ public class BluetoothDeviceAdapter extends ArrayAdapter<BluetootDetectedDevice>
         TextView deviceName = (TextView) convertView.findViewById(R.id.deviceName);
         TextView deviceMAC = (TextView) convertView.findViewById(R.id.deviceMAC);
         Switch deviceTrusted = (Switch) convertView.findViewById(R.id.deviceTrsusted);
+        deviceTrusted.setOnCheckedChangeListener((compoundButton, b) -> {
+            if (b) {
+                this.getItem(position).createBond();
+                Log.i("BLUETOOTH_CREATED_BOND", "A new bond has been created (at least tried to)");
+            }
+        });
+
 
         deviceName.setText(name);
         deviceMAC.setText(mac);
-        deviceTrusted.setChecked(trusted);
+        deviceTrusted.setChecked(connected);
+
+
 
         return convertView;
     }

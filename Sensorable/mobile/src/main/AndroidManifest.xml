@@ -30,10 +30,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MyApplication"
         tools:replace="android:theme">
-        <service
-            android:name=".BluetoothDetectionService"
-            android:enabled="true"
-            android:exported="true"></service>
 
         <activity android:name=".AdlSummaryActivity" />
         <activity android:name=".AddLocationActivity" />

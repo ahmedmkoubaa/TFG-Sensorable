@@ -10,8 +10,6 @@ import android.companion.BluetoothDeviceFilter;
 import android.companion.CompanionDeviceManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentSender;
-import android.os.Handler;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -91,7 +89,9 @@ public class BluetoothDevicesProvider {
 
     public void startScan(ScanCallback callback) {
         stopScanning = false;
-        bluetoothAdapter.getBluetoothLeScanner().startScan(callback);
+        if (isEnabled()) {
+            bluetoothAdapter.getBluetoothLeScanner().startScan(callback);
+        }
     }
 
     public void startScan() {

@@ -10,8 +10,6 @@ import android.companion.BluetoothDeviceFilter;
 import android.companion.CompanionDeviceManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentSender;
-import android.os.Handler;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -26,32 +24,15 @@ public class BluetoothDevicesProvider {
     public static final int SELECT_DEVICE_REQUEST_CODE = 0;
     public static final int REQUEST_ENABLE_BT = 1;
 
-    private final int  STOP_SCANNER_TIME = 60000;
-    private final int  SCANNING_TIME = 10000;
-
     private final AppCompatActivity activity;
-
-    private CompanionDeviceManager deviceManager;
-    private BluetoothDeviceFilter deviceFilter;
-    private AssociationRequest pairingRequest;
     private BluetoothAdapter bluetoothAdapter;
-
-    private boolean stopScanning;
-    private boolean scanningRound;
-    private ArrayList<BluetoothDevice> bleArray;
 
     public BluetoothDevicesProvider(AppCompatActivity activity) {
         this.activity = activity;
-        this.stopScanning = false;
-        this.scanningRound = true;
-        this.bleArray = new ArrayList<>();
-
         initializeBluetoothDetection();
     }
 
-    public ArrayList<BluetoothDevice> getFoundDevices() {
-        return bleArray;
-    }
+
 
     public boolean isEnabled() {
         return bluetoothAdapter.isEnabled();
@@ -73,25 +54,12 @@ public class BluetoothDevicesProvider {
 
     private void initializeBluetoothDetection() {
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-
-
-        deviceManager =
-                (CompanionDeviceManager) this.activity.getSystemService(
-                        Context.COMPANION_DEVICE_SERVICE
-                );
-
-        deviceFilter = new BluetoothDeviceFilter.Builder().build();
-
-        pairingRequest = new AssociationRequest.Builder()
-                .addDeviceFilter(deviceFilter)
-                .setSingleDevice(false)
-                .build();
-
     }
 
     public void startScan(ScanCallback callback) {
-        stopScanning = false;
-        bluetoothAdapter.getBluetoothLeScanner().startScan(callback);
+        if (isEnabled()) {
+            bluetoothAdapter.getBluetoothLeScanner().startScan(callback);
+        }
     }
 
     public void startScan() {
@@ -105,7 +73,6 @@ public class BluetoothDevicesProvider {
     }
 
     public void stopScan() {
-        stopScanning = true;
         bluetoothAdapter.getBluetoothLeScanner().stopScan(new ScanCallback(){
             // we use parent methods
         });

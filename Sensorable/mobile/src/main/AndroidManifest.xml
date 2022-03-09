@@ -18,6 +18,9 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+
+    <uses-feature android:name="android.software.companion_device_setup" />
 
     <application
         android:allowBackup="true"
@@ -27,8 +30,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MyApplication"
         tools:replace="android:theme">
-
-
 
         <activity android:name=".AdlSummaryActivity" />
         <activity android:name=".AddLocationActivity" />
@@ -42,14 +43,11 @@
             </intent-filter>
         </activity>
         <activity android:name=".DetailedSensorsList" />
-        <activity android:name=".AdvancedMenu" />
-
-        <!-- Services deployed by the applicaton -->
+        <activity android:name=".AdvancedMenu" /> <!-- Services deployed by the applicaton -->
         <service
             android:name=".AdlDetectionService"
             android:enabled="true"
-            android:exported="true">
-        </service>
+            android:exported="true" />
         <service android:name=".WearTransmissionService">
             <intent-filter>
 
@@ -64,11 +62,10 @@
                     android:scheme="wear" />
             </intent-filter>
         </service>
-        <service android:name=".EmpaticaTransmissionService"
+        <service
+            android:name=".EmpaticaTransmissionService"
             android:enabled="true"
-            android:exported="true">
-        </service>
-
+            android:exported="true" />
     </application>
 
 </manifest>

@@ -1,11 +1,11 @@
 package com.sensorable;
 
-public class BluetoothDevice {
+public class BluetootDetectedDevice {
     private String name;
     private String mac;
     private boolean trusted;
 
-    public BluetoothDevice(String deviceName, String deviceMac, boolean deviceTrusted) {
+    public BluetootDetectedDevice(String deviceName, String deviceMac, boolean deviceTrusted) {
         name = deviceName;
         mac = deviceMac;
         trusted = deviceTrusted;

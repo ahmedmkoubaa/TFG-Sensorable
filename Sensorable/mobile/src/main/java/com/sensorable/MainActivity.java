@@ -15,36 +15,21 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.empatica.empalink.ConnectionNotAllowedException;
-import com.empatica.empalink.EmpaDeviceManager;
-import com.empatica.empalink.EmpaticaDevice;
-import com.empatica.empalink.config.EmpaSensorType;
-import com.empatica.empalink.config.EmpaStatus;
-import com.empatica.empalink.delegate.EmpaDataDelegate;
-import com.empatica.empalink.delegate.EmpaStatusDelegate;
+import com.example.commons.BluetoothDevicesProvider;
 import com.example.commons.DeviceType;
-import com.example.commons.EmpaticaSensorType;
 import com.example.commons.SensorTransmissionCoder;
 import com.example.commons.SensorsProvider;
 import com.google.android.gms.wearable.MessageClient;
 import com.google.android.gms.wearable.MessageEvent;
 
-import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 
 public class MainActivity extends AppCompatActivity implements MessageClient.OnMessageReceivedListener {
@@ -55,9 +40,13 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
             Manifest.permission.BODY_SENSORS,
             Manifest.permission.ACTIVITY_RECOGNITION,
             Manifest.permission.BLUETOOTH,
-            Manifest.permission.BLUETOOTH_ADMIN
+            Manifest.permission.BLUETOOTH_ADMIN,
+            Manifest.permission.BLUETOOTH_CONNECT
     };
+
     private final static int LOCATION_REQ_CODE = 1;
+    private final static int SELECT_DEVICE_REQUEST_CODE = 0;
+    private final static int REQUEST_ENABLE_BT = 2;
 
     private void requestPermissionsAndInform() {
         requestPermissionsAndInform(true);
@@ -82,13 +71,14 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 
     private WearTransmissionService wearOsService;
     private EmpaticaTransmissionService empaticaService;
+    private AdlDetectionService adlDetectionService;
+
     private BroadcastReceiver wearOsReceiver;
     private BroadcastReceiver empaticaReceiver;
     private BroadcastReceiver infoReceiver;
-    private AdlDetectionService adlDetectionService;
 
-    private Map<Long, ArrayList<SensorTransmissionCoder.SensorMessage>> collectedData =
-            new HashMap<Long, ArrayList<SensorTransmissionCoder.SensorMessage>>();
+    private BluetoothDevicesProvider bluetoothProvider;
+
 
 
     @Override
@@ -97,7 +87,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        requestPermissionsAndInform(true);
+        requestPermissionsAndInform(false);
 
         initializeAttributesFromUI();
         sensorMessagesBuffer = new ArrayList<>();
@@ -105,8 +95,20 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 //        initializeWearOsTranmissionService();
 //        initializeEmpaticaTransmissionService();
         initializeAdlDetectionService();
+        initializeBluetoothDetection();
 
         initializeInfoReceiver();
+
+    /*    Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+
+                //your code
+                Toast.makeText(MainActivity.this, "REPITIENDO " + (new Date().getTime() % 200) , Toast.LENGTH_SHORT).show();
+                handler.postDelayed(this,5000);
+            }
+        },20000);*/
 
 
         userStateSummary.setClickable(false);
@@ -127,6 +129,46 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 
         sensorsProvider = new SensorsProvider(this);
 
+
+    }
+
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+    }
+
+
+    private void initializeBluetoothDetection() {
+        bluetoothProvider = new BluetoothDevicesProvider(this);
+        if (!bluetoothProvider.isEnabled()) {
+            bluetoothProvider.turnOnBluetooth();
+        } else {
+            Toast.makeText(this, "BLUETOOTH IS ENABLED", Toast.LENGTH_SHORT).show();
+        }
+
+        bluetoothProvider.startScan();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        switch (requestCode) {
+            case BluetoothDevicesProvider.SELECT_DEVICE_REQUEST_CODE:
+                Log.i("BLUETOOTH_PROVIDER", "on activity result for companion found device");
+                bluetoothProvider.onActivityResultCompanionFoundDevice(requestCode, resultCode, data);
+                break;
+
+            case BluetoothDevicesProvider.REQUEST_ENABLE_BT:
+                Log.i("BLUETOOTH_PROVIDER", "on activity result for turn on bluetooth");
+                bluetoothProvider.onActivityResultTurnOnBluetooth(requestCode, resultCode, data);
+                break;
+            default:
+                Log.i("ON_ACTIVITY_RESULT DEFAULT", "on activity result for companion found device");
+
+                super.onActivityResult(requestCode, resultCode, data);
+                break;
+        }
 
     }
 

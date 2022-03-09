@@ -11,7 +11,9 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.room.Room;
 
+import com.example.commons.SensorableConstants;
 import com.example.commons.database.BluetoothDevice;
 import com.example.commons.database.BluetoothDeviceDao;
 
@@ -19,24 +21,36 @@ import java.util.ArrayList;
 
 public class BluetoothDeviceAdapter extends ArrayAdapter<BluetoothDevice> {
     private final int resource;
-    private final BluetoothDeviceDao bluetoothDeviceDao;
+    private BluetoothDeviceDao bluetoothDeviceDao;
     private Context context;
 
-    public BluetoothDeviceAdapter(@NonNull Context context, int resource, @NonNull ArrayList<BluetoothDevice> objects, BluetoothDeviceDao bluetoothDeviceDao) {
+    public BluetoothDeviceAdapter(@NonNull Context context, int resource, @NonNull ArrayList<BluetoothDevice> objects) {
         super(context, resource, objects);
         this.context = context;
         this.resource = resource;
-        this.bluetoothDeviceDao = bluetoothDeviceDao;
+
+        initializeDatabase();
+    }
+
+    private void initializeDatabase() {
+        MobileDatabase database = Room.databaseBuilder(
+                context,
+                MobileDatabase.class,
+                SensorableConstants.MOBILE_DATABASE_NAME)
+                .allowMainThreadQueries()
+                .build();
+
+        bluetoothDeviceDao = database.bluetoothDeviceDao();
     }
 
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
 
-        String name = this.getItem(position).deviceName;
-        String mac  = this.getItem(position).address;
-        int bondState = this.getItem(position).bondState;
-        boolean trusted = this.getItem(position).trusted;
+        BluetoothDevice item = this.getItem(position);
+        String name = item.deviceName;
+        String mac  = item.address;
+        boolean trusted = item.trusted;
 
         LayoutInflater inflater = LayoutInflater.from(context);
         convertView = inflater.inflate(this.resource, parent, false);
@@ -46,11 +60,10 @@ public class BluetoothDeviceAdapter extends ArrayAdapter<BluetoothDevice> {
         Switch deviceTrusted = (Switch) convertView.findViewById(R.id.deviceTrsusted);
 
         deviceTrusted.setOnCheckedChangeListener((compoundButton, checked) -> {
-            this.getItem(position).trusted = checked;
+            item.trusted = checked;
             bluetoothDeviceDao.updateDevice(this.getItem(position));
         });
-
-
+        
         deviceName.setText(name);
         deviceMAC.setText(mac);
         deviceTrusted.setChecked(trusted);

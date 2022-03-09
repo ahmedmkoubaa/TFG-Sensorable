@@ -91,8 +91,7 @@ public class BluetoothOptionsActivity extends AppCompatActivity {
         adapter = new BluetoothDeviceAdapter(
                 this,
                 R.layout.bluetooth_devices_layout,
-                bleArray,
-                bluetoothDeviceDao
+                bleArray
         );
 
         adapter.setNotifyOnChange(true);

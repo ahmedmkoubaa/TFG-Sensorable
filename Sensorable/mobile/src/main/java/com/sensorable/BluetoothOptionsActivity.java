@@ -26,7 +26,6 @@ public class BluetoothOptionsActivity extends AppCompatActivity {
     private ArrayList<com.example.commons.database.BluetoothDevice> bleArray;
 
     private BluetoothDeviceDao bluetoothDeviceDao;
-    private LocalDatabaseService databaseService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,10 +46,6 @@ public class BluetoothOptionsActivity extends AppCompatActivity {
          .build();
 
         bluetoothDeviceDao = database.bluetoothDeviceDao();
-
-        databaseService = new LocalDatabaseService(this.bluetoothDeviceDao);
-        databaseService.startService(new Intent(this, LocalDatabaseService.class));
-//        startService(new Intent(this, LocalDatabaseService.class));
     }
 
     @Override
@@ -60,8 +55,6 @@ public class BluetoothOptionsActivity extends AppCompatActivity {
             @Override
             public void onScanResult(int callbackType, ScanResult result) {
                 super.onScanResult(callbackType, result);
-
-
 
                 com.example.commons.database.BluetoothDevice searched = bluetoothDeviceDao.findByAddress(result.getDevice().getAddress());
                 if (searched == null) {

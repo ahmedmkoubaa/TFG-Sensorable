@@ -15,7 +15,6 @@ import androidx.room.Room;
 import com.commons.SensorableConstants;
 import com.commons.database.BluetoothDevice;
 import com.commons.database.BluetoothDeviceDao;
-import com.sensorable.MobileDatabase;
 import com.sensorable.R;
 
 import java.util.ArrayList;

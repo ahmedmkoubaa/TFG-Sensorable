@@ -1,4 +1,4 @@
-package com.sensorable;
+package com.sensorable.activities;
 
 
 import android.Manifest;
@@ -23,6 +23,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.sensorable.utils.KnownLocation;
+import com.sensorable.utils.KnownLocationsAdapter;
+import com.sensorable.R;
 
 import org.osmdroid.config.Configuration;
 

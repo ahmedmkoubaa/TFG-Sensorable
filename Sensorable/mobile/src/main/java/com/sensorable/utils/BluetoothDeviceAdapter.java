@@ -1,4 +1,4 @@
-package com.sensorable;
+package com.sensorable.utils;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -15,13 +15,15 @@ import androidx.room.Room;
 import com.commons.SensorableConstants;
 import com.commons.database.BluetoothDevice;
 import com.commons.database.BluetoothDeviceDao;
+import com.sensorable.MobileDatabase;
+import com.sensorable.R;
 
 import java.util.ArrayList;
 
 public class BluetoothDeviceAdapter extends ArrayAdapter<BluetoothDevice> {
     private final int resource;
     private BluetoothDeviceDao bluetoothDeviceDao;
-    private Context context;
+    private final Context context;
 
     public BluetoothDeviceAdapter(@NonNull Context context, int resource, @NonNull ArrayList<BluetoothDevice> objects) {
         super(context, resource, objects);
@@ -48,21 +50,21 @@ public class BluetoothDeviceAdapter extends ArrayAdapter<BluetoothDevice> {
 
         BluetoothDevice item = this.getItem(position);
         String name = item.deviceName;
-        String mac  = item.address;
+        String mac = item.address;
         boolean trusted = item.trusted;
 
         LayoutInflater inflater = LayoutInflater.from(context);
         convertView = inflater.inflate(this.resource, parent, false);
 
-        TextView deviceName = (TextView) convertView.findViewById(R.id.deviceName);
-        TextView deviceMAC = (TextView) convertView.findViewById(R.id.deviceMAC);
-        Switch deviceTrusted = (Switch) convertView.findViewById(R.id.deviceTrsusted);
+        TextView deviceName = convertView.findViewById(R.id.deviceName);
+        TextView deviceMAC = convertView.findViewById(R.id.deviceMAC);
+        Switch deviceTrusted = convertView.findViewById(R.id.deviceTrsusted);
 
         deviceTrusted.setOnCheckedChangeListener((compoundButton, checked) -> {
             item.trusted = checked;
             bluetoothDeviceDao.updateDevice(this.getItem(position));
         });
-        
+
         deviceName.setText(name);
         deviceMAC.setText(mac);
         deviceTrusted.setChecked(trusted);

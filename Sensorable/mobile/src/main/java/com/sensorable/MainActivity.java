@@ -30,6 +30,10 @@ import com.commons.SensorsProvider;
 import com.example.commons.devicesDetection.WifiDirectDevicesProvider;
 import com.google.android.gms.wearable.MessageClient;
 import com.google.android.gms.wearable.MessageEvent;
+import com.sensorable.activities.DetailedSensorsListActivity;
+import com.sensorable.services.AdlDetectionService;
+import com.sensorable.services.EmpaticaTransmissionService;
+import com.sensorable.services.WearTransmissionService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -304,7 +308,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         moreSensorsButton.setOnClickListener(v -> {
             Intent intent = new Intent(
                     this,
-                    DetailedSensorsList.class);
+                    DetailedSensorsListActivity.class);
             startActivity(intent);
         });
     }

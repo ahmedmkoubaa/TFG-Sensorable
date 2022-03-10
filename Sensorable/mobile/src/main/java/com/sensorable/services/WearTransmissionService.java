@@ -1,4 +1,4 @@
-package com.sensorable;
+package com.sensorable.services;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -7,7 +7,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import com.example.commons.SensorTransmissionCoder;
+import com.commons.SensorTransmissionCoder;
 import com.google.android.gms.wearable.Channel;
 import com.google.android.gms.wearable.DataEventBuffer;
 import com.google.android.gms.wearable.MessageEvent;

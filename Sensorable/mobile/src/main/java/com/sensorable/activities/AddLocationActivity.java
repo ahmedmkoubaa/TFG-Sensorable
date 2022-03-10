@@ -1,4 +1,4 @@
-package com.sensorable;
+package com.sensorable.activities;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import com.commons.SensorsProvider;
 import com.google.android.material.textfield.TextInputEditText;
+import com.sensorable.R;
 
 import org.osmdroid.events.MapEventsReceiver;
 import org.osmdroid.util.GeoPoint;

@@ -1,4 +1,4 @@
-package com.sensorable;
+package com.sensorable.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.room.Room;
@@ -13,6 +13,9 @@ import android.widget.ListView;
 import com.commons.devicesDetection.BluetoothDevicesProvider;
 import com.commons.SensorableConstants;
 import com.commons.database.BluetoothDeviceDao;
+import com.sensorable.utils.BluetoothDeviceAdapter;
+import com.sensorable.MobileDatabase;
+import com.sensorable.R;
 
 import java.util.ArrayList;
 

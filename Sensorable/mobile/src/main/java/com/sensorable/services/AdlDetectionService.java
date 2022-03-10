@@ -1,4 +1,4 @@
-package com.sensorable;
+package com.sensorable.services;
 
 import android.app.Service;
 import android.content.BroadcastReceiver;

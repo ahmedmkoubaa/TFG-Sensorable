@@ -148,30 +148,8 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 
     private void initializeWifiDirectDetector() {
         wifiDirectProvider = new WifiDirectDevicesProvider(this);
-
-
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//    --------------------------------------------------------------------------------------------
-
+    
     @Override
     protected void onDestroy() {
         super.onDestroy();

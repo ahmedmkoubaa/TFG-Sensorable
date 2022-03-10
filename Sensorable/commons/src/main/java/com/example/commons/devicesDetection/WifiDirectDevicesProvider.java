@@ -43,8 +43,6 @@ public class WifiDirectDevicesProvider {
         initializeWifiDirectDetector();
     }
 
-
-
     private void initializeWifiDirectDetector() {
         initializeWifiDirectIntentFilter();
         initializeWifiManager();
@@ -239,6 +237,7 @@ public class WifiDirectDevicesProvider {
         Log.i("WIFI_DIRECT_CONNECTION", "trying to connect to a new peer");
 
         // Picking the first device found on the network.
+        // WARNING: we should choose a desired device from the list and not use only the first
         WifiP2pDevice device = peers.get(0);
 
         WifiP2pConfig config = new WifiP2pConfig();

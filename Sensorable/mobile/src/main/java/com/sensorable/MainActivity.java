@@ -156,7 +156,6 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 
     }
 
-
     private void initializeBluetoothDetection() {
         bluetoothProvider = new BluetoothDevicesProvider(this);
         if (!bluetoothProvider.isEnabled()) {
@@ -234,8 +233,6 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
                 exampleReceiver, new IntentFilter("AdlUpdates"));
     }
 
-
-
     private void initializeEmpaticaTransmissionService() {
 
         empaticaService = new EmpaticaTransmissionService();
@@ -248,15 +245,12 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
                 Bundle b = intent.getBundleExtra("EMPATICA_DATA_COLLECTED");
                 ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage = b.getParcelableArrayList("EmpaticaMessage");
                 sendSensorDataToAdlDetectionService(arrayMessage);
-//                Toast.makeText(context, "He recibido " + arrayMessage.size() + " elementos ", Toast.LENGTH_LONG).show();
-
             }
         };
 
         LocalBroadcastManager.getInstance(MainActivity.this).registerReceiver(
                 empaticaReceiver, new IntentFilter("EmpaticaDataUpdates"));
     }
-
 
     private void initializeInfoReceiver() {
 
@@ -402,24 +396,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
             }
         };
 
-        sensorsProvider.subscribeToSensor(Sensor.TYPE_PROXIMITY,  new SensorEventListener() {
-            @Override
-            public void onSensorChanged(SensorEvent sensorEvent) {
-                SensorTransmissionCoder.SensorMessage msg =
-                        new SensorTransmissionCoder.SensorMessage(
-                                DeviceType.MOBILE,
-                                sensorEvent.sensor.getType(),
-                                sensorEvent.values
-                        );
-
-                sendSensorDataToAdlDetectionService(msg);
-            }
-
-            @Override
-            public void onAccuracyChanged(Sensor sensor, int i) {
-
-            }
-        }, SensorManager.SENSOR_DELAY_NORMAL);
+        sensorsProvider.subscribeToSensor(Sensor.TYPE_PROXIMITY, transmissionListener, SensorManager.SENSOR_DELAY_NORMAL);
         sensorsProvider.subscribeToSensor(Sensor.TYPE_LIGHT, transmissionListener , SensorManager.SENSOR_DELAY_NORMAL);
         sensorsProvider.subscribeToSensor(Sensor.TYPE_ACCELEROMETER, transmissionListener , SensorManager.SENSOR_DELAY_NORMAL);
     }
@@ -429,5 +406,4 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
     public void onMessageReceived(@NonNull MessageEvent messageEvent) {
         Toast.makeText(this, "RECIBIDO", Toast.LENGTH_LONG).show();
     }
-
 }

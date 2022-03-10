@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.NetworkInfo;
+import android.net.wifi.WifiManager;
 import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
@@ -26,7 +27,7 @@ import java.nio.channels.Channel;
 import java.util.ArrayList;
 import java.util.List;
 
-public class WifiDirectDevices {
+public class WifiDirectDevicesProvider {
     private AppCompatActivity activity;
 
     private final IntentFilter wifiDirectIntentFilter = new IntentFilter();
@@ -37,7 +38,7 @@ public class WifiDirectDevices {
     private WifiP2pManager.ConnectionInfoListener connectionListener;
     private BroadcastReceiver wifiDirectReceiver;
 
-    public WifiDirectDevices(AppCompatActivity activity) {
+    public WifiDirectDevicesProvider(AppCompatActivity activity) {
         this.activity = activity;
         initializeWifiDirectDetector();
     }
@@ -49,6 +50,7 @@ public class WifiDirectDevices {
         initializeWifiManager();
         initializeWifiDirectReceiver();
         initializePeerListListener();
+        initializeWifiDirectChangedStateNotification();
         wifiDirectDiscoverDevices();
     }
 

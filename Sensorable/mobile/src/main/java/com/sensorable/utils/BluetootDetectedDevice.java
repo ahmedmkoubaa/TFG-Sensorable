@@ -1,4 +1,4 @@
-package com.sensorable;
+package com.sensorable.utils;
 
 public class BluetootDetectedDevice {
     private String name;

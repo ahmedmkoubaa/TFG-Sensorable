@@ -1,4 +1,4 @@
-package com.sensorable;
+package com.sensorable.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -6,7 +6,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.LinearLayout;
 
-public class AdvancedMenu extends AppCompatActivity {
+import com.sensorable.R;
+
+public class AdvancedMenuActivity extends AppCompatActivity {
 
     private LinearLayout bluetoothLayout;
     private LinearLayout locationLayout;

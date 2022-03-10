@@ -1,11 +1,14 @@
-package com.sensorable;
+package com.sensorable.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 import android.widget.ListView;
 
-import java.lang.reflect.Array;
+import com.sensorable.utils.DetectedAdl;
+import com.sensorable.utils.DetectedAdlsAdapter;
+import com.sensorable.R;
+
 import java.util.ArrayList;
 import java.util.Date;
 

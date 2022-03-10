@@ -1,4 +1,4 @@
-package com.sensorable;
+package com.sensorable.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -9,14 +9,15 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.commons.SensorsProvider;
+import com.commons.SensorsProvider;
+import com.sensorable.R;
+import com.sensorable.activities.AdvancedMenuActivity;
 
-public class DetailedSensorsList extends AppCompatActivity {
+public class DetailedSensorsListActivity extends AppCompatActivity {
 
     private TextView acceleromterTextView;
     private TextView temperatureTextView;
@@ -50,7 +51,7 @@ public class DetailedSensorsList extends AppCompatActivity {
         advancedMenuButton.setOnClickListener(v -> {
             startActivity(new Intent(
                     this,
-                    AdvancedMenu.class)
+                    AdvancedMenuActivity.class)
             );
         });
 

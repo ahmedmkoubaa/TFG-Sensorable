@@ -10,7 +10,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.commons.SensorsProvider;
+import com.commons.SensorsProvider;
 
 
 public class MainActivity extends WearableActivity {

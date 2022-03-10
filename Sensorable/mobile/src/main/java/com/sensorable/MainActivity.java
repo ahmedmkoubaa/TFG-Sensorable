@@ -3,7 +3,6 @@ package com.sensorable;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import android.Manifest;
@@ -11,18 +10,11 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.net.NetworkInfo;
-import android.net.wifi.WpsInfo;
-import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
-import android.net.wifi.p2p.WifiP2pDeviceList;
-import android.net.wifi.p2p.WifiP2pGroup;
-import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
 import android.util.Log;
@@ -31,13 +23,17 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.commons.BluetoothDevicesProvider;
-import com.example.commons.DeviceType;
-import com.example.commons.SensorTransmissionCoder;
-import com.example.commons.SensorsProvider;
+import com.commons.devicesDetection.BluetoothDevicesProvider;
+import com.commons.DeviceType;
+import com.commons.SensorTransmissionCoder;
+import com.commons.SensorsProvider;
 import com.example.commons.devicesDetection.WifiDirectDevicesProvider;
 import com.google.android.gms.wearable.MessageClient;
 import com.google.android.gms.wearable.MessageEvent;
+import com.sensorable.activities.DetailedSensorsListActivity;
+import com.sensorable.services.AdlDetectionService;
+import com.sensorable.services.EmpaticaTransmissionService;
+import com.sensorable.services.WearTransmissionService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -117,7 +113,6 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         initializeWifiDirectDetector();
 
 
-
         userStateSummary.setClickable(false);
         userStateSummary.setText("EN BUEN ESTADO");
 
@@ -133,10 +128,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         // Summary, progressBar and message will be set using a system valoration
         // this system valoration will be developed in the near future
 
-
         sensorsProvider = new SensorsProvider(this);
-
-
     }
 
     private final IntentFilter wifiDirectIntentFilter = new IntentFilter();
@@ -149,7 +141,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
     private void initializeWifiDirectDetector() {
         wifiDirectProvider = new WifiDirectDevicesProvider(this);
     }
-    
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -185,13 +177,13 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
                 super.onActivityResult(requestCode, resultCode, data);
                 break;
         }
-
     }
 
     private void sendSensorDataToAdlDetectionService(ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage) {
         sensorMessagesBuffer.addAll(arrayMessage);
         sendSensorDataToAdlDetectionService();
     }
+
     private void sendSensorDataToAdlDetectionService(SensorTransmissionCoder.SensorMessage msg) {
         sensorMessagesBuffer.add(msg);
         sendSensorDataToAdlDetectionService();
@@ -223,8 +215,8 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
             @Override
             public void onReceive(Context context, Intent intent) {
                 Toast.makeText(context, "mobile: received" +
-                        intent.getBundleExtra("ADL_DATA_COLLECTED")
-                                .getString("AdlMessage"),
+                                intent.getBundleExtra("ADL_DATA_COLLECTED")
+                                        .getString("AdlMessage"),
                         Toast.LENGTH_SHORT).show();
             }
         };
@@ -316,7 +308,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         moreSensorsButton.setOnClickListener(v -> {
             Intent intent = new Intent(
                     this,
-                    DetailedSensorsList.class);
+                    DetailedSensorsListActivity.class);
             startActivity(intent);
         });
     }
@@ -326,7 +318,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
     protected void onStart() {
         super.onStart();
 
-       initializeSensors();
+        initializeSensors();
     }
 
     private void initializeSensors() {
@@ -397,8 +389,8 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         };
 
         sensorsProvider.subscribeToSensor(Sensor.TYPE_PROXIMITY, transmissionListener, SensorManager.SENSOR_DELAY_NORMAL);
-        sensorsProvider.subscribeToSensor(Sensor.TYPE_LIGHT, transmissionListener , SensorManager.SENSOR_DELAY_NORMAL);
-        sensorsProvider.subscribeToSensor(Sensor.TYPE_ACCELEROMETER, transmissionListener , SensorManager.SENSOR_DELAY_NORMAL);
+        sensorsProvider.subscribeToSensor(Sensor.TYPE_LIGHT, transmissionListener, SensorManager.SENSOR_DELAY_NORMAL);
+        sensorsProvider.subscribeToSensor(Sensor.TYPE_ACCELEROMETER, transmissionListener, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
 

@@ -1,4 +1,4 @@
-package com.sensorable;
+package com.sensorable.utils;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -6,21 +6,22 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import com.sensorable.R;
+import com.sensorable.utils.DetectedAdl;
 
 import java.util.ArrayList;
 
 
 public class DetectedAdlsAdapter extends ArrayAdapter<DetectedAdl> {
     private final int resource;
-    private Context context;
+    private final Context context;
 
-    private boolean buttonStates[];
+    private final boolean[] buttonStates;
 
     public DetectedAdlsAdapter(@NonNull Context context, int resource, @NonNull ArrayList<DetectedAdl> objects) {
         super(context, resource, objects);
@@ -28,7 +29,7 @@ public class DetectedAdlsAdapter extends ArrayAdapter<DetectedAdl> {
         this.resource = resource;
 
         this.buttonStates = new boolean[objects.size()];
-        for (boolean b: buttonStates) {
+        for (boolean b : buttonStates) {
             b = false;
         }
     }
@@ -48,13 +49,13 @@ public class DetectedAdlsAdapter extends ArrayAdapter<DetectedAdl> {
         LayoutInflater inflater = LayoutInflater.from(context);
         convertView = inflater.inflate(this.resource, parent, false);
 
-        TextView adlTitle = (TextView) convertView.findViewById(R.id.adlTitle);
-        TextView adlDescription = (TextView) convertView.findViewById(R.id.adlDescription);
-        TextView adlStats = (TextView )convertView.findViewById(R.id.adlStats);
-        TextView adlTimestamp = (TextView )convertView.findViewById(R.id.adlTimestamp);
+        TextView adlTitle = convertView.findViewById(R.id.adlTitle);
+        TextView adlDescription = convertView.findViewById(R.id.adlDescription);
+        TextView adlStats = convertView.findViewById(R.id.adlStats);
+        TextView adlTimestamp = convertView.findViewById(R.id.adlTimestamp);
 
-        Button seeStats = (Button) convertView.findViewById(R.id.seeStatsButton);
-        seeStats.setOnClickListener(v-> {
+        Button seeStats = convertView.findViewById(R.id.seeStatsButton);
+        seeStats.setOnClickListener(v -> {
             if (buttonStates[position]) {
                 seeStats.setText("VER ESTADÍSTICAS DETALLADAS");
                 adlStats.setVisibility(View.GONE);
@@ -66,7 +67,6 @@ public class DetectedAdlsAdapter extends ArrayAdapter<DetectedAdl> {
             }
 
             buttonStates[position] = !buttonStates[position];
-
         });
 
 

@@ -1,4 +1,4 @@
-package com.example.commons;
+package com.commons.devicesDetection;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
@@ -32,17 +32,15 @@ public class BluetoothDevicesProvider {
         initializeBluetoothDetection();
     }
 
-
-
     public boolean isEnabled() {
         return bluetoothAdapter.isEnabled();
     }
 
     public void turnOnBluetooth() {
-      if (!isEnabled()) {
-          Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-          activity.startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-      }
+        if (!isEnabled()) {
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            activity.startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+        }
 
     }
 
@@ -73,11 +71,10 @@ public class BluetoothDevicesProvider {
     }
 
     public void stopScan() {
-        bluetoothAdapter.getBluetoothLeScanner().stopScan(new ScanCallback(){
+        bluetoothAdapter.getBluetoothLeScanner().stopScan(new ScanCallback() {
             // we use parent methods
         });
     }
-
 
 
     public void onActivityResultCompanionFoundDevice(int requestCode, int resultCode, @Nullable Intent data) {
@@ -91,12 +88,12 @@ public class BluetoothDevicesProvider {
                     CompanionDeviceManager.EXTRA_DEVICE
             );
 
-            if (deviceToPair != null ) {
+            if (deviceToPair != null) {
                 Toast.makeText(activity, "We can do a bond", Toast.LENGTH_SHORT).show();
                 Log.i("BLUETOOTH_DETECTOR_PROVIDER", "TRYING A BOUND");
 
 
-                Log.i("BLUETOOTH_DETECTOR_PROVIDER","Bluetooth class " + deviceToPair.getBluetoothClass());
+                Log.i("BLUETOOTH_DETECTOR_PROVIDER", "Bluetooth class " + deviceToPair.getBluetoothClass());
 
                 deviceToPair.createBond();
                 deviceToPair.getBondState();

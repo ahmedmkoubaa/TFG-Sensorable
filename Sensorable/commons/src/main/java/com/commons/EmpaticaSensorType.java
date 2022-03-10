@@ -1,4 +1,5 @@
-package com.example.commons;
+package com.commons;
+
 
 public class EmpaticaSensorType {
     public static final int ACCELEROMETER = 1;

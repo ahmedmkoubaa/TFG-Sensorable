@@ -1,4 +1,4 @@
-package com.sensorable;
+package com.sensorable.utils;
 
 import org.osmdroid.util.GeoPoint;
 

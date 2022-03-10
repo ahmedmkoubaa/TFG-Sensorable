@@ -1,4 +1,4 @@
-package com.sensorable;
+package com.sensorable.services;
 
 import android.app.Service;
 import android.content.Intent;
@@ -18,9 +18,9 @@ import com.empatica.empalink.config.EmpaStatus;
 import com.empatica.empalink.delegate.EmpaDataDelegate;
 import com.empatica.empalink.delegate.EmpaStatusDelegate;
 
-import com.example.commons.DeviceType;
-import com.example.commons.EmpaticaSensorType;
-import com.example.commons.SensorTransmissionCoder;
+import com.commons.DeviceType;
+import com.commons.EmpaticaSensorType;
+import com.commons.SensorTransmissionCoder;
 
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;

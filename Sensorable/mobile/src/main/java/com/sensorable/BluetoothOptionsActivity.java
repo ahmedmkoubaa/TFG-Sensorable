@@ -6,15 +6,13 @@ import androidx.room.Room;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-import com.example.commons.BluetoothDevicesProvider;
-import com.example.commons.SensorableConstants;
-import com.example.commons.database.BluetoothDeviceDao;
+import com.commons.devicesDetection.BluetoothDevicesProvider;
+import com.commons.SensorableConstants;
+import com.commons.database.BluetoothDeviceDao;
 
 import java.util.ArrayList;
 
@@ -23,7 +21,7 @@ public class BluetoothOptionsActivity extends AppCompatActivity {
     private ListView bluetoothFoundDevices;
     private BluetoothDevicesProvider bluetoothProvider;
     private BluetoothDeviceAdapter adapter;
-    private ArrayList<com.example.commons.database.BluetoothDevice> bleArray;
+    private ArrayList<com.commons.database.BluetoothDevice> bleArray;
 
     private BluetoothDeviceDao bluetoothDeviceDao;
 
@@ -56,10 +54,10 @@ public class BluetoothOptionsActivity extends AppCompatActivity {
             public void onScanResult(int callbackType, ScanResult result) {
                 super.onScanResult(callbackType, result);
 
-                com.example.commons.database.BluetoothDevice searched = bluetoothDeviceDao.findByAddress(result.getDevice().getAddress());
+                com.commons.database.BluetoothDevice searched = bluetoothDeviceDao.findByAddress(result.getDevice().getAddress());
                 if (searched == null) {
-                    com.example.commons.database.BluetoothDevice
-                            databaseDevice = new com.example.commons.database.BluetoothDevice();
+                    com.commons.database.BluetoothDevice
+                            databaseDevice = new com.commons.database.BluetoothDevice();
 
                     BluetoothDevice device = result.getDevice();
                     databaseDevice.address = device.getAddress();

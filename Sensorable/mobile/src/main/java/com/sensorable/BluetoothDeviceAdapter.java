@@ -1,7 +1,6 @@
 package com.sensorable;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,9 +12,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.room.Room;
 
-import com.example.commons.SensorableConstants;
-import com.example.commons.database.BluetoothDevice;
-import com.example.commons.database.BluetoothDeviceDao;
+import com.commons.SensorableConstants;
+import com.commons.database.BluetoothDevice;
+import com.commons.database.BluetoothDeviceDao;
 
 import java.util.ArrayList;
 

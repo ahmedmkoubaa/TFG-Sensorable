@@ -1,4 +1,4 @@
-package com.example.commons;
+package com.commons;
 
 import android.Manifest;
 import android.app.Activity;

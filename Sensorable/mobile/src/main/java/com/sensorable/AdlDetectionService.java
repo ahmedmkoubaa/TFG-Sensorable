@@ -14,8 +14,8 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import com.example.commons.DeviceType;
-import com.example.commons.SensorTransmissionCoder;
+import com.commons.DeviceType;
+import com.commons.SensorTransmissionCoder;
 
 import java.util.ArrayList;
 import java.util.Date;

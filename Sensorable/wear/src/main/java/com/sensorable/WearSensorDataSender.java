@@ -5,8 +5,8 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
-import com.example.commons.DeviceType;
-import com.example.commons.SensorTransmissionCoder;
+import com.commons.DeviceType;
+import com.commons.SensorTransmissionCoder;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;

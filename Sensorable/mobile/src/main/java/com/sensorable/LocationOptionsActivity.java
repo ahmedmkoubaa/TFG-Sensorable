@@ -35,9 +35,6 @@ import org.osmdroid.views.overlay.*;
 import java.util.ArrayList;
 
 public class LocationOptionsActivity extends AppCompatActivity {
-
-
-
     private static final String[] SENSOR_PERMISSIONS = {
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION,

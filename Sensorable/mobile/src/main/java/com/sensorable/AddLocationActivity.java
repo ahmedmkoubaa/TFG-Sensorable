@@ -13,7 +13,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.commons.SensorsProvider;
+import com.commons.SensorsProvider;
 import com.google.android.material.textfield.TextInputEditText;
 
 import org.osmdroid.events.MapEventsReceiver;

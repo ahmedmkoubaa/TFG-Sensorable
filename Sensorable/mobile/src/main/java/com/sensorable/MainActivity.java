@@ -1,10 +1,5 @@
 package com.sensorable;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-
 import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -14,8 +9,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.net.wifi.p2p.WifiP2pDevice;
-import android.net.wifi.p2p.WifiP2pManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
@@ -23,10 +17,19 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.commons.devicesDetection.BluetoothDevicesProvider;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.room.Room;
+
 import com.commons.DeviceType;
 import com.commons.SensorTransmissionCoder;
+import com.commons.SensorableConstants;
 import com.commons.SensorsProvider;
+import com.commons.database.SensorDataMessage;
+import com.commons.database.SensorDataMessageDao;
+import com.commons.devicesDetection.BluetoothDevicesProvider;
 import com.example.commons.devicesDetection.WifiDirectDevicesProvider;
 import com.google.android.gms.wearable.MessageClient;
 import com.google.android.gms.wearable.MessageEvent;
@@ -34,10 +37,12 @@ import com.sensorable.activities.DetailedSensorsListActivity;
 import com.sensorable.services.AdlDetectionService;
 import com.sensorable.services.EmpaticaTransmissionService;
 import com.sensorable.services.WearTransmissionService;
+import com.sensorable.utils.MobileDatabase;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 
 public class MainActivity extends AppCompatActivity implements MessageClient.OnMessageReceivedListener {
@@ -57,6 +62,32 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
     private final static int REQUEST_PERMISSIONS_CODE = 1;
     private final static int SELECT_DEVICE_REQUEST_CODE = 0;
     private final static int REQUEST_ENABLE_BT = 2;
+    private final static int MAX_SENSOR_BUFFER_SIZE = 512;
+    private final IntentFilter wifiDirectIntentFilter = new IntentFilter();
+    private ArrayList<SensorTransmissionCoder.SensorMessage> sensorMessagesBuffer;
+    private Button userStateSummary;
+    private ProgressBar useStateProgressBar;
+    private TextView userStateMessage;
+    private TextView hearRateText, stepCounterText;
+    private SensorsProvider sensorsProvider;
+    private Button moreSensorsButton;
+
+    private WearTransmissionService wearOsService;
+    private EmpaticaTransmissionService empaticaService;
+    private AdlDetectionService adlDetectionService;
+
+    private BroadcastReceiver wearOsReceiver;
+    private BroadcastReceiver empaticaReceiver;
+    private BroadcastReceiver infoReceiver;
+    private BroadcastReceiver adlDetectiornReceiver;
+
+    private BluetoothDevicesProvider bluetoothProvider;
+    private WifiDirectDevicesProvider wifiDirectProvider;
+
+    private MobileDatabase database;
+    private SensorDataMessageDao sensorMessageDao;
+    private ExecutorService executorService;
+
 
     private void requestPermissionsAndInform() {
         requestPermissionsAndInform(true);
@@ -69,30 +100,6 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         }
     }
 
-    private final static int MAX_SENSOR_BUFFER_SIZE = 512;
-    private ArrayList<SensorTransmissionCoder.SensorMessage> sensorMessagesBuffer;
-
-    private Button userStateSummary;
-    private ProgressBar useStateProgressBar;
-    private TextView userStateMessage;
-    private TextView hearRateText, stepCounterText;
-
-    private SensorsProvider sensorsProvider;
-    private Button moreSensorsButton;
-
-    private WearTransmissionService wearOsService;
-    private EmpaticaTransmissionService empaticaService;
-    private AdlDetectionService adlDetectionService;
-
-    private BroadcastReceiver wearOsReceiver;
-    private BroadcastReceiver empaticaReceiver;
-    private BroadcastReceiver infoReceiver;
-    private BroadcastReceiver wifiDirectReceiver;
-
-    private BluetoothDevicesProvider bluetoothProvider;
-    private WifiDirectDevicesProvider wifiDirectProvider;
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -102,7 +109,9 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         requestPermissionsAndInform(false);
 
         initializeAttributesFromUI();
-        sensorMessagesBuffer = new ArrayList<>();
+        initializeMobileDatabase();
+
+
 
 //        initializeWearOsTranmissionService();
 //        initializeEmpaticaTransmissionService();
@@ -131,12 +140,21 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         sensorsProvider = new SensorsProvider(this);
     }
 
-    private final IntentFilter wifiDirectIntentFilter = new IntentFilter();
-    private WifiP2pManager.Channel channel;
-    private WifiP2pManager wifiDirectManager;
-    private List<WifiP2pDevice> peers = new ArrayList<WifiP2pDevice>();
-    private WifiP2pManager.PeerListListener peerListListener;
-    private WifiP2pManager.ConnectionInfoListener connectionListener;
+    private void initializeMobileDatabase() {
+
+        executorService = Executors.newFixedThreadPool(SensorableConstants.MOBILE_DATABASE_NUMBER_THREADS);
+
+        database = Room.databaseBuilder(
+                getApplicationContext(),
+                MobileDatabase.class,
+                SensorableConstants.MOBILE_DATABASE_NAME)
+                .fallbackToDestructiveMigration()
+                .build();
+
+        sensorMessageDao = database.sensorMessageDao();
+
+
+    }
 
     private void initializeWifiDirectDetector() {
         wifiDirectProvider = new WifiDirectDevicesProvider(this);
@@ -179,12 +197,27 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         }
     }
 
-    private void sendSensorDataToAdlDetectionService(ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage) {
+    private void collectReceivedSensorData(ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage) {
+
+        executorService.execute(() -> {
+            ArrayList<SensorDataMessage> sensorDataMessages = new ArrayList<>();
+            for (SensorTransmissionCoder.SensorMessage s : arrayMessage) {
+                sensorDataMessages.add(s.toSensorDataMessage());
+            }
+            sensorMessageDao.insertAll(sensorDataMessages);
+            Log.i("COLLECT_RECEIVED_DATA", "collecting an array of sensorMessages, length: " + sensorMessageDao.getAll().size());
+        });
+
         sensorMessagesBuffer.addAll(arrayMessage);
         sendSensorDataToAdlDetectionService();
     }
 
-    private void sendSensorDataToAdlDetectionService(SensorTransmissionCoder.SensorMessage msg) {
+    private void collectReceivedSensorData(SensorTransmissionCoder.SensorMessage msg) {
+        executorService.execute(() -> {
+            Log.i("COLLECT_RECEIVED_DATA", "collecting an single message, length: " + sensorMessageDao.getAll().size());
+            sensorMessageDao.insert(msg.toSensorDataMessage());
+        });
+
         sensorMessagesBuffer.add(msg);
         sendSensorDataToAdlDetectionService();
 
@@ -192,7 +225,6 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 
     private void sendSensorDataToAdlDetectionService() {
         if (sensorMessagesBuffer.size() >= MAX_SENSOR_BUFFER_SIZE) {
-
             Intent intent = new Intent("MOBILE_SENDS_SENSOR_DATA");
             // You can also include some extra data.
 
@@ -208,10 +240,12 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
     }
 
     private void initializeAdlDetectionService() {
+        sensorMessagesBuffer = new ArrayList<>();
+
         adlDetectionService = new AdlDetectionService();
         startService(new Intent(this, AdlDetectionService.class));
 
-        BroadcastReceiver exampleReceiver = new BroadcastReceiver() {
+        adlDetectiornReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 Toast.makeText(context, "mobile: received" +
@@ -222,7 +256,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         };
 
         LocalBroadcastManager.getInstance(MainActivity.this).registerReceiver(
-                exampleReceiver, new IntentFilter("AdlUpdates"));
+                adlDetectiornReceiver, new IntentFilter("AdlUpdates"));
     }
 
     private void initializeEmpaticaTransmissionService() {
@@ -236,7 +270,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
             public void onReceive(Context context, Intent intent) {
                 Bundle b = intent.getBundleExtra("EMPATICA_DATA_COLLECTED");
                 ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage = b.getParcelableArrayList("EmpaticaMessage");
-                sendSensorDataToAdlDetectionService(arrayMessage);
+                collectReceivedSensorData(arrayMessage);
             }
         };
 
@@ -296,15 +330,15 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
     }
 
     private void initializeAttributesFromUI() {
-        userStateSummary = (Button) findViewById(R.id.userStateSummary);
-        useStateProgressBar = (ProgressBar) findViewById(R.id.userStateProgressBar);
-        userStateMessage = (TextView) findViewById(R.id.text);
+        userStateSummary = findViewById(R.id.userStateSummary);
+        useStateProgressBar = findViewById(R.id.userStateProgressBar);
+        userStateMessage = findViewById(R.id.text);
 
-        hearRateText = (TextView) findViewById(R.id.hearRateText);
-        stepCounterText = (TextView) findViewById(R.id.stepCounterText);
+        hearRateText = findViewById(R.id.hearRateText);
+        stepCounterText = findViewById(R.id.stepCounterText);
 
-        moreSensorsButton = (Button) findViewById(R.id.moreSensorsButton);
-        moreSensorsButton = (Button) findViewById(R.id.moreSensorsButton);
+        moreSensorsButton = findViewById(R.id.moreSensorsButton);
+        moreSensorsButton = findViewById(R.id.moreSensorsButton);
         moreSensorsButton.setOnClickListener(v -> {
             Intent intent = new Intent(
                     this,
@@ -334,7 +368,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
                                 sensorEvent.values
                         );
 
-                sendSensorDataToAdlDetectionService(msg);
+                collectReceivedSensorData(msg);
             }
 
             @Override
@@ -360,7 +394,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
                                 sensorEvent.values
                         );
 
-                sendSensorDataToAdlDetectionService(msg);
+                collectReceivedSensorData(msg);
             }
 
             @Override
@@ -379,7 +413,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
                                 sensorEvent.values
                         );
 
-                sendSensorDataToAdlDetectionService(msg);
+                collectReceivedSensorData(msg);
             }
 
             @Override

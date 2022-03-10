@@ -3,6 +3,7 @@ package com.sensorable;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import android.Manifest;
@@ -10,10 +11,19 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.net.NetworkInfo;
+import android.net.wifi.WpsInfo;
+import android.net.wifi.p2p.WifiP2pConfig;
+import android.net.wifi.p2p.WifiP2pDevice;
+import android.net.wifi.p2p.WifiP2pDeviceList;
+import android.net.wifi.p2p.WifiP2pGroup;
+import android.net.wifi.p2p.WifiP2pInfo;
+import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
@@ -25,10 +35,12 @@ import com.example.commons.BluetoothDevicesProvider;
 import com.example.commons.DeviceType;
 import com.example.commons.SensorTransmissionCoder;
 import com.example.commons.SensorsProvider;
+import com.example.commons.devicesDetection.WifiDirectDevicesProvider;
 import com.google.android.gms.wearable.MessageClient;
 import com.google.android.gms.wearable.MessageEvent;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 
@@ -41,18 +53,21 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
             Manifest.permission.ACTIVITY_RECOGNITION,
             Manifest.permission.BLUETOOTH,
             Manifest.permission.BLUETOOTH_ADMIN,
-            Manifest.permission.BLUETOOTH_CONNECT
+            Manifest.permission.BLUETOOTH_CONNECT,
+            Manifest.permission.ACCESS_WIFI_STATE,
+            Manifest.permission.CHANGE_WIFI_STATE
     };
 
-    private final static int LOCATION_REQ_CODE = 1;
+    private final static int REQUEST_PERMISSIONS_CODE = 1;
     private final static int SELECT_DEVICE_REQUEST_CODE = 0;
     private final static int REQUEST_ENABLE_BT = 2;
 
     private void requestPermissionsAndInform() {
         requestPermissionsAndInform(true);
     }
+
     private void requestPermissionsAndInform(Boolean inform) {
-        this.requestPermissions(SENSOR_PERMISSIONS, LOCATION_REQ_CODE);
+        this.requestPermissions(SENSOR_PERMISSIONS, REQUEST_PERMISSIONS_CODE);
         if (inform) {
             Toast.makeText(this, "Permisos solicitados y aparentemente concedidos", Toast.LENGTH_SHORT).show();
         }
@@ -76,9 +91,10 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
     private BroadcastReceiver wearOsReceiver;
     private BroadcastReceiver empaticaReceiver;
     private BroadcastReceiver infoReceiver;
+    private BroadcastReceiver wifiDirectReceiver;
 
     private BluetoothDevicesProvider bluetoothProvider;
-
+    private WifiDirectDevicesProvider wifiDirectProvider;
 
 
     @Override
@@ -96,19 +112,10 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 //        initializeEmpaticaTransmissionService();
         initializeAdlDetectionService();
         initializeBluetoothDetection();
-
         initializeInfoReceiver();
 
-    /*    Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
+        initializeWifiDirectDetector();
 
-                //your code
-                Toast.makeText(MainActivity.this, "REPITIENDO " + (new Date().getTime() % 200) , Toast.LENGTH_SHORT).show();
-                handler.postDelayed(this,5000);
-            }
-        },20000);*/
 
 
         userStateSummary.setClickable(false);
@@ -132,7 +139,17 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 
     }
 
+    private final IntentFilter wifiDirectIntentFilter = new IntentFilter();
+    private WifiP2pManager.Channel channel;
+    private WifiP2pManager wifiDirectManager;
+    private List<WifiP2pDevice> peers = new ArrayList<WifiP2pDevice>();
+    private WifiP2pManager.PeerListListener peerListListener;
+    private WifiP2pManager.ConnectionInfoListener connectionListener;
 
+    private void initializeWifiDirectDetector() {
+        wifiDirectProvider = new WifiDirectDevicesProvider(this);
+    }
+    
     @Override
     protected void onDestroy() {
         super.onDestroy();

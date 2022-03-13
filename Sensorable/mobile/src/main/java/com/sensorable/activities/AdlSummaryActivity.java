@@ -1,67 +1,64 @@
 package com.sensorable.activities;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ListView;
 
-import com.sensorable.utils.DetectedAdl;
-import com.sensorable.utils.DetectedAdlsAdapter;
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.commons.database.DetectedAdlDao;
+import com.commons.database.DetectedAdlEntity;
 import com.sensorable.R;
+import com.sensorable.utils.DetectedAdlsAdapter;
+import com.sensorable.utils.MobileDatabaseBuilder;
 
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.concurrent.ExecutorService;
 
 public class AdlSummaryActivity extends AppCompatActivity {
 
     private ListView detectedAdlList;
-    private ArrayList<DetectedAdl> adlArray;
+    private ArrayList<DetectedAdlEntity> adlArray;
     private DetectedAdlsAdapter detectedAdlsAdapter;
+    private ExecutorService executor;
+    private DetectedAdlDao detectedAdlDao;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_adl_summary);
 
+
+        initializeMobileDatabase();
         initializeAttributesFromUI();
+    }
+
+    private void initializeMobileDatabase() {
+        detectedAdlDao = MobileDatabaseBuilder.getDatabase(this).detectedAdlDao();
+        executor = MobileDatabaseBuilder.getExecutor();
+
+        Log.i("DETECTED_ADL", "initialized mobile database");
+    }
+
+    private void updateDetectedAdlsFromDatabase() {
+        executor.execute(() -> {
+            adlArray.clear();
+            adlArray.addAll(detectedAdlDao.getAll());
+            detectedAdlsAdapter.notifyDataSetChanged();
+
+            Log.i("DETECTED_ADL", "updated from database");
+        });
     }
 
     private void initializeAttributesFromUI() {
         detectedAdlList = (ListView) findViewById(R.id.detectedAdlsList);
         detectedAdlList.setDivider(null);
         adlArray = new ArrayList<>();
-        adlArray.add(new DetectedAdl(
-                "DESPLAZAMIENTO A LA FARMACIA",
-                "Fuiste a la farmacia manoli la cual se encuentra ubicada en la calle alta de cartuja 25",
-                "duracion: 12m, distancia: 1km, velocidad: 1km/h",
-                new Date()))
-        ;
-
-        adlArray.add(new DetectedAdl(
-                "DESPLAZAMIENTO AL TRABAJO",
-                "Fuiste a la farmacia manoli la cual se encuentra ubicada en la calle alta de cartuja 25",
-                "duracion: 12m, distancia: 1km, velocidad: 1km/h",
-                new Date()))
-        ;
-
-        adlArray.add(new DetectedAdl(
-                "DESPLAZAMIENTO A FAMILIARES",
-                "Fuiste a la farmacia manoli la cual se encuentra ubicada en la calle alta de cartuja 25",
-                "duracion: 12m, distancia: 1km, velocidad: 1km/h",
-                new Date()))
-        ;
 
         detectedAdlsAdapter = new DetectedAdlsAdapter(this, R.layout.detected_adl_layout, adlArray);
         detectedAdlsAdapter.setNotifyOnChange(true);
         detectedAdlList.setAdapter(detectedAdlsAdapter);
 
-        /*
-
-
-
-        knownLocationsAdapter = new KnownLocationsAdapter(this, R.layout.known_location_layout, locArray);
-        knownLocationsList.setAdapter(knownLocationsAdapter);
-        * */
-
+        updateDetectedAdlsFromDatabase();
     }
 }

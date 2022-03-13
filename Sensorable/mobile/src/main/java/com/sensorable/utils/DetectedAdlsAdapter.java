@@ -11,19 +11,20 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.commons.database.DetectedAdlEntity;
 import com.sensorable.R;
-import com.sensorable.utils.DetectedAdl;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 
 
-public class DetectedAdlsAdapter extends ArrayAdapter<DetectedAdl> {
+public class DetectedAdlsAdapter extends ArrayAdapter<DetectedAdlEntity> {
     private final int resource;
     private final Context context;
 
     private final boolean[] buttonStates;
 
-    public DetectedAdlsAdapter(@NonNull Context context, int resource, @NonNull ArrayList<DetectedAdl> objects) {
+    public DetectedAdlsAdapter(@NonNull Context context, int resource, @NonNull ArrayList<DetectedAdlEntity> objects) {
         super(context, resource, objects);
         this.context = context;
         this.resource = resource;
@@ -37,14 +38,25 @@ public class DetectedAdlsAdapter extends ArrayAdapter<DetectedAdl> {
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        DetectedAdl adl = this.getItem(position);
+        DetectedAdlEntity adl = this.getItem(position);
 
         String title, description, stats, timestamp;
-        title = adl.getTitle();
-        description = adl.getDescription();
-        stats = adl.getStats();
-        timestamp = adl.getTimestamp().toString();
+        title = adl.title;
+        description = adl.description;
+        stats = adl.stats;
 
+        Calendar adlCalendar = Calendar.getInstance();
+        adlCalendar.setTimeInMillis(adl.timestamp);
+        timestamp =
+                adlCalendar.get(Calendar.DAY_OF_MONTH) +
+                "/" +
+                adlCalendar.get(Calendar.MONTH) +
+                "/" +
+                adlCalendar.get(Calendar.YEAR) +
+                " " +
+                adlCalendar.get(Calendar.HOUR_OF_DAY) +
+                ":" +
+                adlCalendar.get(Calendar.MINUTE);
 
         LayoutInflater inflater = LayoutInflater.from(context);
         convertView = inflater.inflate(this.resource, parent, false);
@@ -56,17 +68,13 @@ public class DetectedAdlsAdapter extends ArrayAdapter<DetectedAdl> {
 
         Button seeStats = convertView.findViewById(R.id.seeStatsButton);
         seeStats.setOnClickListener(v -> {
-            if (buttonStates[position]) {
-                seeStats.setText("VER ESTADÍSTICAS DETALLADAS");
-                adlStats.setVisibility(View.GONE);
-
-
-            } else {
+            if (adlStats.getVisibility() == View.GONE) {
                 seeStats.setText("VER MENOS");
                 adlStats.setVisibility(View.VISIBLE);
+            } else {
+                seeStats.setText("VER ESTADÍSTICAS DETALLADAS");
+                adlStats.setVisibility(View.GONE);
             }
-
-            buttonStates[position] = !buttonStates[position];
         });
 
 

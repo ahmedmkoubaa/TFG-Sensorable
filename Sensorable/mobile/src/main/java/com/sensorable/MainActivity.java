@@ -84,11 +84,6 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
     private SensorMessageDao sensorMessageDao;
     private ExecutorService executorService;
 
-
-    private void requestPermissionsAndInform() {
-        requestPermissionsAndInform(true);
-    }
-
     private void requestPermissionsAndInform(Boolean inform) {
         this.requestPermissions(SENSOR_PERMISSIONS, REQUEST_PERMISSIONS_CODE);
         if (inform) {

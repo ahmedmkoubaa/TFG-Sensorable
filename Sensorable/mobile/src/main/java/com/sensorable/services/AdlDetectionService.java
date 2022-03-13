@@ -16,80 +16,41 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.commons.DeviceType;
 import com.commons.SensorTransmissionCoder;
+import com.commons.SensorableConstants;
+import com.commons.database.DetectedAdlDao;
+import com.commons.database.DetectedAdlEntity;
+import com.sensorable.utils.MobileDatabaseBuilder;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.concurrent.ExecutorService;
 
 public class AdlDetectionService extends Service {
 
     private BroadcastReceiver mobileReceiver;
     private boolean CLOSE_PROXIMITY = false;
-    private long phoneCallLastTimestamp;
-    private long phoneCallFirstTimestamp;
-    private boolean previouslyDetectedPhoneCall = false;
-    private final int TIME_RESOLUTION = 2000; // now is 1 second (1000 milliseconds)
 
-    public class AdlRule {
-        private long firstTimestamp;
-        private long lastTimestmap;
-        private boolean previuslyDetected;
-
-        public long getFirstTimestamp() {
-            return firstTimestamp;
-        }
-
-        public long getLastTimestmap() {
-            return lastTimestmap;
-        }
-
-        public boolean isPreviuslyDetected() {
-            return previuslyDetected;
-        }
-
-        public boolean checkIfDetectedrule(boolean clausures[]) {
-            // Evaluate the adl detection using the received params
-            boolean adlRule = true;
-            for (boolean clausure: clausures) {
-                adlRule = adlRule & clausure;
-            }
-
-
-
-            // if the adl evaluation is positive then we track this adl state
-            if (adlRule) {
-                Log.i("NEWADL", "PHONE-CALL-DETECTED");
-
-                // get starting time of this ADL
-                if (!previouslyDetectedPhoneCall) {
-                    phoneCallFirstTimestamp = getTimestamp();
-                }
-
-                // get always last time
-                phoneCallLastTimestamp = getTimestamp();
-            }
-
-            // if the adl was detected then is true in other case is false
-            previouslyDetectedPhoneCall = adlRule;
-            return adlRule;
-        }
-
-        private long getTimestamp() {
-            return (new Date().getTime());
-        }
-
-
-    };
-
+    private DetectedAdlDao detectedAdlDao;
+    private ExecutorService executor;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Toast.makeText(this, "ADL DETECTION SERVICE", Toast.LENGTH_SHORT).show();
+
+        initializeMobileDatabase();
         initializeMobileReciver();
+
+        Log.i("ADL_DETECTION_SERVICE", "initialized adl detection service");
+
 
         return super.onStartCommand(intent, flags, startId);
     }
 
+    private void initializeMobileDatabase() {
+        detectedAdlDao = MobileDatabaseBuilder.getDatabase(this).detectedAdlDao();
+        executor = MobileDatabaseBuilder.getExecutor();
+    }
 
     private void sendMessageToActivity(String msg) {
         Intent intent = new Intent("AdlUpdates");
@@ -108,7 +69,6 @@ public class AdlDetectionService extends Service {
             public void onReceive(Context context, Intent intent) {
                 Bundle b = intent.getBundleExtra("MOBILE_DATA_COLLECTED");
                 ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage = b.getParcelableArrayList("MobileMessage");
-//                Toast.makeText(context, "ADL DETECTOR: " + arrayMessage.size() + " elementos ", Toast.LENGTH_LONG).show();
                 detectAdls(arrayMessage);
             }
         };
@@ -117,53 +77,53 @@ public class AdlDetectionService extends Service {
                 mobileReceiver, new IntentFilter("MOBILE_SENDS_SENSOR_DATA"));
     }
 
-
     private void detectAdls(ArrayList<SensorTransmissionCoder.SensorMessage> data) {
         HashMap<Long, ArrayList<SensorTransmissionCoder.SensorMessage>> filteredData = filterData(data);
         searchPatterns(filteredData);
-
-
     }
 
     private void searchPatterns(HashMap<Long, ArrayList<SensorTransmissionCoder.SensorMessage>> filteredData) {
         boolean COUNTING_STEPS, LOW_LIGHT, VERTICAL_PHONE;
-        LOW_LIGHT = VERTICAL_PHONE = COUNTING_STEPS = false;
 
-        AdlRule phoneCall = new AdlRule();
+        AdlRule phoneCall = new AdlRule(
+                "Have a phone call",
+                "System detected a phone call sicne first timestamp to last tiemstamp. System has monitorized your body and phone position"
+        );
 
         // For each data stage of time, we are going to process the sensor reading
-        for (long key: filteredData.keySet()) {
+        for (long key : filteredData.keySet()) {
 
             LOW_LIGHT = VERTICAL_PHONE = COUNTING_STEPS = false;
 
             // Now, we look into the sensor readings and use sensor that we want to
             // generate conditions and later shoot rules
-            for (SensorTransmissionCoder.SensorMessage s: filteredData.get(key)) {
+            for (SensorTransmissionCoder.SensorMessage s : filteredData.get(key)) {
 
                 // evaluate conditions if we have any sensor
                 switch (s.getDeviceType()) {
                     case DeviceType.MOBILE:
 
                         switch (s.getSensorType()) {
-                            case Sensor.TYPE_HEART_RATE: break;
+                            case Sensor.TYPE_HEART_RATE:
+                                break;
                             case Sensor.TYPE_PROXIMITY:
                                 CLOSE_PROXIMITY = s.getValue()[0] == 0;
-                                Log.i("ADLSENSORS", "PROXIMITY " + s.getValue()[0]);
+                                Log.i("ADL_DETECTION_SERVICE", "PROXIMITY " + s.getValue()[0]);
                                 break;
 
                             case Sensor.TYPE_LIGHT:
                                 LOW_LIGHT = s.getValue()[0] <= 15;
-                                Log.i("ADLSENSORS", "LIGHT " + s.getValue()[0]);
+                                Log.i("ADL_DETECTION_SERVICE", "LIGHT " + s.getValue()[0]);
                                 break;
 
                             case Sensor.TYPE_ACCELEROMETER:
                                 VERTICAL_PHONE = -4 <= s.getValue()[2] && s.getValue()[2] <= 4;
-                                Log.i("ADLSENSORS", "ACCELEROMETER " + s.getValue()[2]);
+                                Log.i("ADL_DETECTION_SERVICE", "ACCELEROMETER " + s.getValue()[2]);
                                 break;
 
                             case Sensor.TYPE_STEP_COUNTER:
                                 COUNTING_STEPS = true;
-                                Log.i("ADLSENSORS", "STEP_COUNTER " + s.getValue()[0]);
+                                Log.i("ADL_DETECTION_SERVICE", "STEP_COUNTER " + s.getValue()[0]);
                                 break;
                         }
                         break;
@@ -171,46 +131,13 @@ public class AdlDetectionService extends Service {
 
 
                 // rules to shoot
-                boolean values [] = {LOW_LIGHT, CLOSE_PROXIMITY, VERTICAL_PHONE};
-                detectPhoneCall(values);
-                phoneCall.checkIfDetectedrule(values);
+                boolean[] values = {LOW_LIGHT, CLOSE_PROXIMITY, VERTICAL_PHONE};
+                phoneCall.checkRule(values);
 
                 detectWalking(COUNTING_STEPS);
             }
-
-
         }
-
     }
-
-    private void detectPhoneCall(boolean clausures[]) {
-        // Evaluate the adl detection using the received params
-       /* boolean adlRule = true;
-        for (boolean clausure: clausures) {
-            adlRule = adlRule & clausure;
-        }
-
-
-
-        // if the adl evaluation is positive then we track this adl state
-        if (adlRule) {
-            Log.i("NEWADL", "PHONE-CALL-DETECTED");
-
-            // get beginning time of this ADL
-            if (!previouslyDetectedPhoneCall) {
-                phoneCallFirstTimestamp = getTimestamp();
-            }
-
-            // get always last time
-            phoneCallLastTimestamp = getTimestamp();
-        }
-
-        // if the adl was detected then is true in other case is false
-        previouslyDetectedPhoneCall = adlRule;
-*/
-
-    }
-
 
     private void detectWalking(boolean countingSteps) {
         if (countingSteps) {
@@ -218,15 +145,15 @@ public class AdlDetectionService extends Service {
         }
     }
 
-    private  HashMap<Long, ArrayList<SensorTransmissionCoder.SensorMessage>> filterData(ArrayList<SensorTransmissionCoder.SensorMessage> data) {
+    private HashMap<Long, ArrayList<SensorTransmissionCoder.SensorMessage>> filterData(ArrayList<SensorTransmissionCoder.SensorMessage> data) {
         long floorTimestamp;
 
         HashMap<Long, ArrayList<SensorTransmissionCoder.SensorMessage>> categorization =
                 new HashMap<>();
 
         // iterate data sensor to categorize each sensor read per timestamp
-        for (SensorTransmissionCoder.SensorMessage newSensorMessage: data) {
-            floorTimestamp = newSensorMessage.getTimestamp() / TIME_RESOLUTION;
+        for (SensorTransmissionCoder.SensorMessage newSensorMessage : data) {
+            floorTimestamp = newSensorMessage.getTimestamp() / SensorableConstants.ADL_FILTER_TIME;
 
 
             // if the categorization for these timestamp exists
@@ -240,7 +167,7 @@ public class AdlDetectionService extends Service {
 
 
                 // We want only the last sensor read from each categorization per timestamp
-                for (SensorTransmissionCoder.SensorMessage oldSensorMessage: arrayByTimestamp) {
+                for (SensorTransmissionCoder.SensorMessage oldSensorMessage : arrayByTimestamp) {
                     if (oldSensorMessage.getDeviceType() == newSensorMessage.getDeviceType()
                             && oldSensorMessage.getSensorType() == newSensorMessage.getSensorType()) {
 
@@ -259,7 +186,6 @@ public class AdlDetectionService extends Service {
                 }
 
                 if (!found) {
-//                    arrayByTimestamp.add(newSensorMessage);
                     copyArray.add(newSensorMessage);
 
                 }
@@ -274,22 +200,88 @@ public class AdlDetectionService extends Service {
         }
 
 
-        for (long key: categorization.keySet()) {
-            for (SensorTransmissionCoder.SensorMessage s: categorization.get(key)) {
+        for (long key : categorization.keySet()) {
+            for (SensorTransmissionCoder.SensorMessage s : categorization.get(key)) {
 
-                Log.i("FILTER DATA", s.toString());
+                Log.i("ADL_DETECTION_SERVICE", " filtered data -> " + s.toString());
             }
         }
 
-//        Toast.makeText(this, "HECHO CON " + data.size() + " valores", Toast.LENGTH_SHORT).show();
         return categorization;
     }
-
-
 
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
         return null;
+    }
+
+    public class AdlRule {
+        private final String title;
+        private final String description;
+        private long firstTimestamp;
+        private long lastTimestmap;
+        private boolean previouslyDetected;
+
+        public AdlRule(String title, String description) {
+            this.title = title;
+            this.description = description;
+        }
+
+        public long getFirstTimestamp() {
+            return firstTimestamp;
+        }
+
+        public long getLastTimestmap() {
+            return lastTimestmap;
+        }
+
+        public boolean wasPreviouslyDetected() {
+            return previouslyDetected;
+        }
+
+        public boolean checkRule(boolean[] clausures) {
+            // Evaluate the adl detection using the received params
+            boolean adlRule = true;
+            for (boolean clausure : clausures) {
+                adlRule = adlRule & clausure;
+            }
+
+            // if the adl evaluation is positive then we track this adl state
+            if (adlRule) {
+                Log.i("ADL_DETECTION_SERVICE", "new adl detected -> " + title);
+
+                // get starting time of this ADL
+                if (!previouslyDetected) {
+                    firstTimestamp = getCurrentTimestamp();
+                }
+
+                // get always last time
+                lastTimestmap = getCurrentTimestamp();
+            }
+
+            if (!adlRule && previouslyDetected) {
+                executor.execute(() -> {
+                    detectedAdlDao.insert(
+                            new DetectedAdlEntity(
+                                    title,
+                                    description,
+                                    "start: " + firstTimestamp + " end: " + lastTimestmap,
+                                    firstTimestamp)
+                    );
+
+                    Log.i("ADL_DETECTION_SERVICE", "inserted new adl in database");
+                });
+            }
+
+
+            // if the adl was detected then is true in other case is false
+            previouslyDetected = adlRule;
+            return adlRule;
+        }
+
+        private long getCurrentTimestamp() {
+            return (new Date().getTime());
+        }
     }
 }

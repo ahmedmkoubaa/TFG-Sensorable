@@ -11,19 +11,19 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.commons.database.DetectedAdlEntity;
 import com.sensorable.R;
-import com.sensorable.utils.DetectedAdl;
 
 import java.util.ArrayList;
 
 
-public class DetectedAdlsAdapter extends ArrayAdapter<DetectedAdl> {
+public class DetectedAdlsAdapter extends ArrayAdapter<DetectedAdlEntity> {
     private final int resource;
     private final Context context;
 
     private final boolean[] buttonStates;
 
-    public DetectedAdlsAdapter(@NonNull Context context, int resource, @NonNull ArrayList<DetectedAdl> objects) {
+    public DetectedAdlsAdapter(@NonNull Context context, int resource, @NonNull ArrayList<DetectedAdlEntity> objects) {
         super(context, resource, objects);
         this.context = context;
         this.resource = resource;
@@ -37,14 +37,13 @@ public class DetectedAdlsAdapter extends ArrayAdapter<DetectedAdl> {
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        DetectedAdl adl = this.getItem(position);
+        DetectedAdlEntity adl = this.getItem(position);
 
         String title, description, stats, timestamp;
-        title = adl.getTitle();
-        description = adl.getDescription();
-        stats = adl.getStats();
-        timestamp = adl.getTimestamp().toString();
-
+        title = adl.title;
+        description = adl.description;
+        stats = adl.stats;
+        timestamp = Long.toString(adl.timestamp);
 
         LayoutInflater inflater = LayoutInflater.from(context);
         convertView = inflater.inflate(this.resource, parent, false);

@@ -7,7 +7,7 @@ import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
 @Entity
-public class BluetoothDevice {
+public class BluetoothDeviceEntity {
     @NonNull
     @PrimaryKey
     public String address;

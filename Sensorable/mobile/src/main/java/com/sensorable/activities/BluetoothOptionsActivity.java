@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.ListView;
 
+import com.commons.database.BluetoothDeviceEntity;
 import com.commons.devicesDetection.BluetoothDevicesProvider;
 import com.commons.SensorableConstants;
 import com.commons.database.BluetoothDeviceDao;
@@ -24,7 +25,7 @@ public class BluetoothOptionsActivity extends AppCompatActivity {
     private ListView bluetoothFoundDevices;
     private BluetoothDevicesProvider bluetoothProvider;
     private BluetoothDeviceAdapter adapter;
-    private ArrayList<com.commons.database.BluetoothDevice> bleArray;
+    private ArrayList<BluetoothDeviceEntity> bleArray;
 
     private BluetoothDeviceDao bluetoothDeviceDao;
 
@@ -57,10 +58,10 @@ public class BluetoothOptionsActivity extends AppCompatActivity {
             public void onScanResult(int callbackType, ScanResult result) {
                 super.onScanResult(callbackType, result);
 
-                com.commons.database.BluetoothDevice searched = bluetoothDeviceDao.findByAddress(result.getDevice().getAddress());
+                BluetoothDeviceEntity searched = bluetoothDeviceDao.findByAddress(result.getDevice().getAddress());
                 if (searched == null) {
-                    com.commons.database.BluetoothDevice
-                            databaseDevice = new com.commons.database.BluetoothDevice();
+                    BluetoothDeviceEntity
+                            databaseDevice = new BluetoothDeviceEntity();
 
                     BluetoothDevice device = result.getDevice();
                     databaseDevice.address = device.getAddress();

@@ -10,16 +10,16 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.commons.database.KnownLocationEntity;
 import com.sensorable.R;
-import com.sensorable.utils.KnownLocation;
 
 import java.util.ArrayList;
 
-public class KnownLocationsAdapter extends ArrayAdapter<KnownLocation> {
+public class KnownLocationsAdapter extends ArrayAdapter<KnownLocationEntity> {
     private final int resource;
     private Context context;
 
-    public KnownLocationsAdapter(@NonNull Context context, int resource, @NonNull ArrayList<KnownLocation> objects) {
+    public KnownLocationsAdapter(@NonNull Context context, int resource, @NonNull ArrayList<KnownLocationEntity> objects) {
         super(context, resource, objects);
         this.context = context;
         this.resource = resource;
@@ -28,9 +28,9 @@ public class KnownLocationsAdapter extends ArrayAdapter<KnownLocation> {
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        String title = this.getItem(position).getTitle();
-        String address = this.getItem(position).getAddress();
-        String tag = this.getItem(position).getTag();
+        String title = this.getItem(position).title;
+        String address = this.getItem(position).address;
+        String tag = this.getItem(position).tag;
 
 
 

@@ -9,15 +9,15 @@ import java.util.List;
 
 @Dao
 public interface BluetoothDeviceDao {
-    @Query("SELECT * FROM BluetoothDevice")
-    List<BluetoothDevice> getAll();
+    @Query("SELECT * FROM BluetoothDeviceEntity")
+    List<BluetoothDeviceEntity> getAll();
 
-    @Query("SELECT * FROM BluetoothDevice WHERE address LIKE :arg0 ")
-    BluetoothDevice findByAddress(String arg0);
+    @Query("SELECT * FROM BluetoothDeviceEntity WHERE address LIKE :arg0 ")
+    BluetoothDeviceEntity findByAddress(String arg0);
 
     @Insert
-    void insert(BluetoothDevice device);
+    void insert(BluetoothDeviceEntity device);
 
     @Update
-    void updateDevice(BluetoothDevice device);
+    void updateDevice(BluetoothDeviceEntity device);
 }

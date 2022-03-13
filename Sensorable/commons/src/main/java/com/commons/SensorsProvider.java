@@ -74,11 +74,6 @@ public class SensorsProvider  {
             criteria.setCostAllowed(false);
 
             String providerName = locationManager.getBestProvider(criteria, true);
-
-            // If no suitable provider is found, null is returned.
-            if (providerName != null) {
-                Toast.makeText(context, "Tenemos un provider", Toast.LENGTH_SHORT).show();
-            }
         } else {
             Toast.makeText(context, "Es necesario obtener los permisos, reinicie la app", Toast.LENGTH_SHORT).show();
         }

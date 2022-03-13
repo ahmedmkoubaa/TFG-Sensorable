@@ -9,7 +9,7 @@ import java.util.List;
 
 @Dao
 public interface DetectedAdlDao {
-    @Query("SELECT * FROM DetectedAdlEntity")
+    @Query("SELECT * FROM DetectedAdlEntity ORDER BY timestamp DESC")
     List<DetectedAdlEntity> getAll();
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

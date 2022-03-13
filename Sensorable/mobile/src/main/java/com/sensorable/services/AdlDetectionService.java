@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 
 public class AdlDetectionService extends Service {
-    
+
     private BroadcastReceiver mobileReceiver;
     private boolean CLOSE_PROXIMITY = false;
 
@@ -249,7 +249,7 @@ public class AdlDetectionService extends Service {
 
             // if the adl evaluation is positive then we track this adl state
             if (adlRule) {
-                Log.i("ADL_DETECTION_SERVICE", "new adl detected -> PHONE-CALL-DETECTED");
+                Log.i("ADL_DETECTION_SERVICE", "new adl detected -> " + title);
 
                 // get starting time of this ADL
                 if (!previouslyDetected) {

@@ -3,12 +3,10 @@ package com.commons;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.commons.database.SensorDataMessage;
+import com.commons.database.SensorMessageEntity;
 
-import java.lang.reflect.Array;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 
@@ -31,8 +29,8 @@ public class SensorTransmissionCoder {
         private int deviceType;
         private long timestamp;
 
-        public SensorDataMessage toSensorDataMessage() {
-            SensorDataMessage sensorData = new SensorDataMessage();
+        public SensorMessageEntity toSensorDataMessage() {
+            SensorMessageEntity sensorData = new SensorMessageEntity();
             sensorData.deviceType = deviceType;
             sensorData.sensorType = sensorType;
             sensorData.values = Arrays.toString(value);

@@ -9,7 +9,6 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
@@ -27,8 +26,8 @@ import com.commons.DeviceType;
 import com.commons.SensorTransmissionCoder;
 import com.commons.SensorableConstants;
 import com.commons.SensorsProvider;
-import com.commons.database.SensorDataMessage;
-import com.commons.database.SensorDataMessageDao;
+import com.commons.database.SensorMessageDao;
+import com.commons.database.SensorMessageEntity;
 import com.commons.devicesDetection.BluetoothDevicesProvider;
 import com.example.commons.devicesDetection.WifiDirectDevicesProvider;
 import com.google.android.gms.wearable.MessageClient;
@@ -82,7 +81,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
     private WifiDirectDevicesProvider wifiDirectProvider;
 
     private MobileDatabase database;
-    private SensorDataMessageDao sensorMessageDao;
+    private SensorMessageDao sensorMessageDao;
     private ExecutorService executorService;
 
 
@@ -142,9 +141,10 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         executorService = Executors.newFixedThreadPool(SensorableConstants.MOBILE_DATABASE_NUMBER_THREADS);
 
         database = Room.databaseBuilder(
-                getApplicationContext(),
-                MobileDatabase.class,
-                SensorableConstants.MOBILE_DATABASE_NAME)
+                    getApplicationContext(),
+                    MobileDatabase.class,
+                    SensorableConstants.MOBILE_DATABASE_NAME
+                )
                 .fallbackToDestructiveMigration()
                 .build();
 
@@ -197,12 +197,11 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
     private void collectReceivedSensorData(ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage) {
 
         executorService.execute(() -> {
-            ArrayList<SensorDataMessage> sensorDataMessages = new ArrayList<>();
+            ArrayList<SensorMessageEntity> sensorMessageEntities = new ArrayList<>();
             for (SensorTransmissionCoder.SensorMessage s : arrayMessage) {
-                sensorDataMessages.add(s.toSensorDataMessage());
+                sensorMessageEntities.add(s.toSensorDataMessage());
             }
-            sensorMessageDao.insertAll(sensorDataMessages);
-            Log.i("COLLECT_RECEIVED_DATA", "collecting an array of sensorMessages, length: " + sensorMessageDao.getAll().size());
+            sensorMessageDao.insertAll(sensorMessageEntities);
         });
 
         sensorMessagesBuffer.addAll(arrayMessage);
@@ -211,7 +210,6 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 
     private void collectReceivedSensorData(SensorTransmissionCoder.SensorMessage msg) {
         executorService.execute(() -> {
-            Log.i("COLLECT_RECEIVED_DATA", "collecting an single message, length: " + sensorMessageDao.getAll().size());
             sensorMessageDao.insert(msg.toSensorDataMessage());
         });
 

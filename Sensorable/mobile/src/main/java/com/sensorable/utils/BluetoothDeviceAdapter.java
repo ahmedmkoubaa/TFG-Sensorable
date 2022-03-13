@@ -13,18 +13,18 @@ import androidx.annotation.Nullable;
 import androidx.room.Room;
 
 import com.commons.SensorableConstants;
-import com.commons.database.BluetoothDevice;
+import com.commons.database.BluetoothDeviceEntity;
 import com.commons.database.BluetoothDeviceDao;
 import com.sensorable.R;
 
 import java.util.ArrayList;
 
-public class BluetoothDeviceAdapter extends ArrayAdapter<BluetoothDevice> {
+public class BluetoothDeviceAdapter extends ArrayAdapter<BluetoothDeviceEntity> {
     private final int resource;
     private BluetoothDeviceDao bluetoothDeviceDao;
     private final Context context;
 
-    public BluetoothDeviceAdapter(@NonNull Context context, int resource, @NonNull ArrayList<BluetoothDevice> objects) {
+    public BluetoothDeviceAdapter(@NonNull Context context, int resource, @NonNull ArrayList<BluetoothDeviceEntity> objects) {
         super(context, resource, objects);
         this.context = context;
         this.resource = resource;
@@ -47,7 +47,7 @@ public class BluetoothDeviceAdapter extends ArrayAdapter<BluetoothDevice> {
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
 
-        BluetoothDevice item = this.getItem(position);
+        BluetoothDeviceEntity item = this.getItem(position);
         String name = item.deviceName;
         String mac = item.address;
         boolean trusted = item.trusted;

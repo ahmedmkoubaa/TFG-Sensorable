@@ -1,8 +1,5 @@
 package com.sensorable.activities;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.location.Location;
@@ -13,9 +10,15 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.commons.SensorsProvider;
+import com.commons.database.KnownLocationDao;
+import com.commons.database.KnownLocationEntity;
 import com.google.android.material.textfield.TextInputEditText;
 import com.sensorable.R;
+import com.sensorable.utils.MobileDatabaseBuilder;
 
 import org.osmdroid.events.MapEventsReceiver;
 import org.osmdroid.util.GeoPoint;
@@ -23,6 +26,8 @@ import org.osmdroid.views.MapController;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.MapEventsOverlay;
 import org.osmdroid.views.overlay.Marker;
+
+import java.util.concurrent.ExecutorService;
 
 public class AddLocationActivity extends AppCompatActivity {
 
@@ -36,6 +41,8 @@ public class AddLocationActivity extends AppCompatActivity {
     private Button saveButton;
 
     private TextView infoError;
+    private KnownLocationDao knownLocationDao;
+    private ExecutorService executor;
 
 
     @Override
@@ -43,8 +50,14 @@ public class AddLocationActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_location);
 
+        initializeMobileDatabase();
         initializeFieldsFromUI();
         initializeMap();
+    }
+
+    private void initializeMobileDatabase() {
+        knownLocationDao = MobileDatabaseBuilder.getDatabase(this).knownLocationDao();
+        executor = MobileDatabaseBuilder.getExecutor();
     }
 
     private void initializeFieldsFromUI() {
@@ -53,24 +66,26 @@ public class AddLocationActivity extends AppCompatActivity {
         locationTags = (TextInputEditText) findViewById(R.id.locationTagInput);
 
         saveButton = (Button) findViewById(R.id.saveButton);
-        saveButton.setOnClickListener(v-> {
+        saveButton.setOnClickListener(v -> {
             Toast.makeText(this, "AÑADIDO NUEVO PUNTO", Toast.LENGTH_SHORT).show();
 
             if (mapMarker.getPosition() != null) {
-                GeoPoint p = mapMarker.getPosition();
 
-                setResult(
-                        Activity.RESULT_OK,
-                        new Intent().
-                                putExtra("title", locationTitle.getText().toString()).
-                                putExtra("address", locationAddress.getText().toString()).
-                                putExtra("tag", locationTags.getText().toString()).
-                                putExtra("latitude", "" + p.getLatitude()).
-                                putExtra("longitude", "" + p.getLongitude()).
-                                putExtra("altitude", "" + p.getAltitude())
-                );
+                executor.execute(()-> {
+                    KnownLocationEntity newLocation = new KnownLocationEntity(
+                            locationTitle.getText().toString(),
+                            locationAddress.getText().toString(),
+                            locationTags.getText().toString(),
+                            mapMarker.getPosition()
 
+                    );
+                    knownLocationDao.insert(newLocation);
+                });
+
+                setResult(Activity.RESULT_OK);
                 finish();
+
+
             } else {
                 infoError.setText("POR FAVOR MARCA UN PUNTO DEL MAPA");
                 infoError.setVisibility(View.VISIBLE);
@@ -91,17 +106,14 @@ public class AddLocationActivity extends AppCompatActivity {
 
     private void initializeMapEvents() {
         if (map != null) {
-            MapEventsReceiver mReceive = new MapEventsReceiver()
-            {
+            MapEventsReceiver mReceive = new MapEventsReceiver() {
                 @Override
-                public boolean singleTapConfirmedHelper(GeoPoint p)
-                {
+                public boolean singleTapConfirmedHelper(GeoPoint p) {
                     return false;
                 }
 
                 @Override
-                public boolean longPressHelper(GeoPoint p)
-                {
+                public boolean longPressHelper(GeoPoint p) {
                     setMarker(p);
                     mapMarker.setTitle(locationTitle.getText().toString());
                     mapMarker.setSubDescription(locationAddress.getText().toString());

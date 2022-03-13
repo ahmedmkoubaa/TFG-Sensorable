@@ -34,6 +34,7 @@ import com.google.android.gms.wearable.MessageClient;
 import com.google.android.gms.wearable.MessageEvent;
 import com.sensorable.activities.DetailedSensorsListActivity;
 import com.sensorable.services.AdlDetectionService;
+import com.sensorable.services.BluetoothDetectionService;
 import com.sensorable.services.EmpaticaTransmissionService;
 import com.sensorable.services.WearTransmissionService;
 import com.sensorable.utils.MobileDatabase;
@@ -107,8 +108,10 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 //        initializeWearOsTranmissionService();
 //        initializeEmpaticaTransmissionService();
         initializeAdlDetectionService();
-        initializeBluetoothDetection();
+//        initializeBluetoothDetection();
+        initializeBluetoothDetectionService();
         initializeInfoReceiver();
+
 
         initializeWifiDirectDetector();
 
@@ -158,6 +161,9 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 
     }
 
+    private void initializeBluetoothDetectionService() {
+        startService(new Intent(this, BluetoothDetectionService.class));
+    }
     private void initializeBluetoothDetection() {
         bluetoothProvider = new BluetoothDevicesProvider(this);
         if (!bluetoothProvider.isEnabled()) {

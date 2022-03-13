@@ -28,10 +28,8 @@ public class SensorsProvider  {
     };
 
 
-
-
     private final int LOCATION_REQ_CODE = 1;
-    private Activity context;
+    private Context context;
 
     // this gives us the location
     private LocationManager locationManager;
@@ -39,9 +37,8 @@ public class SensorsProvider  {
     // Attributes to use sensors from sensor manager
     private SensorManager sensorManager;
 
-    public SensorsProvider(Activity context) {
+    public SensorsProvider(Context context) {
         this.context = context;
-        requestPermissionsAndInform(false);
 
         initializeProviderLocation();
         initializeSensorManager();
@@ -59,7 +56,7 @@ public class SensorsProvider  {
 
         } catch (Exception e) {
             if (!canAccessLocation()) {
-                requestPermissionsAndInform();
+                Toast.makeText(context, "Necesitamos permisos", Toast.LENGTH_SHORT).show();
             }
         }
 
@@ -121,9 +118,7 @@ public class SensorsProvider  {
                     // TODO: Consider calling
                     //    ActivityCompat#requestPermissions
                     Toast.makeText(context, "Permisos de ubicación no disponibles", Toast.LENGTH_SHORT).show();
-                    requestPermissionsAndInform(false);
                 }
-
                 locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER, 1000, 0, listener);
             }
         }
@@ -142,16 +137,6 @@ public class SensorsProvider  {
                 (context.checkSelfPermission(
                         Manifest.permission.ACCESS_COARSE_LOCATION) ==
                         PackageManager.PERMISSION_GRANTED);
-    }
-
-    private void requestPermissionsAndInform() {
-        requestPermissionsAndInform(true);
-    }
-    private void requestPermissionsAndInform(Boolean inform) {
-        context.requestPermissions(SENSOR_PERMISSIONS, LOCATION_REQ_CODE);
-        if (inform) {
-            Toast.makeText(context, "Permisos solicitados y aparentemente concedidos", Toast.LENGTH_SHORT).show();
-        }
     }
 
 

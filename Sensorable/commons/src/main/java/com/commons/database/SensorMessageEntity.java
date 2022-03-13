@@ -4,7 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 
-@Entity(primaryKeys = {"device_type", "sensor_type", "values", "timestamp"})
+    @Entity(primaryKeys = {"device_type", "sensor_type", "values", "timestamp"})
 public class SensorMessageEntity {
     @NonNull
     @ColumnInfo(name = "device_type")

@@ -15,6 +15,7 @@ import com.commons.database.DetectedAdlEntity;
 import com.sensorable.R;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 
 
 public class DetectedAdlsAdapter extends ArrayAdapter<DetectedAdlEntity> {
@@ -43,7 +44,19 @@ public class DetectedAdlsAdapter extends ArrayAdapter<DetectedAdlEntity> {
         title = adl.title;
         description = adl.description;
         stats = adl.stats;
-        timestamp = Long.toString(adl.timestamp);
+
+        Calendar adlCalendar = Calendar.getInstance();
+        adlCalendar.setTimeInMillis(adl.timestamp);
+        timestamp =
+                adlCalendar.get(Calendar.DAY_OF_MONTH) +
+                "/" +
+                adlCalendar.get(Calendar.MONTH) +
+                "/" +
+                adlCalendar.get(Calendar.YEAR) +
+                " " +
+                adlCalendar.get(Calendar.HOUR_OF_DAY) +
+                ":" +
+                adlCalendar.get(Calendar.MINUTE);
 
         LayoutInflater inflater = LayoutInflater.from(context);
         convertView = inflater.inflate(this.resource, parent, false);
@@ -55,17 +68,13 @@ public class DetectedAdlsAdapter extends ArrayAdapter<DetectedAdlEntity> {
 
         Button seeStats = convertView.findViewById(R.id.seeStatsButton);
         seeStats.setOnClickListener(v -> {
-            if (buttonStates[position]) {
-                seeStats.setText("VER ESTADÍSTICAS DETALLADAS");
-                adlStats.setVisibility(View.GONE);
-
-
-            } else {
+            if (adlStats.getVisibility() == View.GONE) {
                 seeStats.setText("VER MENOS");
                 adlStats.setVisibility(View.VISIBLE);
+            } else {
+                seeStats.setText("VER ESTADÍSTICAS DETALLADAS");
+                adlStats.setVisibility(View.GONE);
             }
-
-            buttonStates[position] = !buttonStates[position];
         });
 
 

@@ -60,10 +60,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
     };
 
     private final static int REQUEST_PERMISSIONS_CODE = 1;
-    private final static int SELECT_DEVICE_REQUEST_CODE = 0;
-    private final static int REQUEST_ENABLE_BT = 2;
     private final static int MAX_SENSOR_BUFFER_SIZE = 512;
-    private final IntentFilter wifiDirectIntentFilter = new IntentFilter();
     private ArrayList<SensorTransmissionCoder.SensorMessage> sensorMessagesBuffer;
     private Button userStateSummary;
     private ProgressBar useStateProgressBar;

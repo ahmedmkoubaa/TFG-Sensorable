@@ -14,7 +14,4 @@ public interface KnownLocationDao {
 
     @Insert
     void insert(KnownLocationEntity entity);
-
-    @Update
-    void updateDevice(KnownLocationEntity entity);
 }

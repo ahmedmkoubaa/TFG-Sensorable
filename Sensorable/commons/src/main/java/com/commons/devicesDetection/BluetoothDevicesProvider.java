@@ -22,19 +22,23 @@ public class BluetoothDevicesProvider {
     private Context context;
     private BluetoothAdapter bluetoothAdapter;
 
+    public static void startDiscovery() {
+        BluetoothAdapter.getDefaultAdapter().startDiscovery();
+    }
+
     public BluetoothDevicesProvider(Context context) {
         this.context = context;
         initializeBluetoothDetection();
     }
 
-    public boolean isEnabled() {
-        return bluetoothAdapter.isEnabled();
+    public static boolean isEnabledBluetooth() {
+        return BluetoothAdapter.getDefaultAdapter().isEnabled();
     }
 
-    public void turnOnBluetooth() {
-        if (!isEnabled()) {
-//            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-//            context.startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+    public static void enableBluetooth(AppCompatActivity activity) {
+        if (!isEnabledBluetooth()) {
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            activity.startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
         }
     }
 
@@ -49,7 +53,7 @@ public class BluetoothDevicesProvider {
     }
 
     public void startScan(ScanCallback callback) {
-        if (isEnabled()) {
+        if (isEnabledBluetooth()) {
             bluetoothAdapter.getBluetoothLeScanner().startScan(callback);
         }
     }

@@ -1,24 +1,21 @@
 package com.sensorable.activities;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.room.Room;
-
-import android.bluetooth.BluetoothDevice;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.ListView;
 
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.commons.database.BluetoothDeviceDao;
 import com.commons.database.BluetoothDeviceEntity;
 import com.commons.devicesDetection.BluetoothDevicesProvider;
-import com.commons.SensorableConstants;
-import com.commons.database.BluetoothDeviceDao;
-import com.sensorable.utils.BluetoothDeviceAdapter;
-import com.sensorable.utils.MobileDatabase;
 import com.sensorable.R;
+import com.sensorable.utils.BluetoothDeviceAdapter;
+import com.sensorable.utils.MobileDatabaseBuilder;
 
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
 
 public class BluetoothOptionsActivity extends AppCompatActivity {
 
@@ -28,6 +25,7 @@ public class BluetoothOptionsActivity extends AppCompatActivity {
     private ArrayList<BluetoothDeviceEntity> bleArray;
 
     private BluetoothDeviceDao bluetoothDeviceDao;
+    private ExecutorService executor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,14 +38,8 @@ public class BluetoothOptionsActivity extends AppCompatActivity {
     }
 
     private void initializeDatabase() {
-        MobileDatabase database = Room.databaseBuilder(
-                getApplicationContext(),
-                MobileDatabase.class,
-                SensorableConstants.MOBILE_DATABASE_NAME)
-          .allowMainThreadQueries()
-         .build();
-
-        bluetoothDeviceDao = database.bluetoothDeviceDao();
+        bluetoothDeviceDao = MobileDatabaseBuilder.getDatabase(this).bluetoothDeviceDao();
+        executor = MobileDatabaseBuilder.getExecutor();
     }
 
     @Override
@@ -58,7 +50,7 @@ public class BluetoothOptionsActivity extends AppCompatActivity {
             public void onScanResult(int callbackType, ScanResult result) {
                 super.onScanResult(callbackType, result);
 
-                BluetoothDeviceEntity searched = bluetoothDeviceDao.findByAddress(result.getDevice().getAddress());
+/*                BluetoothDeviceEntity searched = bluetoothDeviceDao.findByAddress(result.getDevice().getAddress());
                 if (searched == null) {
                     BluetoothDeviceEntity
                             databaseDevice = new BluetoothDeviceEntity();
@@ -79,8 +71,9 @@ public class BluetoothOptionsActivity extends AppCompatActivity {
                     adapter.notifyDataSetChanged();
 
                     Log.i("BLUETOOTH_SCANNER", "added a new bluetooth device");
-                }
+                }*/
 
+                updateFromDatabase();
 
             }
         });
@@ -88,7 +81,7 @@ public class BluetoothOptionsActivity extends AppCompatActivity {
 
     private void initializeAttributesFromUI() {
         bluetoothFoundDevices = (ListView) findViewById(R.id.foundDevices);
-        bleArray = new ArrayList<>(bluetoothDeviceDao.getAll());
+        bleArray = new ArrayList<>();
 
         adapter = new BluetoothDeviceAdapter(
                 this,
@@ -98,10 +91,19 @@ public class BluetoothOptionsActivity extends AppCompatActivity {
 
         adapter.setNotifyOnChange(true);
         bluetoothFoundDevices.setAdapter(adapter);
+
+        updateFromDatabase();
+    }
+
+    private void updateFromDatabase() {
+        executor.execute(() -> {
+            bleArray.clear();
+            bleArray.addAll(bluetoothDeviceDao.getAll());
+        });
     }
 
     private void initializeBluetoothDevicesProvider() {
         bluetoothProvider = new BluetoothDevicesProvider(this);
-        bluetoothProvider.turnOnBluetooth();
+        BluetoothDevicesProvider.enableBluetooth(this);
     }
 }

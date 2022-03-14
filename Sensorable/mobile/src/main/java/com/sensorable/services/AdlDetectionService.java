@@ -17,13 +17,17 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import com.commons.DeviceType;
 import com.commons.SensorTransmissionCoder;
 import com.commons.SensorableConstants;
+import com.commons.database.BluetoothDeviceDao;
+import com.commons.database.BluetoothDeviceEntity;
 import com.commons.database.DetectedAdlDao;
 import com.commons.database.DetectedAdlEntity;
 import com.sensorable.utils.MobileDatabaseBuilder;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 public class AdlDetectionService extends Service {
@@ -33,6 +37,7 @@ public class AdlDetectionService extends Service {
 
     private DetectedAdlDao detectedAdlDao;
     private ExecutorService executor;
+    private BluetoothDeviceDao bluetoothDao;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -49,6 +54,7 @@ public class AdlDetectionService extends Service {
 
     private void initializeMobileDatabase() {
         detectedAdlDao = MobileDatabaseBuilder.getDatabase(this).detectedAdlDao();
+        bluetoothDao = MobileDatabaseBuilder.getDatabase(this).bluetoothDeviceDao();
         executor = MobileDatabaseBuilder.getExecutor();
     }
 
@@ -86,8 +92,8 @@ public class AdlDetectionService extends Service {
         boolean COUNTING_STEPS, LOW_LIGHT, VERTICAL_PHONE;
 
         AdlRule phoneCall = new AdlRule(
-                "Have a phone call",
-                "System detected a phone call sicne first timestamp to last tiemstamp. System has monitorized your body and phone position"
+                "Tuviste una llamada de teléfono",
+                "El sistema detectó una llamada teléfonica. El sistema se basó en tu postura corporal y en la del teléfono"
         );
 
         // For each data stage of time, we are going to process the sensor reading
@@ -219,6 +225,7 @@ public class AdlDetectionService extends Service {
     public class AdlRule {
         private final String title;
         private final String description;
+        private final SimpleDateFormat simpleDateFormat;
         private long firstTimestamp;
         private long lastTimestmap;
         private boolean previouslyDetected;
@@ -226,6 +233,9 @@ public class AdlDetectionService extends Service {
         public AdlRule(String title, String description) {
             this.title = title;
             this.description = description;
+
+            String pattern = "hh:mm dd-MM-yyyy";
+            simpleDateFormat = new SimpleDateFormat(pattern);
         }
 
         public long getFirstTimestamp() {
@@ -261,16 +271,43 @@ public class AdlDetectionService extends Service {
             }
 
             if (!adlRule && previouslyDetected) {
-                executor.execute(() -> {
-                    detectedAdlDao.insert(
-                            new DetectedAdlEntity(
-                                    title,
-                                    description,
-                                    "start: " + firstTimestamp + " end: " + lastTimestmap,
-                                    firstTimestamp)
-                    );
 
-                    Log.i("ADL_DETECTION_SERVICE", "inserted new adl in database");
+                // get detected devices by their timestamps, if we have a detection that
+                // surrounds (its timestamps) the ADL, then we have to set to true the accompanied
+
+
+                executor.execute(() -> {
+
+                    DetectedAdlEntity lastDetected = detectedAdlDao.getLastAdl(title, lastTimestmap - SensorableConstants.TIME_SINCE_LAST_ADL_DETECTION);
+
+                    if (lastDetected == null) {
+                        List<BluetoothDeviceEntity> detectionsWhileAdl = bluetoothDao.getDevicesInRange(firstTimestamp, lastTimestmap);
+
+                        detectedAdlDao.insert(
+                                new DetectedAdlEntity(
+                                        title,
+                                        description,
+                                        "start: " + firstTimestamp + " end: " + lastTimestmap,
+                                        firstTimestamp,
+                                        lastTimestmap,
+                                        !detectionsWhileAdl.isEmpty()
+                                )
+                        );
+
+                        Log.i("ADL_DETECTION_SERVICE", "inserted new detected adl");
+
+                    } else {
+
+
+                        lastDetected.lastTimestamp = lastTimestmap;
+
+                        String startDate = simpleDateFormat.format(new Date(lastDetected.firstTimestamp));
+                        String endDate = simpleDateFormat.format(new Date(lastDetected.lastTimestamp));
+
+                        lastDetected.stats = "start: " + startDate + " end: " + endDate;
+                        detectedAdlDao.update(lastDetected);
+                        Log.i("ADL_DETECTION_SERVICE", "updated timestamp");
+                    }
                 });
             }
 

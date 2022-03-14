@@ -4,7 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 
-@Entity(primaryKeys = {"title", "timestamp"})
+@Entity(primaryKeys = {"title", "first_timestamp"})
 public class DetectedAdlEntity {
     @NonNull
     @ColumnInfo(name = "title")
@@ -17,14 +17,23 @@ public class DetectedAdlEntity {
     public String stats;
 
     @NonNull
-    @ColumnInfo(name = "timestamp")
-    public long timestamp;
+    @ColumnInfo(name = "first_timestamp")
+    public long firstTimestamp;
 
-    public DetectedAdlEntity(@NonNull String title, String description, String stats, @NonNull long timestamp) {
+    @NonNull
+    @ColumnInfo(name = "last_timestamp")
+    public long lastTimestamp;
+
+    @ColumnInfo(name = "accompanied")
+    public boolean accompanied;
+
+    public DetectedAdlEntity(@NonNull String title, String description, String stats, @NonNull long firstTimestamp, long lastTimestamp, boolean accompanied) {
         this.title = title;
         this.description = description;
         this.stats = stats;
-        this.timestamp = timestamp;
+        this.firstTimestamp = firstTimestamp;
+        this.lastTimestamp = lastTimestamp;
+        this.accompanied = accompanied;
     }
 
 }

@@ -58,15 +58,19 @@ public class BluetoothDeviceAdapter extends ArrayAdapter<BluetoothDeviceEntity> 
         TextView deviceName = convertView.findViewById(R.id.deviceName);
         TextView deviceMAC = convertView.findViewById(R.id.deviceMAC);
         Switch deviceTrusted = convertView.findViewById(R.id.deviceTrsusted);
+        TextView first = convertView.findViewById(R.id.firstTime);
+        TextView last = convertView.findViewById(R.id.lastTime);
 
         deviceTrusted.setOnCheckedChangeListener((compoundButton, checked) -> {
             item.trusted = checked;
-            bluetoothDeviceDao.updateDevice(this.getItem(position));
+            bluetoothDeviceDao.updateDevice(item);
         });
 
         deviceName.setText(name);
         deviceMAC.setText(mac);
         deviceTrusted.setChecked(trusted);
+        first.setText(Long.toString(item.firstTimestamp));
+        last.setText(Long.toString(item.lastTimestamp));
 
         return convertView;
     }

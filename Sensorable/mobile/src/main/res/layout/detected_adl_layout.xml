@@ -24,7 +24,7 @@
 
             <TextView
                 android:id="@+id/adlTitle"
-                android:layout_width="209dp"
+                android:layout_width="199dp"
                 android:layout_height="wrap_content"
                 android:layout_margin="3dp"
                 android:text="Title of ADL"
@@ -40,6 +40,15 @@
                 android:textAlignment="textEnd"
                 android:textSize="18sp"
                 android:textStyle="bold" />
+
+            <CheckBox
+                android:id="@+id/accompaniedCheckBox"
+                android:layout_width="5dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:width="5dp"
+                android:editable="false"
+                android:enabled="false" />
 
         </LinearLayout>
 

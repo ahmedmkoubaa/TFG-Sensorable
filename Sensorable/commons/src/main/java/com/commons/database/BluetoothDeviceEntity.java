@@ -1,15 +1,16 @@
 package com.commons.database;
 
 
+import android.bluetooth.BluetoothDevice;
+
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
-@Entity
+@Entity(primaryKeys = {"address", "first_timestamp"})
 public class BluetoothDeviceEntity {
     @NonNull
-    @PrimaryKey
     public String address;
 
     @ColumnInfo(name = "device_name")
@@ -23,6 +24,32 @@ public class BluetoothDeviceEntity {
 
     @ColumnInfo(name = "trusted")
     public boolean trusted;
+
+    @NonNull
+    @ColumnInfo(name = "first_timestamp")
+    public long firstTimestamp;
+
+    @NonNull
+    @ColumnInfo(name = "last_timestamp")
+    public long lastTimestamp;
+
+    public BluetoothDeviceEntity() {
+
+    }
+
+    public BluetoothDeviceEntity(BluetoothDevice device, long firstTimestamp) {
+        this.address = device.getAddress();
+        this.deviceName = device.getName();
+        this.bondState = device.getBondState();
+        this.bluetoothDeviceType = device.getBluetoothClass().getDeviceClass();
+
+        this.firstTimestamp = firstTimestamp;
+        this.lastTimestamp = firstTimestamp;
+
+        this.trusted = false;
+
+
+    }
 }
 
 

@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -46,7 +47,7 @@ public class DetectedAdlsAdapter extends ArrayAdapter<DetectedAdlEntity> {
         stats = adl.stats;
 
         Calendar adlCalendar = Calendar.getInstance();
-        adlCalendar.setTimeInMillis(adl.timestamp);
+        adlCalendar.setTimeInMillis(adl.firstTimestamp);
         timestamp =
                 adlCalendar.get(Calendar.DAY_OF_MONTH) +
                 "/" +
@@ -65,6 +66,7 @@ public class DetectedAdlsAdapter extends ArrayAdapter<DetectedAdlEntity> {
         TextView adlDescription = convertView.findViewById(R.id.adlDescription);
         TextView adlStats = convertView.findViewById(R.id.adlStats);
         TextView adlTimestamp = convertView.findViewById(R.id.adlTimestamp);
+        CheckBox accompanied = convertView.findViewById(R.id.accompaniedCheckBox);
 
         Button seeStats = convertView.findViewById(R.id.seeStatsButton);
         seeStats.setOnClickListener(v -> {
@@ -82,6 +84,7 @@ public class DetectedAdlsAdapter extends ArrayAdapter<DetectedAdlEntity> {
         adlDescription.setText(description);
         adlStats.setText(stats);
         adlTimestamp.setText(timestamp);
+        accompanied.setChecked(adl.accompanied);
 
         return convertView;
     }

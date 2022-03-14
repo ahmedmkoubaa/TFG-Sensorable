@@ -1,6 +1,7 @@
 package com.sensorable;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -34,6 +35,7 @@ import com.google.android.gms.wearable.MessageClient;
 import com.google.android.gms.wearable.MessageEvent;
 import com.sensorable.activities.DetailedSensorsListActivity;
 import com.sensorable.services.AdlDetectionService;
+import com.sensorable.services.BluetoothDetectionService;
 import com.sensorable.services.EmpaticaTransmissionService;
 import com.sensorable.services.WearTransmissionService;
 import com.sensorable.utils.MobileDatabase;
@@ -77,7 +79,6 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
     private BroadcastReceiver infoReceiver;
     private BroadcastReceiver adlDetectiornReceiver;
 
-    private BluetoothDevicesProvider bluetoothProvider;
     private WifiDirectDevicesProvider wifiDirectProvider;
 
     private MobileDatabase database;
@@ -103,12 +104,13 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         initializeMobileDatabase();
 
 
-
 //        initializeWearOsTranmissionService();
 //        initializeEmpaticaTransmissionService();
         initializeAdlDetectionService();
-        initializeBluetoothDetection();
+//        initializeBluetoothDetection();
+        initializeBluetoothDetectionService();
         initializeInfoReceiver();
+
 
         initializeWifiDirectDetector();
 
@@ -136,10 +138,10 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         executorService = Executors.newFixedThreadPool(SensorableConstants.MOBILE_DATABASE_NUMBER_THREADS);
 
         database = Room.databaseBuilder(
-                    getApplicationContext(),
-                    MobileDatabase.class,
-                    SensorableConstants.MOBILE_DATABASE_NAME
-                )
+                getApplicationContext(),
+                MobileDatabase.class,
+                SensorableConstants.MOBILE_DATABASE_NAME
+        )
                 .fallbackToDestructiveMigration()
                 .build();
 
@@ -158,28 +160,23 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 
     }
 
-    private void initializeBluetoothDetection() {
-        bluetoothProvider = new BluetoothDevicesProvider(this);
-        if (!bluetoothProvider.isEnabled()) {
-            bluetoothProvider.turnOnBluetooth();
+    private void initializeBluetoothDetectionService() {
+        if (!BluetoothDevicesProvider.isEnabledBluetooth()) {
+            BluetoothDevicesProvider.enableBluetooth(this);
         } else {
-            Toast.makeText(this, "BLUETOOTH IS ENABLED", Toast.LENGTH_SHORT).show();
+            startService(new Intent(this, BluetoothDetectionService.class));
         }
-
-        bluetoothProvider.startScan();
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         switch (requestCode) {
-            case BluetoothDevicesProvider.SELECT_DEVICE_REQUEST_CODE:
-                Log.i("BLUETOOTH_PROVIDER", "on activity result for companion found device");
-                bluetoothProvider.onActivityResultCompanionFoundDevice(requestCode, resultCode, data);
-                break;
-
             case BluetoothDevicesProvider.REQUEST_ENABLE_BT:
                 Log.i("BLUETOOTH_PROVIDER", "on activity result for turn on bluetooth");
-                bluetoothProvider.onActivityResultTurnOnBluetooth(requestCode, resultCode, data);
+                if (resultCode == Activity.RESULT_OK) {
+                    startService(new Intent(this, BluetoothDetectionService.class));
+                    Toast.makeText(this, "Bluetooth was turned on", Toast.LENGTH_SHORT).show();
+                }
                 break;
             default:
                 Log.i("ON_ACTIVITY_RESULT DEFAULT", "on activity result for companion found device");

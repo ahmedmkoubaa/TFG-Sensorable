@@ -5,8 +5,6 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
-import android.companion.AssociationRequest;
-import android.companion.BluetoothDeviceFilter;
 import android.companion.CompanionDeviceManager;
 import android.content.Context;
 import android.content.Intent;
@@ -16,37 +14,37 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class BluetoothDevicesProvider {
 
     public static final int SELECT_DEVICE_REQUEST_CODE = 0;
     public static final int REQUEST_ENABLE_BT = 1;
 
-    private final AppCompatActivity activity;
+    private Context context;
     private BluetoothAdapter bluetoothAdapter;
 
-    public BluetoothDevicesProvider(AppCompatActivity activity) {
-        this.activity = activity;
+    public static void startDiscovery() {
+        BluetoothAdapter.getDefaultAdapter().startDiscovery();
+    }
+
+    public BluetoothDevicesProvider(Context context) {
+        this.context = context;
         initializeBluetoothDetection();
     }
 
-    public boolean isEnabled() {
-        return bluetoothAdapter.isEnabled();
+    public static boolean isEnabledBluetooth() {
+        return BluetoothAdapter.getDefaultAdapter().isEnabled();
     }
 
-    public void turnOnBluetooth() {
-        if (!isEnabled()) {
+    public static void enableBluetooth(AppCompatActivity activity) {
+        if (!isEnabledBluetooth()) {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             activity.startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
         }
-
     }
 
     public void onActivityResultTurnOnBluetooth(int requestCode, int resultCode, @Nullable Intent data) {
         if (resultCode == Activity.RESULT_OK) {
-            Toast.makeText(activity, "BLUETOOTH WAS ENABLED", Toast.LENGTH_LONG).show();
+            Toast.makeText(context, "BLUETOOTH WAS ENABLED", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -55,7 +53,7 @@ public class BluetoothDevicesProvider {
     }
 
     public void startScan(ScanCallback callback) {
-        if (isEnabled()) {
+        if (isEnabledBluetooth()) {
             bluetoothAdapter.getBluetoothLeScanner().startScan(callback);
         }
     }
@@ -65,6 +63,7 @@ public class BluetoothDevicesProvider {
             @Override
             public void onScanResult(int callbackType, ScanResult result) {
                 super.onScanResult(callbackType, result);
+                Log.i("BLUETOOTH_DEVICES_PROVIDER", "scan found devices");
             }
         });
 
@@ -78,10 +77,10 @@ public class BluetoothDevicesProvider {
 
 
     public void onActivityResultCompanionFoundDevice(int requestCode, int resultCode, @Nullable Intent data) {
-        Toast.makeText(activity, "Found a device", Toast.LENGTH_SHORT).show();
+        Toast.makeText(context, "Found a device", Toast.LENGTH_SHORT).show();
 
         if (resultCode == Activity.RESULT_OK && data != null) {
-            Toast.makeText(activity, "It went all well", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "It went all well", Toast.LENGTH_SHORT).show();
             Log.i("BLUETOOTH_DETECTOR_PROVIDER", "DEVICE FOUND, LET'S TRY BOUND");
 
             BluetoothDevice deviceToPair = data.getParcelableExtra(
@@ -89,7 +88,7 @@ public class BluetoothDevicesProvider {
             );
 
             if (deviceToPair != null) {
-                Toast.makeText(activity, "We can do a bond", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "We can do a bond", Toast.LENGTH_SHORT).show();
                 Log.i("BLUETOOTH_DETECTOR_PROVIDER", "TRYING A BOUND");
 
 

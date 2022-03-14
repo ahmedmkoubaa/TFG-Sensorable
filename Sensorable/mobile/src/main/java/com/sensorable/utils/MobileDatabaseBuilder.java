@@ -15,7 +15,6 @@ public  class MobileDatabaseBuilder {
                 MobileDatabase.class,
                 SensorableConstants.MOBILE_DATABASE_NAME
         )
-                .fallbackToDestructiveMigration()
                 .build();
     }
 

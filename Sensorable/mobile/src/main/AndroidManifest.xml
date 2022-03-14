@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    android:allowBackup="false"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.sensorable">
+    package="com.sensorable"
+    android:allowBackup="false">
+
     <!--
          The ACCESS_COARSE/FINE_LOCATION permissions are not required to use
          Google Maps Android API v2, but you must specify either coarse or fine
@@ -10,16 +11,13 @@
     -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-
     <uses-permission android:name="android.permission.BODY_SENSORS" />
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
-
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
-
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
@@ -34,7 +32,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MyApplication"
         tools:replace="android:theme">
-        <activity android:name=".activities.LocationOptionsActivity"></activity>
+        <service
+            android:name=".services.BluetoothDetectionService"
+            android:enabled="true"
+            android:exported="true"></service>
+
+        <activity android:name=".activities.LocationOptionsActivity" />
         <activity android:name=".activities.AdlSummaryActivity" />
         <activity android:name=".activities.AddLocationActivity" />
         <activity android:name=".activities.BluetoothOptionsActivity" /> <!-- Activities that the application is composed by -->

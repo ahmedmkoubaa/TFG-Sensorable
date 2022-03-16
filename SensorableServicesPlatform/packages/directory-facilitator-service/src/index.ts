@@ -47,7 +47,8 @@ export function runDirectoryFacilitator() {
 
     client.on("message", (topic, payload, packet) => {
       console.log("Received Message:", topic, payload.toString())
-      // we receive this response topic, then is just a
+      // we receive this response topic, then is just a request not a publishing
+      console.log(packet.properties?.responseTopic)
     })
   })
 }

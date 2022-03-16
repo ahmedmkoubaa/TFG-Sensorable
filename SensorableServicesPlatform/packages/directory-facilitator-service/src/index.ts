@@ -9,6 +9,7 @@ import {
 } from "../../sensorable-constants/src"
 
 export function runDirectoryFacilitator() {
+  console.log("running directory facilitator service")
   const connectUrl = MQTT_CONNECT_URL
 
   console.log("Esta es la url", connectUrl)

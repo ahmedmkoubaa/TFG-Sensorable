@@ -31,6 +31,7 @@ var mqtt = __importStar(require("mqtt"));
 var pure_uuid_1 = __importDefault(require("pure-uuid"));
 var src_1 = require("../../sensorable-constants/src");
 function runDirectoryFacilitator() {
+    console.log("running directory facilitator service");
     var connectUrl = src_1.MQTT_CONNECT_URL;
     console.log("Esta es la url", connectUrl);
     var client = mqtt.connect(src_1.MQTT_CONNECT_URL, {
@@ -57,8 +58,10 @@ function runDirectoryFacilitator() {
             }
         });
         client.on("message", function (topic, payload, packet) {
+            var _a;
             console.log("Received Message:", topic, payload.toString());
-            // we receive this response topic, then is just a
+            // we receive this response topic, then is just a request not a publishing
+            console.log((_a = packet.properties) === null || _a === void 0 ? void 0 : _a.responseTopic);
         });
     });
 }

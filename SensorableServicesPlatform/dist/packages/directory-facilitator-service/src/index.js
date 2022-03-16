@@ -57,8 +57,10 @@ function runDirectoryFacilitator() {
             }
         });
         client.on("message", function (topic, payload, packet) {
+            var _a;
             console.log("Received Message:", topic, payload.toString());
-            // we receive this response topic, then is just a
+            // we receive this response topic, then is just a request not a publishing
+            console.log((_a = packet.properties) === null || _a === void 0 ? void 0 : _a.responseTopic);
         });
     });
 }

@@ -21,14 +21,21 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+    
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+    }
+    packagingOptions {
+        exclude 'META-INF/INDEX.LIST'
+        exclude 'META-INF/io.netty.versions.properties'
     }
     buildToolsVersion '29.0.2'
 }
 
 dependencies {
+
+    // for local database room usage
     def room_version = "2.4.2"
     implementation "androidx.room:room-runtime:$room_version"
     annotationProcessor "androidx.room:room-compiler:$room_version"
@@ -45,9 +52,14 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
     implementation 'com.squareup.okhttp:okhttp:2.5.0'
 
+    // for empatica api
     implementation 'com.empatica.empalink:e4link:1.0.0@aar'
 
+    // for open street maps api
     implementation 'org.osmdroid:osmdroid-android:5.6.4'
+
+    // for mqtt client
+    implementation 'com.hivemq:hivemq-mqtt-client:1.2.2'
 
     compileOnly 'com.google.android.wearable:wearable:2.8.1'
     wearApp project(":wear")

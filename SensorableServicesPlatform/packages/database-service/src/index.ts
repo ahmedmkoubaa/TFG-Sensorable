@@ -6,9 +6,11 @@ import {
   MQTT_DEFAULT_USERNAME,
   MQTT_DEFAULT_PASSWORD,
   MQTT_CONNECT_URL,
+  MQTT_TEST_TOPIC,
 } from "../../sensorable-constants/src"
 
-export function runDirectoryFacilitator() {
+export function runDatabaseService() {
+  console.log("running database service")
   const connectUrl = MQTT_CONNECT_URL
 
   console.log("Esta es la url", connectUrl)
@@ -22,9 +24,9 @@ export function runDirectoryFacilitator() {
     reconnectPeriod: MQTT_RECONNECT_PERIOD,
   })
 
-  const topic = "services/topics"
+  const topic = MQTT_TEST_TOPIC
   client.on("connect", () => {
-    console.log("Connected")
+    console.log("database service connected")
 
     client.subscribe([topic], () => {
       console.log(`Subscribe to topic '${topic}'`)
@@ -32,7 +34,7 @@ export function runDirectoryFacilitator() {
 
     client.publish(
       topic,
-      "I am directory facilitator",
+      "I am database service",
       {
         qos: 0,
         retain: false,

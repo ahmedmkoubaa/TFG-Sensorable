@@ -31,6 +31,7 @@ var mqtt = __importStar(require("mqtt"));
 var pure_uuid_1 = __importDefault(require("pure-uuid"));
 var src_1 = require("../../sensorable-constants/src");
 function runDirectoryFacilitator() {
+    console.log("running directory facilitator service");
     var connectUrl = src_1.MQTT_CONNECT_URL;
     console.log("Esta es la url", connectUrl);
     var client = mqtt.connect(src_1.MQTT_CONNECT_URL, {
@@ -41,7 +42,7 @@ function runDirectoryFacilitator() {
         password: src_1.MQTT_DEFAULT_USERNAME,
         reconnectPeriod: src_1.MQTT_RECONNECT_PERIOD
     });
-    var topic = "services/topics";
+    var topic = src_1.MQTT_TEST_TOPIC;
     client.on("connect", function () {
         console.log("Connected");
         client.subscribe([topic], function () {

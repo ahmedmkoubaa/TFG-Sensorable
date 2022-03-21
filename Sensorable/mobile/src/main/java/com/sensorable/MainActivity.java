@@ -31,16 +31,11 @@ import com.commons.devicesDetection.BluetoothDevicesProvider;
 import com.example.commons.devicesDetection.WifiDirectDevicesProvider;
 import com.google.android.gms.wearable.MessageClient;
 import com.google.android.gms.wearable.MessageEvent;
-import com.hivemq.client.mqtt.MqttClient;
-import com.hivemq.client.mqtt.mqtt5.Mqtt5AsyncClient;
-import com.hivemq.client.mqtt.mqtt5.message.connect.Mqtt5ConnectBuilder;
-import com.hivemq.client.mqtt.mqtt5.message.connect.connack.Mqtt5ConnAck;
 import com.sensorable.activities.DetailedSensorsListActivity;
 import com.sensorable.services.AdlDetectionService;
 import com.sensorable.services.BluetoothDetectionService;
 import com.sensorable.services.EmpaticaTransmissionService;
 import com.sensorable.services.WearTransmissionService;
-import com.sensorable.utils.MobileDatabase;
 import com.sensorable.utils.MobileDatabaseBuilder;
 import com.sensorable.utils.MqttHelper;
 
@@ -94,11 +89,6 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         }
     }
 
-    private void testMqtt() {
-        MqttHelper.connect();
-        MqttHelper.subscribe();
-        MqttHelper.publish();
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -139,8 +129,6 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         // this system valoration will be developed in the near future
 
         sensorsProvider = new SensorsProvider(this);
-
-        testMqtt();
     }
 
     private void initializeMobileDatabase() {

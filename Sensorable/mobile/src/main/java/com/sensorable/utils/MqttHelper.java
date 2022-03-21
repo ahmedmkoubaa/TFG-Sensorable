@@ -13,7 +13,11 @@ import com.hivemq.client.mqtt.mqtt5.message.subscribe.Mqtt5RetainHandling;
 import java.util.function.Consumer;
 
 public class MqttHelper {
-    private static final Mqtt5AsyncClient client = Mqtt5Client.builder().serverHost(SensorableConstants.MQTT_CONNECT_URL).buildAsync();
+    private static final Mqtt5AsyncClient client =
+            Mqtt5Client
+                    .builder()
+                    .serverHost(SensorableConstants.MQTT_CONNECT_URL)
+                    .buildAsync();
 
     // is necessary to make it blocking for lately requests
     public static void connect() {
@@ -21,7 +25,7 @@ public class MqttHelper {
     }
 
 
-    public static void  subscribe() {
+    public static void subscribe() {
         subscribe(SensorableConstants.MQTT_TEST_TOPIC, message -> {
             Log.i("MQTT", "received message " + message.toString());
         });
@@ -35,27 +39,27 @@ public class MqttHelper {
                 .retainAsPublished(true)
                 .callback(callback)
                 .send()
+                .whenComplete((mqtt5PublishResult, throwable) ->
+                        Log.i("MQTT", throwable == null ? "success in susbcribe" : throwable.getMessage())
+                )
                 .thenAccept(mqtt5SubAck -> Log.i("MQTT", "subscribed to topic " + topic));
     }
 
     public static void publish() {
-        publish(SensorableConstants.MQTT_TEST_TOPIC, "hello world");
+        publish(SensorableConstants.MQTT_TEST_TOPIC, ("test message").getBytes());
     }
 
-    public static void publish(final String topic, final String payload) {
+    public static void publish(final String topic, final byte[] payload) {
         client.connect();
         client.toAsync()
                 .publishWith()
                 .topic(topic)
-                .responseTopic("sensorable/S454A-4-4HTH-4HJGHG4-GH47")
                 .qos(MqttQos.EXACTLY_ONCE)
-                .payload(payload.getBytes())
+                .payload(payload)
                 .send()
                 .whenComplete((mqtt5PublishResult, throwable) ->
-                    Log.i("MQTT", throwable == null ? "success in publishment": throwable.getMessage())
+                        Log.i("MQTT", throwable == null ? "success in publishment" : throwable.getMessage())
                 )
-
-
                 .thenAccept(accept -> Log.i("MQTT", "published the message"));
 
     }

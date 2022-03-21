@@ -84,11 +84,8 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 
     private WifiDirectDevicesProvider wifiDirectProvider;
 
-    private MobileDatabase database;
     private SensorMessageDao sensorMessageDao;
     private ExecutorService executor;
-    private Mqtt5AsyncClient client;
-    private Mqtt5ConnectBuilder.Send<Mqtt5ConnAck> mqttConnection;
 
     private void requestPermissionsAndInform(Boolean inform) {
         this.requestPermissions(SENSOR_PERMISSIONS, REQUEST_PERMISSIONS_CODE);
@@ -96,7 +93,6 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
             Toast.makeText(this, "Permisos solicitados y aparentemente concedidos", Toast.LENGTH_SHORT).show();
         }
     }
-
 
     private void testMqtt() {
         MqttHelper.connect();

@@ -14,6 +14,8 @@ import java.util.function.Consumer;
 
 public class MqttHelper {
     private static final Mqtt5AsyncClient client = Mqtt5Client.builder().serverHost(SensorableConstants.MQTT_CONNECT_URL).buildAsync();
+
+    // is necessary to make it blocking for lately requests
     public static void connect() {
         client.toBlocking().connect();
     }

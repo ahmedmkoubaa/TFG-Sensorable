@@ -10,6 +10,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.commons.SensorablePermissions;
 import com.commons.SensorsProvider;
 
 
@@ -28,6 +29,10 @@ public class MainActivity extends WearableActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // request all necessary permissions
+        SensorablePermissions.requestAll(this);
+
         heartText = (TextView) findViewById(R.id.heartRateText);
         lightText = (TextView) findViewById(R.id.temperatureText);
         send = (Button) findViewById(R.id.buttonSendHeartRate);

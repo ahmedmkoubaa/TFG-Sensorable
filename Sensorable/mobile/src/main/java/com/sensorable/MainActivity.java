@@ -1,6 +1,5 @@
 package com.sensorable;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -37,7 +36,7 @@ import com.sensorable.services.BluetoothDetectionService;
 import com.sensorable.services.EmpaticaTransmissionService;
 import com.sensorable.services.WearTransmissionService;
 import com.sensorable.utils.MobileDatabaseBuilder;
-import com.sensorable.utils.MqttHelper;
+import com.commons.SensorablePermissions;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -45,20 +44,7 @@ import java.util.concurrent.ExecutorService;
 
 
 public class MainActivity extends AppCompatActivity implements MessageClient.OnMessageReceivedListener {
-    private static final String[] SENSOR_PERMISSIONS = {
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.INTERNET,
-            Manifest.permission.BODY_SENSORS,
-            Manifest.permission.ACTIVITY_RECOGNITION,
-            Manifest.permission.BLUETOOTH,
-            Manifest.permission.BLUETOOTH_ADMIN,
-            Manifest.permission.BLUETOOTH_CONNECT,
-            Manifest.permission.ACCESS_WIFI_STATE,
-            Manifest.permission.CHANGE_WIFI_STATE
-    };
 
-    private final static int REQUEST_PERMISSIONS_CODE = 1;
     private final static int MAX_SENSOR_BUFFER_SIZE = 512;
     private ArrayList<SensorTransmissionCoder.SensorMessage> sensorMessagesBuffer;
     private Button userStateSummary;
@@ -82,13 +68,6 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
     private SensorMessageDao sensorMessageDao;
     private ExecutorService executor;
 
-    private void requestPermissionsAndInform(Boolean inform) {
-        this.requestPermissions(SENSOR_PERMISSIONS, REQUEST_PERMISSIONS_CODE);
-        if (inform) {
-            Toast.makeText(this, "Permisos solicitados y aparentemente concedidos", Toast.LENGTH_SHORT).show();
-        }
-    }
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,7 +75,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        requestPermissionsAndInform(false);
+        SensorablePermissions.requestAll(this);
 
         initializeAttributesFromUI();
         initializeMobileDatabase();

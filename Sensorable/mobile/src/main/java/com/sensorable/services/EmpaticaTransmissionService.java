@@ -10,6 +10,7 @@ import android.os.IBinder;
 import androidx.annotation.Nullable;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import com.commons.SensorableConstants;
 import com.empatica.empalink.ConnectionNotAllowedException;
 import com.empatica.empalink.EmpaDeviceManager;
 import com.empatica.empalink.EmpaticaDevice;
@@ -61,9 +62,9 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
             // You can also include some extra data.
 
             Bundle empaticaBundle = new Bundle();
-            empaticaBundle.putParcelableArrayList("EmpaticaMessage", new ArrayList<>(sensorMessagesBuffer));
+            empaticaBundle.putParcelableArrayList(SensorableConstants.BROADCAST_MESSAGE, new ArrayList<>(sensorMessagesBuffer));
 
-            intent.putExtra("EMPATICA_DATA_COLLECTED", empaticaBundle);
+            intent.putExtra(SensorableConstants.EXTRA_MESSAGE, empaticaBundle);
             LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
 
             // reset buffer
@@ -76,8 +77,8 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
     }
 
     private void sendInfoMessage(String msg) {
-        Intent intent = new Intent("INFO");
-        intent.putExtra("msg", msg);
+        Intent intent = new Intent(SensorableConstants.SERVICE_SENDS_INFO);
+        intent.putExtra(SensorableConstants.EXTRA_MESSAGE, msg);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 

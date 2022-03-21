@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.commons.SensorTransmissionCoder;
+import com.commons.SensorableConstants;
 import com.google.android.gms.wearable.Channel;
 import com.google.android.gms.wearable.DataEventBuffer;
 import com.google.android.gms.wearable.MessageEvent;
@@ -30,13 +31,13 @@ public class WearTransmissionService extends WearableListenerService {
     }
 
     private void sendMessageToActivity(SensorTransmissionCoder.SensorMessage msg) {
-        Intent intent = new Intent("SensorDataUpdates");
+        Intent intent = new Intent(SensorableConstants.WEAR_SENDS_SENSOR_DATA);
         // You can also include some extra data.
 
         Bundle sensorMesssages = new Bundle();
-        sensorMesssages.putParcelable("SensorMessage", msg);
+        sensorMesssages.putParcelable(SensorableConstants.BROADCAST_MESSAGE, msg);
 
-        intent.putExtra("WEAR_DATA_COLLECTED", sensorMesssages);
+        intent.putExtra(SensorableConstants.EXTRA_MESSAGE, sensorMesssages);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 

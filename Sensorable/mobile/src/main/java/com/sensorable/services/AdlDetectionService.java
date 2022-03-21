@@ -59,13 +59,14 @@ public class AdlDetectionService extends Service {
     }
 
     private void sendMessageToActivity(String msg) {
-        Intent intent = new Intent("AdlUpdates");
+        Intent intent = new Intent(SensorableConstants.ADL_UPDATE);
         // You can also include some extra data.
 
         Bundle empaticaBundle = new Bundle();
-        empaticaBundle.putString("AdlMessage", msg);
 
-        intent.putExtra("ADL_DATA_COLLECTED", empaticaBundle);
+        empaticaBundle.putString(SensorableConstants.BROADCAST_MESSAGE, msg);
+
+        intent.putExtra(SensorableConstants.EXTRA_MESSAGE, empaticaBundle);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
@@ -73,14 +74,14 @@ public class AdlDetectionService extends Service {
         mobileReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                Bundle b = intent.getBundleExtra("MOBILE_DATA_COLLECTED");
-                ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage = b.getParcelableArrayList("MobileMessage");
+                Bundle b = intent.getBundleExtra(SensorableConstants.EXTRA_MESSAGE);
+                ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage = b.getParcelableArrayList(SensorableConstants.BROADCAST_MESSAGE);
                 detectAdls(arrayMessage);
             }
         };
 
         LocalBroadcastManager.getInstance(this).registerReceiver(
-                mobileReceiver, new IntentFilter("MOBILE_SENDS_SENSOR_DATA"));
+                mobileReceiver, new IntentFilter(SensorableConstants.MOBILE_SENDS_SENSOR_DATA));
     }
 
     private void detectAdls(ArrayList<SensorTransmissionCoder.SensorMessage> data) {

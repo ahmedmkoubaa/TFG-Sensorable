@@ -30,8 +30,8 @@ public class MainActivity extends WearableActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // request all necessary permissions
         SensorablePermissions.requestAll(this);
-
 
         heartText = (TextView) findViewById(R.id.heartRateText);
         lightText = (TextView) findViewById(R.id.temperatureText);

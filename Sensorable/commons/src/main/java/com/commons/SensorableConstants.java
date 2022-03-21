@@ -1,7 +1,6 @@
 package com.commons;
 
 public class SensorableConstants {
-
     public final static int REQUEST_PERMISSIONS_CODE = 1;
 
     public final static String MOBILE_DATABASE_NAME = "default-mobile-database";

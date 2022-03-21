@@ -1,6 +1,5 @@
 package com.sensorable.activities;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -22,6 +21,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.commons.SensorablePermissions;
 import com.commons.SensorsProvider;
 import com.commons.database.KnownLocationDao;
 import com.commons.database.KnownLocationEntity;
@@ -40,17 +40,6 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 
 public class LocationOptionsActivity extends AppCompatActivity {
-    private static final String[] SENSOR_PERMISSIONS = {
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.INTERNET,
-            Manifest.permission.BODY_SENSORS,
-            Manifest.permission.ACTIVITY_RECOGNITION,
-            Manifest.permission.ACCESS_NETWORK_STATE,
-            Manifest.permission.ACCESS_WIFI_STATE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
-    };
-
     private static final int LOCATION_REQ_CODE = 1;
 
     private boolean isMarkedCurrentLocation;
@@ -74,7 +63,7 @@ public class LocationOptionsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        requestPermissionsAndInform(false);
+        SensorablePermissions.requestAll(this);
 
         //load/initialize the osmdroid configuration, this can be done
         Context ctx = getApplicationContext();
@@ -122,7 +111,7 @@ public class LocationOptionsActivity extends AppCompatActivity {
     }
 
     private void initializeAddLocationButton() {
-        addLocationButton = (FloatingActionButton) findViewById(R.id.addLocationButton);
+        addLocationButton = findViewById(R.id.addLocationButton);
         addLocationButton.setOnClickListener(v -> {
             openAddLocationActivity();
         });
@@ -134,7 +123,7 @@ public class LocationOptionsActivity extends AppCompatActivity {
     }
 
     private void initializeSwitchButtons() {
-        listButton = (Button) findViewById(R.id.listButton);
+        listButton = findViewById(R.id.listButton);
 
         listButton.setOnClickListener(View -> {
             Toast.makeText(this, "selected list", Toast.LENGTH_SHORT).show();
@@ -144,7 +133,7 @@ public class LocationOptionsActivity extends AppCompatActivity {
             mapButton.setBackgroundColor(Color.RED);
         });
 
-        mapButton = (Button) findViewById(R.id.mapButton);
+        mapButton = findViewById(R.id.mapButton);
         mapButton.setOnClickListener(view -> {
             Toast.makeText(this, "selected map", Toast.LENGTH_SHORT).show();
             knownLocationsList.setVisibility(View.GONE);
@@ -174,7 +163,7 @@ public class LocationOptionsActivity extends AppCompatActivity {
 
     private void initializeKnownLocationList() {
 
-        knownLocationsList = (ListView) findViewById(R.id.knownLocationsList);
+        knownLocationsList = findViewById(R.id.knownLocationsList);
         locArray = new ArrayList<>();
         knownLocationsAdapter = new KnownLocationsAdapter(this, R.layout.known_location_layout, locArray);
         knownLocationsList.setAdapter(knownLocationsAdapter);
@@ -224,7 +213,7 @@ public class LocationOptionsActivity extends AppCompatActivity {
     }
 
     private void initializeMap() {
-        map = (MapView) findViewById(R.id.map);
+        map = findViewById(R.id.map);
         map.setBuiltInZoomControls(true);
         map.setMultiTouchControls(true);
         isMarkedCurrentLocation = false;
@@ -258,17 +247,4 @@ public class LocationOptionsActivity extends AppCompatActivity {
         //Configuration.getInstance().save(this, prefs);
 //        map.onPause();  //needed for compass, my location overlays, v6.0.0 and up
     }
-
-    private void requestPermissionsAndInform() {
-        requestPermissionsAndInform(true);
-    }
-
-    private void requestPermissionsAndInform(Boolean inform) {
-        this.requestPermissions(SENSOR_PERMISSIONS, LOCATION_REQ_CODE);
-        if (inform) {
-            Toast.makeText(this, "Permisos solicitados y aparentemente concedidos", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-
 }

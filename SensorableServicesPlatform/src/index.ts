@@ -1,3 +1,3 @@
+import { statrtDatabaseService } from "../packages/database-service/src"
 
-import {runDirectoryFacilitator} from "../packages/directory-facilitator-service/src"
-runDirectoryFacilitator()
+statrtDatabaseService()

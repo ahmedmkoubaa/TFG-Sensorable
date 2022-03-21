@@ -21,11 +21,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-import androidx.room.Room;
 
 import com.commons.DeviceType;
 import com.commons.SensorTransmissionCoder;
-import com.commons.SensorableConstants;
 import com.commons.SensorsProvider;
 import com.commons.database.SensorMessageDao;
 import com.commons.database.SensorMessageEntity;
@@ -38,12 +36,12 @@ import com.sensorable.services.AdlDetectionService;
 import com.sensorable.services.BluetoothDetectionService;
 import com.sensorable.services.EmpaticaTransmissionService;
 import com.sensorable.services.WearTransmissionService;
-import com.sensorable.utils.MobileDatabase;
+import com.sensorable.utils.MobileDatabaseBuilder;
+import com.sensorable.utils.MqttHelper;
 
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 
 public class MainActivity extends AppCompatActivity implements MessageClient.OnMessageReceivedListener {
@@ -81,9 +79,8 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 
     private WifiDirectDevicesProvider wifiDirectProvider;
 
-    private MobileDatabase database;
     private SensorMessageDao sensorMessageDao;
-    private ExecutorService executorService;
+    private ExecutorService executor;
 
     private void requestPermissionsAndInform(Boolean inform) {
         this.requestPermissions(SENSOR_PERMISSIONS, REQUEST_PERMISSIONS_CODE);
@@ -91,6 +88,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
             Toast.makeText(this, "Permisos solicitados y aparentemente concedidos", Toast.LENGTH_SHORT).show();
         }
     }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -134,19 +132,8 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
     }
 
     private void initializeMobileDatabase() {
-
-        executorService = Executors.newFixedThreadPool(SensorableConstants.MOBILE_DATABASE_NUMBER_THREADS);
-
-        database = Room.databaseBuilder(
-                getApplicationContext(),
-                MobileDatabase.class,
-                SensorableConstants.MOBILE_DATABASE_NAME
-        )
-                .fallbackToDestructiveMigration()
-                .build();
-
-        sensorMessageDao = database.sensorMessageDao();
-
+        sensorMessageDao = MobileDatabaseBuilder.getDatabase(this).sensorMessageDao();
+        executor = MobileDatabaseBuilder.getExecutor();
 
     }
 
@@ -188,7 +175,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 
     private void collectReceivedSensorData(ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage) {
 
-        executorService.execute(() -> {
+        executor.execute(() -> {
             ArrayList<SensorMessageEntity> sensorMessageEntities = new ArrayList<>();
             for (SensorTransmissionCoder.SensorMessage s : arrayMessage) {
                 sensorMessageEntities.add(s.toSensorDataMessage());
@@ -201,7 +188,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
     }
 
     private void collectReceivedSensorData(SensorTransmissionCoder.SensorMessage msg) {
-        executorService.execute(() -> {
+        executor.execute(() -> {
             sensorMessageDao.insert(msg.toSensorDataMessage());
         });
 

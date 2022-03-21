@@ -26,12 +26,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 exports.__esModule = true;
-exports.runDirectoryFacilitator = void 0;
+exports.runDatabaseService = void 0;
 var mqtt = __importStar(require("mqtt"));
 var pure_uuid_1 = __importDefault(require("pure-uuid"));
 var src_1 = require("../../sensorable-constants/src");
-function runDirectoryFacilitator() {
-    console.log("running directory facilitator service");
+function runDatabaseService() {
+    console.log("running database service");
     var connectUrl = src_1.MQTT_CONNECT_URL;
     console.log("Esta es la url", connectUrl);
     var client = mqtt.connect(src_1.MQTT_CONNECT_URL, {
@@ -42,13 +42,13 @@ function runDirectoryFacilitator() {
         password: src_1.MQTT_DEFAULT_USERNAME,
         reconnectPeriod: src_1.MQTT_RECONNECT_PERIOD
     });
-    var topic = "services/topics";
+    var topic = src_1.MQTT_TEST_TOPIC;
     client.on("connect", function () {
-        console.log("Connected");
+        console.log("database service connected");
         client.subscribe([topic], function () {
             console.log("Subscribe to topic '".concat(topic, "'"));
         });
-        client.publish(topic, "I am directory facilitator", {
+        client.publish(topic, "I am database service", {
             qos: 0,
             retain: false,
             properties: { responseTopic: "resonseTopic-uuid" }
@@ -65,4 +65,4 @@ function runDirectoryFacilitator() {
         });
     });
 }
-exports.runDirectoryFacilitator = runDirectoryFacilitator;
+exports.runDatabaseService = runDatabaseService;

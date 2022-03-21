@@ -13,4 +13,15 @@ public class SensorableConstants {
 
     public final static long TIME_SINCE_LAST_BLUETOOTH_DETECTION = 30 * 60 * 1000; // in milliseconds
     public final static int SCHEDULE_BLUETOOTH_DISCOVERY = 5 * 1000; // in milliseconds
+
+    // mqtt client constants
+    public static final int MQTT_BROKER_PORT = 1883;
+    public static  final String MQTT_BROKER_HOST = "192.168.1.108";
+    public static final int QTT_TIMEOUT = 4000;
+    public static final int  MQTT_RECONNECT_PERIOD = 1000;
+    public static final String MQTT_DEFAULT_USERNAME = "default-username";
+    public static final String MQTT_DEFAULT_PASSWORD = "default-password";
+    public static final String MQTT_TEST_TOPIC = "sensorable/test";
+    public static final String  MQTT_CONNECT_URL = "broker.hivemq.com";
+
 }

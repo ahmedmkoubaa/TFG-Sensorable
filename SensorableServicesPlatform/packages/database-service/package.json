@@ -1,5 +1,5 @@
 {
-  "name": "directory-facilitator-service",
+  "name": "database-service",
   "version": "1.0.0",
   "main": "dist/index.js",
   "repository": "https://github.com/ahmedmkoubaa/TFG-Sensorable",
@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@types/node": "^17.0.21",
+    "debug": "^4.3.4",
     "mqtt": "^4.3.6",
     "pure-uuid": "^1.6.2",
     "typescript": "^4.6.2"

@@ -21,5 +21,4 @@ public  class MobileDatabaseBuilder {
     public static ExecutorService getExecutor() {
        return Executors.newFixedThreadPool(SensorableConstants.MOBILE_DATABASE_NUMBER_THREADS);
     }
-
 }

@@ -44,36 +44,7 @@ public class BluetoothDetectionService extends Service {
     }
 
     private void initializeBluetoothProvider() {
-      /*  bluetoothProvider = new BluetoothDevicesProvider(this);
-        bluetoothProvider.startScan(new ScanCallback() {
-            @Override
-            public void onScanResult(int callbackType, ScanResult result) {
-                super.onScanResult(callbackType, result);
-                Log.i("BLUETOOTH_DETECTION_SERVICE", "scanning found a result " + result.getDevice().getAddress());
-
-              executor.execute(() -> {
-                  BluetoothDeviceEntity searched = bluetoothDeviceDao.findByAddress(result.getDevice().getAddress());
-                  if (searched == null) {
-                      BluetoothDeviceEntity
-                              databaseDevice = new BluetoothDeviceEntity();
-
-                      BluetoothDevice device = result.getDevice();
-                      databaseDevice.address = device.getAddress();
-                      databaseDevice.deviceName = device.getName();
-                      databaseDevice.bluetoothDeviceType = device.getBluetoothClass().getDeviceClass();
-                      databaseDevice.bondState = device.getBondState();
-
-                      // update database
-                      bluetoothDeviceDao.insert(databaseDevice);
-
-
-                      Log.i("BLUETOOTH_DETECTION_SERVICE", "added a new bluetooth device");
-                  }
-              });
-            }
-        });*/
-
-        // Register for broadcasts when a device is discovered.
+        // Register of local receiver to listen to found bluetooth devices
         IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         registerReceiver(new BroadcastReceiver() {
             @Override
@@ -126,7 +97,6 @@ public class BluetoothDetectionService extends Service {
                                             "inserting new with elapsed time " + elapsedTime / 1000 + " seconds"
                                     );
                                 });
-
                             }
                         }
                     });
@@ -142,7 +112,6 @@ public class BluetoothDetectionService extends Service {
             }
         }, 0, SensorableConstants.SCHEDULE_BLUETOOTH_DISCOVERY, TimeUnit.MILLISECONDS);
     }
-
 
     @Nullable
     @Override

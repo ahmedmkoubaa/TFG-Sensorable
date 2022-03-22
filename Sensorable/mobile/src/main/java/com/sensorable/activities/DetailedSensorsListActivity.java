@@ -28,7 +28,6 @@ public class DetailedSensorsListActivity extends AppCompatActivity {
 
     private SensorsProvider sensorsProvider;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,7 +53,6 @@ public class DetailedSensorsListActivity extends AppCompatActivity {
                     AdvancedMenuActivity.class)
             );
         });
-
     }
 
     @Override

@@ -24,6 +24,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import com.commons.DeviceType;
 import com.commons.SensorTransmissionCoder;
 import com.commons.SensorableConstants;
+import com.commons.SensorablePermissions;
 import com.commons.SensorsProvider;
 import com.commons.database.SensorMessageDao;
 import com.commons.database.SensorMessageEntity;
@@ -37,7 +38,6 @@ import com.sensorable.services.BluetoothDetectionService;
 import com.sensorable.services.EmpaticaTransmissionService;
 import com.sensorable.services.WearTransmissionService;
 import com.sensorable.utils.MobileDatabaseBuilder;
-import com.commons.SensorablePermissions;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -46,23 +46,13 @@ import java.util.concurrent.ExecutorService;
 
 public class MainActivity extends AppCompatActivity implements MessageClient.OnMessageReceivedListener {
 
-    private final static int MAX_SENSOR_BUFFER_SIZE = 512;
-    private ArrayList<SensorTransmissionCoder.SensorMessage> sensorMessagesBuffer;
+    private ArrayList<SensorTransmissionCoder.SensorMessage> sensorDataBuffer;
     private Button userStateSummary;
     private ProgressBar useStateProgressBar;
     private TextView userStateMessage;
     private TextView hearRateText, stepCounterText;
     private SensorsProvider sensorsProvider;
     private Button moreSensorsButton;
-
-    private WearTransmissionService wearOsService;
-    private EmpaticaTransmissionService empaticaService;
-    private AdlDetectionService adlDetectionService;
-
-    private BroadcastReceiver wearOsReceiver;
-    private BroadcastReceiver empaticaReceiver;
-    private BroadcastReceiver infoReceiver;
-    private BroadcastReceiver adlDetectiornReceiver;
 
     private WifiDirectDevicesProvider wifiDirectProvider;
 
@@ -93,6 +83,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         initializeWifiDirectDetector();
 
 
+        // TODO remove this progress bar statements
         userStateSummary.setClickable(false);
         userStateSummary.setText("EN BUEN ESTADO");
 
@@ -114,7 +105,6 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
     private void initializeMobileDatabase() {
         sensorMessageDao = MobileDatabaseBuilder.getDatabase(this).sensorMessageDao();
         executor = MobileDatabaseBuilder.getExecutor();
-
     }
 
     private void initializeWifiDirectDetector() {
@@ -124,7 +114,6 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
     }
 
     private void initializeBluetoothDetectionService() {
@@ -138,7 +127,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         switch (requestCode) {
-            case BluetoothDevicesProvider.REQUEST_ENABLE_BT:
+            case SensorableConstants.REQUEST_ENABLE_BT:
                 Log.i("BLUETOOTH_PROVIDER", "on activity result for turn on bluetooth");
                 if (resultCode == Activity.RESULT_OK) {
                     startService(new Intent(this, BluetoothDetectionService.class));
@@ -154,7 +143,6 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
     }
 
     private void collectReceivedSensorData(ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage) {
-
         executor.execute(() -> {
             ArrayList<SensorMessageEntity> sensorMessageEntities = new ArrayList<>();
             for (SensorTransmissionCoder.SensorMessage s : arrayMessage) {
@@ -163,7 +151,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
             sensorMessageDao.insertAll(sensorMessageEntities);
         });
 
-        sensorMessagesBuffer.addAll(arrayMessage);
+        sensorDataBuffer.addAll(arrayMessage);
         sendSensorDataToAdlDetectionService();
     }
 
@@ -172,115 +160,86 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
             sensorMessageDao.insert(msg.toSensorDataMessage());
         });
 
-        sensorMessagesBuffer.add(msg);
+        sensorDataBuffer.add(msg);
         sendSensorDataToAdlDetectionService();
-
     }
 
     private void sendSensorDataToAdlDetectionService() {
-        if (sensorMessagesBuffer.size() >= MAX_SENSOR_BUFFER_SIZE) {
+        if (sensorDataBuffer.size() >= SensorableConstants.COLLECTED_SENSOR_DATA_SIZE) {
             Intent intent = new Intent(SensorableConstants.MOBILE_SENDS_SENSOR_DATA);
             // You can also include some extra data.
 
-            Bundle empaticaBundle = new Bundle();
-            empaticaBundle.putParcelableArrayList("MobileMessage", new ArrayList<>(sensorMessagesBuffer));
+            Bundle adlBundle = new Bundle();
+            adlBundle.putParcelableArrayList(SensorableConstants.BROADCAST_MESSAGE, new ArrayList<>(sensorDataBuffer));
 
-            intent.putExtra("MOBILE_DATA_COLLECTED", empaticaBundle);
+            intent.putExtra(SensorableConstants.EXTRA_MESSAGE, adlBundle);
             LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
 
             // reset buffer
-            sensorMessagesBuffer.clear();
+            sensorDataBuffer.clear();
         }
     }
 
     private void initializeAdlDetectionService() {
-        sensorMessagesBuffer = new ArrayList<>();
+        sensorDataBuffer = new ArrayList<>();
 
-        adlDetectionService = new AdlDetectionService();
         startService(new Intent(this, AdlDetectionService.class));
 
-        adlDetectiornReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                Toast.makeText(context, "mobile: received" +
-                                intent.getBundleExtra(SensorableConstants.EXTRA_MESSAGE)
-                                        .getString(SensorableConstants.BROADCAST_MESSAGE),
-                        Toast.LENGTH_SHORT).show();
-            }
-        };
-
         LocalBroadcastManager.getInstance(MainActivity.this).registerReceiver(
-                adlDetectiornReceiver, new IntentFilter(SensorableConstants.ADL_UPDATE));
+                new BroadcastReceiver() {
+                    @Override
+                    public void onReceive(Context context, Intent intent) {
+                        Toast.makeText(context, "mobile: received" +
+                                        intent.getBundleExtra(SensorableConstants.EXTRA_MESSAGE)
+                                                .getString(SensorableConstants.BROADCAST_MESSAGE),
+                                Toast.LENGTH_SHORT).show();
+                    }
+                }, new IntentFilter(SensorableConstants.ADL_UPDATE));
     }
 
     private void initializeEmpaticaTransmissionService() {
-
-        empaticaService = new EmpaticaTransmissionService();
         startService(new Intent(this, EmpaticaTransmissionService.class));
 
         // handle messages from our service to this activity
-        empaticaReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                Bundle b = intent.getBundleExtra(SensorableConstants.EXTRA_MESSAGE);
-                ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage = b.getParcelableArrayList(SensorableConstants.BROADCAST_MESSAGE);
-                collectReceivedSensorData(arrayMessage);
-            }
-        };
-
         LocalBroadcastManager.getInstance(MainActivity.this).registerReceiver(
-                empaticaReceiver, new IntentFilter("EmpaticaDataUpdates"));
+                new BroadcastReceiver() {
+                    @Override
+                    public void onReceive(Context context, Intent intent) {
+                        Bundle b = intent.getBundleExtra(SensorableConstants.EXTRA_MESSAGE);
+                        ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage = b.getParcelableArrayList(SensorableConstants.BROADCAST_MESSAGE);
+                        collectReceivedSensorData(arrayMessage);
+                    }
+                }, new IntentFilter(SensorableConstants.EMPATICA_SENDS_SENSOR_DATA));
     }
 
     private void initializeInfoReceiver() {
-
         // handle messages from our service to this activity
-        infoReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-
-                String msg = intent.getStringExtra(SensorableConstants.EXTRA_MESSAGE);
-                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
-            }
-        };
-
         LocalBroadcastManager.getInstance(MainActivity.this).registerReceiver(
-                infoReceiver, new IntentFilter(SensorableConstants.SERVICE_SENDS_INFO));
+                new BroadcastReceiver() {
+                    @Override
+                    public void onReceive(Context context, Intent intent) {
+
+                        String msg = intent.getStringExtra(SensorableConstants.EXTRA_MESSAGE);
+                        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
+                    }
+                }, new IntentFilter(SensorableConstants.SERVICE_SENDS_INFO));
     }
 
     private void initializeWearOsTranmissionService() {
         // start new data transmission service to collect data from wear os
-        wearOsService = new WearTransmissionService();
         startService(new Intent(this, WearTransmissionService.class));
 
         // handle messages from our service to this activity
-        wearOsReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                Bundle b = intent.getBundleExtra(SensorableConstants.EXTRA_MESSAGE);
-                SensorTransmissionCoder.SensorMessage message = b.getParcelable(SensorableConstants.BROADCAST_MESSAGE);
-                String value;
-
-                switch (message.getSensorType()) {
-                    case Sensor.TYPE_HEART_RATE:
-                        value = message.getValue()[0] + " ppm";
-                        hearRateText.setText(value);
-                        break;
-
-                    case Sensor.TYPE_STEP_COUNTER:
-                        value = message.getValue()[0] + "steps";
-                        stepCounterText.setText(value);
-                        break;
-
-                    default:
-                        Toast.makeText(context, "Sensor recibido no reconocido", Toast.LENGTH_SHORT).show();
-                        break;
-                }
-            }
-        };
-
         LocalBroadcastManager.getInstance(MainActivity.this).registerReceiver(
-                wearOsReceiver, new IntentFilter(SensorableConstants.WEAR_SENDS_SENSOR_DATA));
+                new BroadcastReceiver() {
+                    @Override
+                    public void onReceive(Context context, Intent intent) {
+                        Bundle b = intent.getBundleExtra(SensorableConstants.EXTRA_MESSAGE);
+                        ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage = b.getParcelableArrayList(SensorableConstants.BROADCAST_MESSAGE);
+                        collectReceivedSensorData(arrayMessage);
+                    }
+                },
+                new IntentFilter(SensorableConstants.WEAR_SENDS_SENSOR_DATA));
     }
 
     private void initializeAttributesFromUI() {
@@ -292,7 +251,6 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         stepCounterText = findViewById(R.id.stepCounterText);
 
         moreSensorsButton = findViewById(R.id.moreSensorsButton);
-        moreSensorsButton = findViewById(R.id.moreSensorsButton);
         moreSensorsButton.setOnClickListener(v -> {
             Intent intent = new Intent(
                     this,
@@ -301,16 +259,13 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         });
     }
 
-
     @Override
     protected void onStart() {
         super.onStart();
-
         initializeSensors();
     }
 
     private void initializeSensors() {
-
         sensorsProvider.subscribeToSensor(Sensor.TYPE_HEART_RATE, new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent sensorEvent) {
@@ -327,12 +282,8 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 
             @Override
             public void onAccuracyChanged(Sensor sensor, int i) {
-        /*        Toast.makeText(
-                        MainActivity.this,
-                        i <= 0 ? "Sensor not available" : ("Accuracy value is: " + i) ,
-                        Toast.LENGTH_SHORT
-                ).show();*/
             }
+
         }, SensorManager.SENSOR_DELAY_NORMAL);
 
 
@@ -381,7 +332,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         sensorsProvider.subscribeToSensor(Sensor.TYPE_ACCELEROMETER, transmissionListener, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
-
+    // TODO test me and find my utility if I have any
     @Override
     public void onMessageReceived(@NonNull MessageEvent messageEvent) {
         Toast.makeText(this, "RECIBIDO", Toast.LENGTH_LONG).show();

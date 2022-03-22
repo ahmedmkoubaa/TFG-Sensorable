@@ -29,7 +29,6 @@ import java.util.concurrent.Executors;
 
 public class EmpaticaTransmissionService extends Service implements EmpaDataDelegate, EmpaStatusDelegate {
     private ArrayList<SensorTransmissionCoder.SensorMessage> sensorMessagesBuffer;
-    private final static int MAX_BUFFER_SIZE = 512;
 
     private EmpaDeviceManager deviceManager;
     private static final String EMPATICA_API_KEY = "e910f7a73ce74dbd99b774b9f6010ab5";
@@ -57,8 +56,8 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
     private void sendMessageToActivity(SensorTransmissionCoder.SensorMessage msg) {
 
         sensorMessagesBuffer.add(msg);
-        if (sensorMessagesBuffer.size() >= MAX_BUFFER_SIZE) {
-            Intent intent = new Intent("EmpaticaDataUpdates");
+        if (sensorMessagesBuffer.size() >= SensorableConstants.EMPATICA_BUFFER_SIZE) {
+            Intent intent = new Intent(SensorableConstants.EMPATICA_SENDS_SENSOR_DATA);
             // You can also include some extra data.
 
             Bundle empaticaBundle = new Bundle();

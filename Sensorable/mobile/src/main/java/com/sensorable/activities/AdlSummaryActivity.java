@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 
 public class AdlSummaryActivity extends AppCompatActivity {
-
     private ListView detectedAdlList;
     private ArrayList<DetectedAdlEntity> adlArray;
     private DetectedAdlsAdapter detectedAdlsAdapter;
@@ -27,7 +26,6 @@ public class AdlSummaryActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_adl_summary);
-
 
         initializeMobileDatabase();
         initializeAttributesFromUI();

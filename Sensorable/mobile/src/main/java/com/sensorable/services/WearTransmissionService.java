@@ -14,8 +14,11 @@ import com.google.android.gms.wearable.DataEventBuffer;
 import com.google.android.gms.wearable.MessageEvent;
 import com.google.android.gms.wearable.WearableListenerService;
 
+import java.util.ArrayList;
+
 
 public class WearTransmissionService extends WearableListenerService {
+    private ArrayList<SensorTransmissionCoder.SensorMessage> sensorMessagesBuffer;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -30,15 +33,23 @@ public class WearTransmissionService extends WearableListenerService {
         sendMessageToActivity(message);
     }
 
+
     private void sendMessageToActivity(SensorTransmissionCoder.SensorMessage msg) {
-        Intent intent = new Intent(SensorableConstants.WEAR_SENDS_SENSOR_DATA);
-        // You can also include some extra data.
 
-        Bundle sensorMesssages = new Bundle();
-        sensorMesssages.putParcelable(SensorableConstants.BROADCAST_MESSAGE, msg);
+        sensorMessagesBuffer.add(msg);
+        if (sensorMessagesBuffer.size() >= SensorableConstants.WEAR_BUFFER_SIZE) {
+            Intent intent = new Intent(SensorableConstants.WEAR_SENDS_SENSOR_DATA);
+            // You can also include some extra data.
 
-        intent.putExtra(SensorableConstants.EXTRA_MESSAGE, sensorMesssages);
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+            Bundle empaticaBundle = new Bundle();
+            empaticaBundle.putParcelableArrayList(SensorableConstants.BROADCAST_MESSAGE, new ArrayList<>(sensorMessagesBuffer));
+
+            intent.putExtra(SensorableConstants.EXTRA_MESSAGE, empaticaBundle);
+            LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+
+            // reset buffer
+            sensorMessagesBuffer.clear();
+        }
     }
 
     @Override

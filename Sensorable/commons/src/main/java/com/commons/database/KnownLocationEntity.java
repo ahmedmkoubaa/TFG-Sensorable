@@ -33,7 +33,6 @@ public class KnownLocationEntity {
     public double longitude;
 
     public KnownLocationEntity() {
-
     }
 
     public KnownLocationEntity(String title, String address, String tag, GeoPoint point) {

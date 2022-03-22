@@ -1,7 +1,6 @@
 package com.sensorable.activities;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.location.Location;
 import android.location.LocationListener;
 import android.os.Bundle;
@@ -67,11 +66,9 @@ public class AddLocationActivity extends AppCompatActivity {
 
         saveButton = (Button) findViewById(R.id.saveButton);
         saveButton.setOnClickListener(v -> {
-            Toast.makeText(this, "AÑADIDO NUEVO PUNTO", Toast.LENGTH_SHORT).show();
-
             if (mapMarker.getPosition() != null) {
 
-                executor.execute(()-> {
+                executor.execute(() -> {
                     KnownLocationEntity newLocation = new KnownLocationEntity(
                             locationTitle.getText().toString(),
                             locationAddress.getText().toString(),
@@ -82,14 +79,14 @@ public class AddLocationActivity extends AppCompatActivity {
                     knownLocationDao.insert(newLocation);
                 });
 
+                Toast.makeText(this, "Se añadió una nueva ubicación", Toast.LENGTH_LONG).show();
+
                 setResult(Activity.RESULT_OK);
                 finish();
-
-
             } else {
+                // TODO initialize info error before doing this
                 infoError.setText("POR FAVOR MARCA UN PUNTO DEL MAPA");
                 infoError.setVisibility(View.VISIBLE);
-//                Toast.makeText(this, "POR FAVOR INDICA UN PUNTO DEL MAPA", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -120,6 +117,7 @@ public class AddLocationActivity extends AppCompatActivity {
                     return true;
                 }
             };
+
             MapEventsOverlay evOverlay = new MapEventsOverlay(mReceive);
             map.getOverlays().add(evOverlay);
         } else {
@@ -156,6 +154,7 @@ public class AddLocationActivity extends AppCompatActivity {
                 @Override
                 public void onLocationChanged(@NonNull Location location) {
                     if (mapController != null && location != null) {
+                        // TODO uncomment below statements, testing them before
 //                        mapController.setCenter(
 //                                new GeoPoint(
 //                                       location

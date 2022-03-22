@@ -14,23 +14,16 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import com.commons.AdlRule;
 import com.commons.DeviceType;
 import com.commons.SensorTransmissionCoder;
 import com.commons.SensorableConstants;
-import com.commons.database.BluetoothDeviceDao;
-import com.commons.database.DetectedAdlDao;
+import com.sensorable.utils.AdlRule;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.concurrent.ExecutorService;
 
 public class AdlDetectionService extends Service {
     private boolean CLOSE_PROXIMITY = false;
-
-    private DetectedAdlDao detectedAdlDao;
-    private ExecutorService executor;
-    private BluetoothDeviceDao bluetoothDao;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {

@@ -1,14 +1,13 @@
-package com.commons;
-
+package com.sensorable.utils;
 
 import android.content.Context;
 import android.util.Log;
 
+import com.commons.SensorableConstants;
 import com.commons.database.BluetoothDeviceDao;
 import com.commons.database.BluetoothDeviceEntity;
 import com.commons.database.DetectedAdlDao;
 import com.commons.database.DetectedAdlEntity;
-import com.sensorable.utils.MobileDatabaseBuilder;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

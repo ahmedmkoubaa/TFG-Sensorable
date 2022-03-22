@@ -147,12 +147,12 @@ public class LocationOptionsActivity extends AppCompatActivity {
 
             Log.i("KNOWN_LOCATION_ENTITY", "Query has been made succesfully, no errors");
 
-            knownLocationsAdapter.notifyDataSetChanged();
+            for (KnownLocationEntity k : locArray) {
+                setMarker(new GeoPoint(k.longitude, k.latitude));
+            }
         });
 
-        for (KnownLocationEntity k : locArray) {
-            setMarker(new GeoPoint(k.longitude, k.latitude));
-        }
+        knownLocationsAdapter.notifyDataSetChanged();
     }
 
     private void initializeKnownLocationList() {

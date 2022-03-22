@@ -43,6 +43,8 @@ public class AddLocationActivity extends AppCompatActivity {
     private KnownLocationDao knownLocationDao;
     private ExecutorService executor;
 
+    private boolean isMarkedCurrentLocation;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,6 +94,7 @@ public class AddLocationActivity extends AppCompatActivity {
     }
 
     private void initializeMap() {
+        isMarkedCurrentLocation = false;
         map = (MapView) findViewById(R.id.mapAdd);
         map.setBuiltInZoomControls(true);
         map.setMultiTouchControls(true);
@@ -144,22 +147,17 @@ public class AddLocationActivity extends AppCompatActivity {
 
     private void initializeMapController() {
         if (map != null) {
-            GeoPoint currentPoint = new GeoPoint(37.18817, -3.60667);
             SensorsProvider provider = new SensorsProvider(this);
             mapController = (MapController) map.getController();
             mapController.setZoom(10);
-            mapController.setCenter(currentPoint);
 
             provider.subscribeToGps(new LocationListener() {
                 @Override
                 public void onLocationChanged(@NonNull Location location) {
-                    if (mapController != null && location != null) {
-                        // TODO uncomment below statements, testing them before
-//                        mapController.setCenter(
-//                                new GeoPoint(
-//                                       location
-//                                )
-//                        );
+                    if (mapController != null && location != null && !isMarkedCurrentLocation) {
+                        mapController.setCenter(new GeoPoint(location));
+                        isMarkedCurrentLocation = true;
+                        mapController.setZoom(16);
                     }
                 }
 

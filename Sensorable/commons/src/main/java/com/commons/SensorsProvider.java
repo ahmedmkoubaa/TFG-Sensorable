@@ -42,9 +42,12 @@ public class SensorsProvider {
             locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
 
         } catch (Exception e) {
+            Log.i("SENSORS_PROVIDER", "ERROR-> " + e.getMessage());
+
             if (!canAccessLocation()) {
                 Toast.makeText(context, "Necesitamos permisos", Toast.LENGTH_SHORT).show();
-                Log.i("SENSORS_PROVIDER", "ERROR-> " + e.getMessage());
+                SensorablePermissions.requestAll(this.context);
+
             }
         }
     }
@@ -86,12 +89,14 @@ public class SensorsProvider {
     // Check if location perms are available
     // Returns true if those permissions are available and false if not
     private boolean canAccessLocation() {
-        boolean granted = SensorablePermissions.isGranted(context, Manifest.permission.ACCESS_FINE_LOCATION) &&
+        Log.i("SENSORS_PROVIDER", "checking granted access to location permissions");
+
+        return SensorablePermissions.isGranted(context, Manifest.permission.ACCESS_FINE_LOCATION) &&
                 SensorablePermissions.isGranted(context, Manifest.permission.ACCESS_COARSE_LOCATION);
 
-        Log.i("SENSORS_PROVIDER", "location granted status is " + granted);
 
-        return granted;
+
+
 
     }
 

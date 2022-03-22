@@ -13,10 +13,12 @@ public class SensorableConstants {
     public final static String WEAR_SENDS_SENSOR_DATA = "SensorDataUpdates";
     public final static String MOBILE_SENDS_SENSOR_DATA = "MobileSendsSensorData";
     public final static String EMPATICA_SENDS_SENSOR_DATA = "EmpaticaDataUpdates";
+    public final static String SENSORS_PROVIDER_SENDS_DATA = "SensorProviderSendsData";
 
     public final static int COLLECTED_SENSOR_DATA_SIZE = 2048;
     public final static int WEAR_BUFFER_SIZE = 512;
     public final static int EMPATICA_BUFFER_SIZE = 512;
+    public final static int SENSORS_PROVIDER_SERVICE_BUFFER_SIZE = 256;
 
     // for mobile database
     public final static String MOBILE_DATABASE_NAME = "default-mobile-database";

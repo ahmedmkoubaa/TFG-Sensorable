@@ -33,9 +33,13 @@
         android:theme="@style/Theme.MyApplication"
         tools:replace="android:theme">
         <service
-            android:name=".services.BluetoothDetectionService"
+            android:name=".services.SensorsProviderService"
             android:enabled="true"
             android:exported="true"></service>
+        <service
+            android:name=".services.BluetoothDetectionService"
+            android:enabled="true"
+            android:exported="true" />
 
         <activity android:name=".activities.LocationOptionsActivity" />
         <activity android:name=".activities.AdlSummaryActivity" />

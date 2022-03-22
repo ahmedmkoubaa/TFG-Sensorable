@@ -28,7 +28,7 @@ public class AdlDetectionService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Toast.makeText(this, "ADL DETECTION SERVICE", Toast.LENGTH_SHORT).show();
-        initializeMobileReciver();
+        initializeMobileReceiver();
         Log.i("ADL_DETECTION_SERVICE", "initialized adl detection service");
 
         return super.onStartCommand(intent, flags, startId);
@@ -44,7 +44,7 @@ public class AdlDetectionService extends Service {
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
-    private void initializeMobileReciver() {
+    private void initializeMobileReceiver() {
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 new BroadcastReceiver() {
                     @Override

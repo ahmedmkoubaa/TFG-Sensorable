@@ -1,8 +1,24 @@
 package com.commons;
 
 public class SensorableConstants {
+    // for requests
     public final static int REQUEST_PERMISSIONS_CODE = 1;
+    public final static int REQUEST_ENABLE_BT = 2;
 
+    // for services and activities communication
+    public final static String ADL_UPDATE = "AdlUpdates";
+    public final static String EXTRA_MESSAGE = "extra_message";
+    public final static String BROADCAST_MESSAGE = "broadcast_message";
+    public final static String SERVICE_SENDS_INFO = "info";
+    public final static String WEAR_SENDS_SENSOR_DATA = "SensorDataUpdates";
+    public final static String MOBILE_SENDS_SENSOR_DATA = "MobileSendsSensorData";
+    public final static String EMPATICA_SENDS_SENSOR_DATA = "EmpaticaDataUpdates";
+
+    public final static int COLLECTED_SENSOR_DATA_SIZE = 2048;
+    public final static int WEAR_BUFFER_SIZE = 512;
+    public final static int EMPATICA_BUFFER_SIZE = 512;
+
+    // for mobile database
     public final static String MOBILE_DATABASE_NAME = "default-mobile-database";
     public final static int MOBILE_DATABASE_NUMBER_THREADS = 1;
     public final static int MOBILE_DATABASE_VERSION = 18;
@@ -16,7 +32,7 @@ public class SensorableConstants {
     public final static long TIME_SINCE_LAST_BLUETOOTH_DETECTION = 30 * 60 * 1000; // in milliseconds
     public final static int SCHEDULE_BLUETOOTH_DISCOVERY = 5 * 1000; // in milliseconds
 
-    // mqtt client constants
+    // for mqtt client communication
     public static final int MQTT_BROKER_PORT = 1883;
     public static  final String MQTT_BROKER_HOST = "192.168.1.108";
     public static final int QTT_TIMEOUT = 4000;

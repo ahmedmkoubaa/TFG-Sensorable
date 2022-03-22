@@ -32,8 +32,6 @@ public class KnownLocationsAdapter extends ArrayAdapter<KnownLocationEntity> {
         String address = this.getItem(position).address;
         String tag = this.getItem(position).tag;
 
-
-
         LayoutInflater inflater = LayoutInflater.from(context);
         convertView = inflater.inflate(this.resource, parent, false);
 

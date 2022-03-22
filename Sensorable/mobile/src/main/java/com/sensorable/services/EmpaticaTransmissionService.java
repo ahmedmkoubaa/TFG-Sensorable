@@ -10,6 +10,7 @@ import android.os.IBinder;
 import androidx.annotation.Nullable;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import com.commons.SensorableConstants;
 import com.empatica.empalink.ConnectionNotAllowedException;
 import com.empatica.empalink.EmpaDeviceManager;
 import com.empatica.empalink.EmpaticaDevice;
@@ -28,7 +29,6 @@ import java.util.concurrent.Executors;
 
 public class EmpaticaTransmissionService extends Service implements EmpaDataDelegate, EmpaStatusDelegate {
     private ArrayList<SensorTransmissionCoder.SensorMessage> sensorMessagesBuffer;
-    private final static int MAX_BUFFER_SIZE = 512;
 
     private EmpaDeviceManager deviceManager;
     private static final String EMPATICA_API_KEY = "e910f7a73ce74dbd99b774b9f6010ab5";
@@ -56,14 +56,14 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
     private void sendMessageToActivity(SensorTransmissionCoder.SensorMessage msg) {
 
         sensorMessagesBuffer.add(msg);
-        if (sensorMessagesBuffer.size() >= MAX_BUFFER_SIZE) {
-            Intent intent = new Intent("EmpaticaDataUpdates");
+        if (sensorMessagesBuffer.size() >= SensorableConstants.EMPATICA_BUFFER_SIZE) {
+            Intent intent = new Intent(SensorableConstants.EMPATICA_SENDS_SENSOR_DATA);
             // You can also include some extra data.
 
             Bundle empaticaBundle = new Bundle();
-            empaticaBundle.putParcelableArrayList("EmpaticaMessage", new ArrayList<>(sensorMessagesBuffer));
+            empaticaBundle.putParcelableArrayList(SensorableConstants.BROADCAST_MESSAGE, new ArrayList<>(sensorMessagesBuffer));
 
-            intent.putExtra("EMPATICA_DATA_COLLECTED", empaticaBundle);
+            intent.putExtra(SensorableConstants.EXTRA_MESSAGE, empaticaBundle);
             LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
 
             // reset buffer
@@ -76,8 +76,8 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
     }
 
     private void sendInfoMessage(String msg) {
-        Intent intent = new Intent("INFO");
-        intent.putExtra("msg", msg);
+        Intent intent = new Intent(SensorableConstants.SERVICE_SENDS_INFO);
+        intent.putExtra(SensorableConstants.EXTRA_MESSAGE, msg);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 

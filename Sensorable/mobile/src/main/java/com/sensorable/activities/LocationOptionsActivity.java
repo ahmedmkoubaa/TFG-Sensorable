@@ -40,8 +40,6 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 
 public class LocationOptionsActivity extends AppCompatActivity {
-    private static final int LOCATION_REQ_CODE = 1;
-
     private boolean isMarkedCurrentLocation;
     private MapController mapController;
     private MapView map;
@@ -65,6 +63,7 @@ public class LocationOptionsActivity extends AppCompatActivity {
 
         SensorablePermissions.requestAll(this);
 
+        // TODO remove this, test it and find out if it's necessary
         //load/initialize the osmdroid configuration, this can be done
         Context ctx = getApplicationContext();
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
@@ -83,7 +82,6 @@ public class LocationOptionsActivity extends AppCompatActivity {
         initializeAddLocationButton();
 
         initializeActivityLauncher();
-
     }
 
     private void initializeMobileDatabase() {
@@ -99,12 +97,10 @@ public class LocationOptionsActivity extends AppCompatActivity {
                     @Override
                     public void onActivityResult(ActivityResult result) {
                         Log.i("KNOWN_LOCATION_RESULT", "Received a new result");
+
                         if (result.getResultCode() == Activity.RESULT_OK) {
-                            // There are no request codes
-
-                            Log.i("KNOWN_LOCATION_RESULT", "Upadting bro");
-
                             updateLocationsFromDatabase();
+                            Log.i("KNOWN_LOCATION_RESULT", "Upadting bro");
                         }
                     }
                 });
@@ -126,7 +122,6 @@ public class LocationOptionsActivity extends AppCompatActivity {
         listButton = findViewById(R.id.listButton);
 
         listButton.setOnClickListener(View -> {
-            Toast.makeText(this, "selected list", Toast.LENGTH_SHORT).show();
             knownLocationsList.setVisibility(android.view.View.VISIBLE);
             map.setVisibility(android.view.View.GONE);
             listButton.setBackgroundColor(Color.GREEN);
@@ -135,7 +130,6 @@ public class LocationOptionsActivity extends AppCompatActivity {
 
         mapButton = findViewById(R.id.mapButton);
         mapButton.setOnClickListener(view -> {
-            Toast.makeText(this, "selected map", Toast.LENGTH_SHORT).show();
             knownLocationsList.setVisibility(View.GONE);
             map.setVisibility(View.VISIBLE);
             listButton.setBackgroundColor(Color.RED);
@@ -162,7 +156,6 @@ public class LocationOptionsActivity extends AppCompatActivity {
     }
 
     private void initializeKnownLocationList() {
-
         knownLocationsList = findViewById(R.id.knownLocationsList);
         locArray = new ArrayList<>();
         knownLocationsAdapter = new KnownLocationsAdapter(this, R.layout.known_location_layout, locArray);
@@ -170,7 +163,6 @@ public class LocationOptionsActivity extends AppCompatActivity {
         knownLocationsAdapter.setNotifyOnChange(true);
 
         updateLocationsFromDatabase();
-
     }
 
     private void initializeMapController() {
@@ -185,12 +177,10 @@ public class LocationOptionsActivity extends AppCompatActivity {
                 @Override
                 public void onProviderDisabled(@NonNull String provider) {
                     Toast.makeText(LocationOptionsActivity.this, "Provider is disabled", Toast.LENGTH_SHORT).show();
-
                 }
 
                 @Override
                 public void onStatusChanged(String provider, int status, Bundle extras) {
-
                 }
 
                 @Override
@@ -221,30 +211,11 @@ public class LocationOptionsActivity extends AppCompatActivity {
         initializeMapController();
     }
 
-
     private void setMarker(GeoPoint point) {
         // this is how to display a position
         Marker marker = new Marker(map);
         marker.setPosition(point);
         marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
         map.getOverlays().add(marker);
-    }
-
-    public void onResume() {
-        super.onResume();
-        //this will refresh the osmdroid configuration on resuming.
-        //if you make changes to the configuration, use
-        //SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        //Configuration.getInstance().load(this, PreferenceManager.getDefaultSharedPreferences(this));
-//        map.onResume(); //needed for compass, my location overlays, v6.0.0 and up
-    }
-
-    public void onPause() {
-        super.onPause();
-        //this will refresh the osmdroid configuration on resuming.
-        //if you make changes to the configuration, use
-        //SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        //Configuration.getInstance().save(this, prefs);
-//        map.onPause();  //needed for compass, my location overlays, v6.0.0 and up
     }
 }

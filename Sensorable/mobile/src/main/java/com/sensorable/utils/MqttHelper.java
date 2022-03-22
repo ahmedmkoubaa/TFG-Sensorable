@@ -61,7 +61,6 @@ public class MqttHelper {
                         Log.i("MQTT", throwable == null ? "success in publishment" : throwable.getMessage())
                 )
                 .thenAccept(accept -> Log.i("MQTT", "published the message"));
-
     }
 
     public static void disconnect() {

@@ -19,16 +19,10 @@ import com.commons.DeviceType;
 import com.commons.SensorTransmissionCoder;
 import com.commons.SensorableConstants;
 import com.commons.database.BluetoothDeviceDao;
-import com.commons.database.BluetoothDeviceEntity;
 import com.commons.database.DetectedAdlDao;
-import com.commons.database.DetectedAdlEntity;
-import com.sensorable.utils.MobileDatabaseBuilder;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 public class AdlDetectionService extends Service {
@@ -46,8 +40,6 @@ public class AdlDetectionService extends Service {
 
         return super.onStartCommand(intent, flags, startId);
     }
-
-
 
     private void sendMessageToActivity(String msg) {
         Intent intent = new Intent(SensorableConstants.ADL_UPDATE);
@@ -144,7 +136,6 @@ public class AdlDetectionService extends Service {
 
                 boolean found = false;
                 ArrayList<SensorTransmissionCoder.SensorMessage> copyArray = new ArrayList<>(arrayByTimestamp);
-
 
                 // We want only the last sensor read from each categorization per timestamp
                 for (SensorTransmissionCoder.SensorMessage oldSensorMessage : arrayByTimestamp) {

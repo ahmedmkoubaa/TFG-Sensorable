@@ -11,7 +11,7 @@ public class SensorableConstants {
     public final static String BROADCAST_MESSAGE = "broadcast_message";
     public final static String SERVICE_SENDS_INFO = "info";
     public final static String WEAR_SENDS_SENSOR_DATA = "SensorDataUpdates";
-    public final static String MOBILE_SENDS_SENSOR_DATA = "MOBILE_SENDS_SENSOR_DATA";
+    public final static String MOBILE_SENDS_SENSOR_DATA = "MobileSendsSensorData";
     public final static String EMPATICA_SENDS_SENSOR_DATA = "EmpaticaDataUpdates";
 
     public final static int COLLECTED_SENSOR_DATA_SIZE = 2048;

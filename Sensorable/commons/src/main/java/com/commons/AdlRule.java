@@ -81,10 +81,7 @@ public class AdlRule {
 
             // get detected devices by their timestamps, if we have a detection that
             // surrounds (its timestamps) the ADL, then we have to set to true the accompanied
-
-
             executor.execute(() -> {
-
                 DetectedAdlEntity lastDetected = detectedAdlDao.getLastAdl(title, lastTimestmap - SensorableConstants.TIME_SINCE_LAST_ADL_DETECTION);
 
                 if (lastDetected == null) {
@@ -104,8 +101,6 @@ public class AdlRule {
                     Log.i("ADL_DETECTION_SERVICE", "inserted new detected adl");
 
                 } else {
-
-
                     lastDetected.lastTimestamp = lastTimestmap;
 
                     String startDate = simpleDateFormat.format(new Date(lastDetected.firstTimestamp));

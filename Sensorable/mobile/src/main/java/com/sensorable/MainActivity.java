@@ -9,10 +9,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.PowerManager;
-import android.provider.Settings;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -72,25 +69,20 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 
         SensorablePermissions.requestAll(this);
         SensorablePermissions.ignoreBatteryOptimization(this);
-/*        requestDisableBatteryOptimizations();*/
 
         initializeAttributesFromUI();
+
         initializeMobileDatabase();
-
         initializeSensorDataReceiver();
-
 
 //        initializeWearOsTranmissionService();
 //        initializeEmpaticaTransmissionService();
         initializeAdlDetectionService();
-//        initializeBluetoothDetection();
         initializeBluetoothDetectionService();
         initializeSensorsProviderService();
         initializeInfoReceiver();
 
-
         initializeWifiDirectDetector();
-
 
         // TODO remove this progress bar statements
         userStateSummary.setClickable(false);
@@ -128,25 +120,10 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
                         Bundle b = intent.getBundleExtra(SensorableConstants.EXTRA_MESSAGE);
                         ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage = b.getParcelableArrayList(SensorableConstants.BROADCAST_MESSAGE);
                         collectReceivedSensorData(arrayMessage);
-
-                        Toast.makeText(context, "Redirectig data: " + arrayMessage.size(), Toast.LENGTH_SHORT).show();
                     }
                 };
     }
 
-    private void requestDisableBatteryOptimizations() {
-        Intent intent = new Intent();
-        String packageName = getPackageName();
-        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        if (pm.isIgnoringBatteryOptimizations(packageName)) {
-            intent.setAction(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
-        } else {
-            intent.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
-            intent.setData(Uri.parse("package:" + packageName));
-        }
-
-        this.startActivity(intent);
-    }
 
     private void initializeMobileDatabase() {
         sensorMessageDao = MobileDatabaseBuilder.getDatabase(this).sensorMessageDao();

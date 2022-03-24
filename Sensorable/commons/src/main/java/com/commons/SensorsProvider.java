@@ -43,7 +43,7 @@ public class SensorsProvider {
             Log.i("SENSORS_PROVIDER", "ERROR-> " + e.getMessage());
 
             if (!canAccessLocation()) {
-                Toast.makeText(context, "Necesitamos permisos", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "Not granted permissions are necessary", Toast.LENGTH_SHORT).show();
             }
         }
     }

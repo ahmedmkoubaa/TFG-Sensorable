@@ -25,8 +25,8 @@ import com.commons.SensorsProvider;
 import java.util.ArrayList;
 
 public class SensorsProviderService extends Service {
+    private final ArrayList<SensorTransmissionCoder.SensorMessage> sensorMessagesBuffer;
     private SensorsProvider sensorsProvider;
-    private ArrayList<SensorTransmissionCoder.SensorMessage> sensorMessagesBuffer;
 
     public SensorsProviderService() {
         sensorMessagesBuffer = new ArrayList<>();
@@ -74,23 +74,20 @@ public class SensorsProviderService extends Service {
         sensorsProvider.subscribeToGps(new LocationListener() {
             @Override
             public void onLocationChanged(@NonNull Location location) {
-               broadcastGPSLocation(location);
-               Log.i("SENSORS_PROVIDER_SERVICE", "location update");
+                broadcastGPSLocation(location);
+                Log.i("SENSORS_PROVIDER_SERVICE", "location update");
             }
 
             @Override
             public void onProviderEnabled(@NonNull String provider) {
-
             }
 
             @Override
             public void onProviderDisabled(@NonNull String provider) {
-
             }
 
             @Override
             public void onStatusChanged(String provider, int status, Bundle extras) {
-
             }
         });
     }
@@ -128,6 +125,6 @@ public class SensorsProviderService extends Service {
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        return  null;
+        return null;
     }
 }

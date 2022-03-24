@@ -28,7 +28,7 @@ public class AdlDetectionService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Toast.makeText(this, "ADL DETECTION SERVICE", Toast.LENGTH_SHORT).show();
-        initializeMobileReciver();
+        initializeMobileReceiver();
         Log.i("ADL_DETECTION_SERVICE", "initialized adl detection service");
 
         return super.onStartCommand(intent, flags, startId);
@@ -44,7 +44,7 @@ public class AdlDetectionService extends Service {
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
-    private void initializeMobileReciver() {
+    private void initializeMobileReceiver() {
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 new BroadcastReceiver() {
                     @Override
@@ -52,6 +52,8 @@ public class AdlDetectionService extends Service {
                         Bundle b = intent.getBundleExtra(SensorableConstants.EXTRA_MESSAGE);
                         ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage = b.getParcelableArrayList(SensorableConstants.BROADCAST_MESSAGE);
                         detectAdls(arrayMessage);
+
+                        Log.i("ADL_DETECTION_SERVICE", "received new data from mobile " + arrayMessage.size());
                     }
                 }, new IntentFilter(SensorableConstants.MOBILE_SENDS_SENSOR_DATA));
     }

@@ -15,7 +15,7 @@ import android.widget.Toast;
 import java.util.List;
 
 public class SensorsProvider {
-    private final Activity context;
+    private final Context context;
 
     // this gives us the location
     private LocationManager locationManager;
@@ -23,10 +23,8 @@ public class SensorsProvider {
     // Attributes to use sensors from sensor manager
     private SensorManager sensorManager;
 
-    public SensorsProvider(Activity context) {
+    public SensorsProvider(Context context) {
         this.context = context;
-
-        SensorablePermissions.requestAll(context);
 
         initializeProviderLocation();
         initializeSensorManager();
@@ -45,9 +43,7 @@ public class SensorsProvider {
             Log.i("SENSORS_PROVIDER", "ERROR-> " + e.getMessage());
 
             if (!canAccessLocation()) {
-                Toast.makeText(context, "Necesitamos permisos", Toast.LENGTH_SHORT).show();
-                SensorablePermissions.requestAll(this.context);
-
+                Toast.makeText(context, "Not granted permissions are necessary", Toast.LENGTH_SHORT).show();
             }
         }
     }

@@ -77,7 +77,6 @@ public class AdlRule {
         }
 
         if (!adlRule && previouslyDetected) {
-
             // get detected devices by their timestamps, if we have a detection that
             // surrounds (its timestamps) the ADL, then we have to set to true the accompanied
             executor.execute(() -> {

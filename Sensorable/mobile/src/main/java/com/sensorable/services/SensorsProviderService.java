@@ -6,11 +6,14 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.location.Location;
+import android.location.LocationListener;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
@@ -26,12 +29,15 @@ public class SensorsProviderService extends Service {
     private ArrayList<SensorTransmissionCoder.SensorMessage> sensorMessagesBuffer;
 
     public SensorsProviderService() {
+        sensorMessagesBuffer = new ArrayList<>();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-
         Toast.makeText(this, "SENSORS PROVIDER SERVICE", Toast.LENGTH_SHORT).show();
+
+        initializeSensorsProvider();
+
         Log.i("ADL_DETECTION_SERVICE", "initialized adl detection service");
         return super.onStartCommand(intent, flags, startId);
     }
@@ -48,7 +54,7 @@ public class SensorsProviderService extends Service {
                                 sensorEvent.values
                         );
 
-                sendMessageToActivity(msg);
+                broadcastSensorMessages(msg);
             }
 
             @Override
@@ -64,18 +70,50 @@ public class SensorsProviderService extends Service {
         sensorsProvider.subscribeToSensor(Sensor.TYPE_STEP_COUNTER, transmissionListener, SensorManager.SENSOR_DELAY_NORMAL);
         sensorsProvider.subscribeToSensor(Sensor.TYPE_LIGHT, transmissionListener, SensorManager.SENSOR_DELAY_NORMAL);
         sensorsProvider.subscribeToSensor(Sensor.TYPE_ACCELEROMETER, transmissionListener, SensorManager.SENSOR_DELAY_NORMAL);
+
+        sensorsProvider.subscribeToGps(new LocationListener() {
+            @Override
+            public void onLocationChanged(@NonNull Location location) {
+               broadcastGPSLocation(location);
+               Log.i("SENSORS_PROVIDER_SERVICE", "location update");
+            }
+
+            @Override
+            public void onProviderEnabled(@NonNull String provider) {
+
+            }
+
+            @Override
+            public void onProviderDisabled(@NonNull String provider) {
+
+            }
+
+            @Override
+            public void onStatusChanged(String provider, int status, Bundle extras) {
+
+            }
+        });
     }
 
-    private void sendMessageToActivity(SensorTransmissionCoder.SensorMessage msg) {
+    private void broadcastGPSLocation(Location location) {
+        Intent intent = new Intent(SensorableConstants.SENSORS_PROVIDER_SENDS_LOCATION);
+
+        Bundle bundle = new Bundle();
+        bundle.putParcelable(SensorableConstants.BROADCAST_LOCATION, location);
+
+        intent.putExtra(SensorableConstants.EXTRA_MESSAGE, bundle);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
+
+    private void broadcastSensorMessages(SensorTransmissionCoder.SensorMessage msg) {
         sensorMessagesBuffer.add(msg);
         if (sensorMessagesBuffer.size() >= SensorableConstants.SENSORS_PROVIDER_SERVICE_BUFFER_SIZE) {
-            Intent intent = new Intent(SensorableConstants.SENSORS_PROVIDER_SENDS_DATA);
-            // You can also include some extra data.
+            Intent intent = new Intent(SensorableConstants.SENSORS_PROVIDER_SENDS_SENSORS);
 
-            Bundle empaticaBundle = new Bundle();
-            empaticaBundle.putParcelableArrayList(SensorableConstants.BROADCAST_MESSAGE, new ArrayList<>(sensorMessagesBuffer));
+            Bundle bundle = new Bundle();
+            bundle.putParcelableArrayList(SensorableConstants.BROADCAST_MESSAGE, new ArrayList<>(sensorMessagesBuffer));
 
-            intent.putExtra(SensorableConstants.EXTRA_MESSAGE, empaticaBundle);
+            intent.putExtra(SensorableConstants.EXTRA_MESSAGE, bundle);
             LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
 
             // reset buffer
@@ -83,8 +121,8 @@ public class SensorsProviderService extends Service {
         }
     }
 
-    private void sendMessageToActivity(int sensorType, float[] values) {
-        sendMessageToActivity(new SensorTransmissionCoder.SensorMessage(DeviceType.EMPATICA, sensorType, values));
+    private void broadcastSensorMessages(int sensorType, float[] values) {
+        broadcastSensorMessages(new SensorTransmissionCoder.SensorMessage(DeviceType.EMPATICA, sensorType, values));
     }
 
     @Nullable

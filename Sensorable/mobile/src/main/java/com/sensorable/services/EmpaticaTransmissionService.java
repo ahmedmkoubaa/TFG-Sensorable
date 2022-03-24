@@ -81,14 +81,10 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
-
     @Override
     public void didUpdateStatus(EmpaStatus status) {
-
         // The device manager is ready for use
         if (status == EmpaStatus.READY) {
-
-
             sendInfoMessage("ENCIENDE LA PULSERA");
             // Start scanning
             deviceManager.startScanning();
@@ -105,7 +101,6 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
             // The device manager manager disconnected from a device
         }
     }
-
 
     @Override
     public void didDiscoverDevice(EmpaticaDevice bluetoothDevice, String deviceName, int rssi, boolean allowed) {

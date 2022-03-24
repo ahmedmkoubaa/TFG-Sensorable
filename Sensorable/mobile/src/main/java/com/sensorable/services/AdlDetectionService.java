@@ -52,6 +52,8 @@ public class AdlDetectionService extends Service {
                         Bundle b = intent.getBundleExtra(SensorableConstants.EXTRA_MESSAGE);
                         ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage = b.getParcelableArrayList(SensorableConstants.BROADCAST_MESSAGE);
                         detectAdls(arrayMessage);
+
+                        Log.i("ADL_DETECTION_SERVICE", "received new data from mobile " + arrayMessage.size());
                     }
                 }, new IntentFilter(SensorableConstants.MOBILE_SENDS_SENSOR_DATA));
     }

@@ -9,13 +9,15 @@ public class SensorableConstants {
     public final static String ADL_UPDATE = "AdlUpdates";
     public final static String EXTRA_MESSAGE = "extra_message";
     public final static String BROADCAST_MESSAGE = "broadcast_message";
+    public final static String BROADCAST_LOCATION = "broacast_update_location";
     public final static String SERVICE_SENDS_INFO = "info";
     public final static String WEAR_SENDS_SENSOR_DATA = "SensorDataUpdates";
     public final static String MOBILE_SENDS_SENSOR_DATA = "MobileSendsSensorData";
     public final static String EMPATICA_SENDS_SENSOR_DATA = "EmpaticaDataUpdates";
-    public final static String SENSORS_PROVIDER_SENDS_DATA = "SensorProviderSendsData";
+    public final static String SENSORS_PROVIDER_SENDS_SENSORS = "SensorProviderSendsSensors";
+    public final static String SENSORS_PROVIDER_SENDS_LOCATION = "SensorsProviderSendsLocation";
 
-    public final static int COLLECTED_SENSOR_DATA_SIZE = 2048;
+    public final static int COLLECTED_SENSOR_DATA_SIZE = 512;
     public final static int WEAR_BUFFER_SIZE = 512;
     public final static int EMPATICA_BUFFER_SIZE = 512;
     public final static int SENSORS_PROVIDER_SERVICE_BUFFER_SIZE = 256;

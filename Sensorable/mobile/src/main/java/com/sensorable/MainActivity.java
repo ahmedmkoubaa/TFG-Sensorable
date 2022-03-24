@@ -9,7 +9,10 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.PowerManager;
+import android.provider.Settings;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -21,7 +24,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import com.commons.DeviceType;
 import com.commons.SensorTransmissionCoder;
 import com.commons.SensorableConstants;
 import com.commons.SensorablePermissions;
@@ -36,6 +38,7 @@ import com.sensorable.activities.DetailedSensorsListActivity;
 import com.sensorable.services.AdlDetectionService;
 import com.sensorable.services.BluetoothDetectionService;
 import com.sensorable.services.EmpaticaTransmissionService;
+import com.sensorable.services.SensorsProviderService;
 import com.sensorable.services.WearTransmissionService;
 import com.sensorable.utils.MobileDatabaseBuilder;
 
@@ -58,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 
     private SensorMessageDao sensorMessageDao;
     private ExecutorService executor;
+    private BroadcastReceiver sensorDataReceiver;
 
 
     @Override
@@ -67,9 +71,13 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         setContentView(R.layout.activity_main);
 
         SensorablePermissions.requestAll(this);
+        SensorablePermissions.ignoreBatteryOptimization(this);
+/*        requestDisableBatteryOptimizations();*/
 
         initializeAttributesFromUI();
         initializeMobileDatabase();
+
+        initializeSensorDataReceiver();
 
 
 //        initializeWearOsTranmissionService();
@@ -77,6 +85,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         initializeAdlDetectionService();
 //        initializeBluetoothDetection();
         initializeBluetoothDetectionService();
+        initializeSensorsProviderService();
         initializeInfoReceiver();
 
 
@@ -98,8 +107,45 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 
         // Summary, progressBar and message will be set using a system valoration
         // this system valoration will be developed in the near future
+    }
 
-        sensorsProvider = new SensorsProvider(this);
+    @Override
+    protected void onStart() {
+        super.onStart();
+        initializeSensors();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
+
+    private void initializeSensorDataReceiver() {
+        sensorDataReceiver =
+                new BroadcastReceiver() {
+                    @Override
+                    public void onReceive(Context context, Intent intent) {
+                        Bundle b = intent.getBundleExtra(SensorableConstants.EXTRA_MESSAGE);
+                        ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage = b.getParcelableArrayList(SensorableConstants.BROADCAST_MESSAGE);
+                        collectReceivedSensorData(arrayMessage);
+
+                        Toast.makeText(context, "Redirectig data: " + arrayMessage.size(), Toast.LENGTH_SHORT).show();
+                    }
+                };
+    }
+
+    private void requestDisableBatteryOptimizations() {
+        Intent intent = new Intent();
+        String packageName = getPackageName();
+        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        if (pm.isIgnoringBatteryOptimizations(packageName)) {
+            intent.setAction(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
+        } else {
+            intent.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+            intent.setData(Uri.parse("package:" + packageName));
+        }
+
+        this.startActivity(intent);
     }
 
     private void initializeMobileDatabase() {
@@ -109,11 +155,6 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 
     private void initializeWifiDirectDetector() {
         wifiDirectProvider = new WifiDirectDevicesProvider(this);
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
     }
 
     private void initializeBluetoothDetectionService() {
@@ -143,6 +184,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
     }
 
     private void collectReceivedSensorData(ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage) {
+        // local database storing
         executor.execute(() -> {
             ArrayList<SensorMessageEntity> sensorMessageEntities = new ArrayList<>();
             for (SensorTransmissionCoder.SensorMessage s : arrayMessage) {
@@ -202,27 +244,8 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 
         // handle messages from our service to this activity
         LocalBroadcastManager.getInstance(MainActivity.this).registerReceiver(
-                new BroadcastReceiver() {
-                    @Override
-                    public void onReceive(Context context, Intent intent) {
-                        Bundle b = intent.getBundleExtra(SensorableConstants.EXTRA_MESSAGE);
-                        ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage = b.getParcelableArrayList(SensorableConstants.BROADCAST_MESSAGE);
-                        collectReceivedSensorData(arrayMessage);
-                    }
-                }, new IntentFilter(SensorableConstants.EMPATICA_SENDS_SENSOR_DATA));
-    }
-
-    private void initializeInfoReceiver() {
-        // handle messages from our service to this activity
-        LocalBroadcastManager.getInstance(MainActivity.this).registerReceiver(
-                new BroadcastReceiver() {
-                    @Override
-                    public void onReceive(Context context, Intent intent) {
-
-                        String msg = intent.getStringExtra(SensorableConstants.EXTRA_MESSAGE);
-                        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
-                    }
-                }, new IntentFilter(SensorableConstants.SERVICE_SENDS_INFO));
+                sensorDataReceiver,
+                new IntentFilter(SensorableConstants.EMPATICA_SENDS_SENSOR_DATA));
     }
 
     private void initializeWearOsTranmissionService() {
@@ -231,14 +254,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 
         // handle messages from our service to this activity
         LocalBroadcastManager.getInstance(MainActivity.this).registerReceiver(
-                new BroadcastReceiver() {
-                    @Override
-                    public void onReceive(Context context, Intent intent) {
-                        Bundle b = intent.getBundleExtra(SensorableConstants.EXTRA_MESSAGE);
-                        ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage = b.getParcelableArrayList(SensorableConstants.BROADCAST_MESSAGE);
-                        collectReceivedSensorData(arrayMessage);
-                    }
-                },
+                sensorDataReceiver,
                 new IntentFilter(SensorableConstants.WEAR_SENDS_SENSOR_DATA));
     }
 
@@ -259,25 +275,42 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         });
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        initializeSensors();
+    private void initializeInfoReceiver() {
+        // handle messages from our service to this activity
+        LocalBroadcastManager.getInstance(MainActivity.this).registerReceiver(
+                new BroadcastReceiver() {
+                    @Override
+                    public void onReceive(Context context, Intent intent) {
+
+                        String msg = intent.getStringExtra(SensorableConstants.EXTRA_MESSAGE);
+                        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
+                    }
+                }, new IntentFilter(SensorableConstants.SERVICE_SENDS_INFO));
+    }
+
+    private void initializeSensorsProviderService() {
+        // start new data transmission service to collect data from wear os
+        startService(new Intent(this, SensorsProviderService.class));
+
+        // handle sensorMessages from sensors provider service and redirect this messages
+        // to the ADL detection service
+        // TODO: as you can see is redundant, we don't need to have this information if
+        //  the only task we are going to do is redirect it, we can send it directly
+        //  between services. So we need to create broadcast receivers in the sensors
+        //  provider service
+        LocalBroadcastManager.getInstance(MainActivity.this).registerReceiver(
+                sensorDataReceiver,
+                new IntentFilter(SensorableConstants.SENSORS_PROVIDER_SENDS_SENSORS));
+
     }
 
     private void initializeSensors() {
+        sensorsProvider = new SensorsProvider(this);
+
         sensorsProvider.subscribeToSensor(Sensor.TYPE_HEART_RATE, new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent sensorEvent) {
                 hearRateText.setText((int) sensorEvent.values[0] + " ppm");
-                SensorTransmissionCoder.SensorMessage msg =
-                        new SensorTransmissionCoder.SensorMessage(
-                                DeviceType.MOBILE,
-                                Sensor.TYPE_HEART_RATE,
-                                sensorEvent.values
-                        );
-
-                collectReceivedSensorData(msg);
             }
 
             @Override
@@ -285,51 +318,17 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
             }
 
         }, SensorManager.SENSOR_DELAY_NORMAL);
-
 
         sensorsProvider.subscribeToSensor(Sensor.TYPE_STEP_COUNTER, new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent sensorEvent) {
                 stepCounterText.setText((int) sensorEvent.values[0] + " pasos");
-
-                SensorTransmissionCoder.SensorMessage msg =
-                        new SensorTransmissionCoder.SensorMessage(
-                                DeviceType.MOBILE,
-                                Sensor.TYPE_STEP_COUNTER,
-                                sensorEvent.values
-                        );
-
-                collectReceivedSensorData(msg);
             }
 
             @Override
             public void onAccuracyChanged(Sensor sensor, int i) {
             }
         }, SensorManager.SENSOR_DELAY_NORMAL);
-
-
-        SensorEventListener transmissionListener = new SensorEventListener() {
-            @Override
-            public void onSensorChanged(SensorEvent sensorEvent) {
-                SensorTransmissionCoder.SensorMessage msg =
-                        new SensorTransmissionCoder.SensorMessage(
-                                DeviceType.MOBILE,
-                                sensorEvent.sensor.getType(),
-                                sensorEvent.values
-                        );
-
-                collectReceivedSensorData(msg);
-            }
-
-            @Override
-            public void onAccuracyChanged(Sensor sensor, int i) {
-
-            }
-        };
-
-        sensorsProvider.subscribeToSensor(Sensor.TYPE_PROXIMITY, transmissionListener, SensorManager.SENSOR_DELAY_NORMAL);
-        sensorsProvider.subscribeToSensor(Sensor.TYPE_LIGHT, transmissionListener, SensorManager.SENSOR_DELAY_NORMAL);
-        sensorsProvider.subscribeToSensor(Sensor.TYPE_ACCELEROMETER, transmissionListener, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
     // TODO test me and find my utility if I have any

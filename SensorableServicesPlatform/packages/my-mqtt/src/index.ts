@@ -12,19 +12,17 @@ import { MqttClient, connect, IPublishPacket } from "mqtt"
 const log = debug("my-mqtt")
 
 export function useMyMqtt() {
-  let client: MqttClient
+  // initialize the client connecting to default url
+  let client: MqttClient = connect(MQTT_CONNECT_URL, {
+    clientId: new UUID(4).toString(),
+    clean: true,
+    connectTimeout: MQTT_TIMEOUT,
+    username: MQTT_DEFAULT_PASSWORD,
+    password: MQTT_DEFAULT_USERNAME,
+    reconnectPeriod: MQTT_RECONNECT_PERIOD,
+  })
 
-  function init() {
-    client = connect(MQTT_CONNECT_URL, {
-      clientId: new UUID(4).toString(),
-      clean: true,
-      connectTimeout: MQTT_TIMEOUT,
-      username: MQTT_DEFAULT_PASSWORD,
-      password: MQTT_DEFAULT_USERNAME,
-      reconnectPeriod: MQTT_RECONNECT_PERIOD,
-    })
-  }
-
+  // export subscribe function
   function subscribe(topic: string | string[], callback: () => void) {
     const subscribeWhenConnected = () => {
       client.subscribe(topic, { qos: 0, nl: true }, callback)
@@ -37,6 +35,7 @@ export function useMyMqtt() {
     }
   }
 
+  // export publish function
   function publish(topic: string, payload: string) {
     const publishWhenConnected = () => {
       client.publish(
@@ -62,6 +61,7 @@ export function useMyMqtt() {
     }
   }
 
+  // export received message function
   function onMessage(callback: (topic: string, payload: Buffer) => void) {
     const onMessageWhenConnected = () => {
       client.on("message", callback)
@@ -75,7 +75,6 @@ export function useMyMqtt() {
   }
 
   return {
-    init,
     subscribe,
     publish,
     onMessage,

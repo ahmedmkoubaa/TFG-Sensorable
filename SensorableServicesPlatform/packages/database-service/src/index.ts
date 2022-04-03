@@ -1,14 +1,5 @@
-import * as mqtt from "mqtt"
 import mysql from "mysql"
-import UUID from "pure-uuid"
-import {
-  MQTT_RECONNECT_PERIOD,
-  MQTT_TIMEOUT,
-  MQTT_DEFAULT_USERNAME,
-  MQTT_DEFAULT_PASSWORD,
-  MQTT_CONNECT_URL,
-  MQTT_TEST_TOPIC,
-} from "../../sensorable-constants/src"
+import { MQTT_TEST_TOPIC, DATABASE_TABLES, DATABASE_ACTIONS } from "../../sensorable-constants/src"
 import { useMyMqtt } from "../../my-mqtt/src"
 
 import debug from "debug"
@@ -76,66 +67,47 @@ export function statrtDatabaseService() {
   database.init()
   database.connect()
 
-  /**  database.doQuery("SELECT * FROM example_table", (err, rows) => {
-    log("in callback received rows: %o", rows)
-  })
- */
   log("running database service")
   const mqtt = useMyMqtt()
 
-  mqtt.init()
-  mqtt.subscribe(MQTT_TEST_TOPIC, () => {
-    log("subscribed to topic %o", MQTT_TEST_TOPIC)
+  mqtt.subscribe(["sensorable/test", "sensorable/database/#"], () => {
+    log("subscribed to topic %o", ["sensorable/test", "sensorable/database/#"])
   })
 
   mqtt.publish(MQTT_TEST_TOPIC, "Hello I am database service")
 
   mqtt.onMessage((topic: string, payload: Buffer) => {
     log("received message:", topic, payload.toString())
-  })
+    const topics = topic.toUpperCase().split("/")
 
-  /** const client = mqtt.connect(MQTT_CONNECT_URL, {
-    clientId: new UUID(4).toString(),
-    clean: true,
-    connectTimeout: MQTT_TIMEOUT,
-    username: MQTT_DEFAULT_PASSWORD,
-    password: MQTT_DEFAULT_USERNAME,
-    reconnectPeriod: MQTT_RECONNECT_PERIOD,
-  })
-
-  const topic = MQTT_TEST_TOPIC
-  client.on("connect", () => {
-    log("database service connected")
-
-    client.subscribe([topic], { qos: 0, nl: true }, () => {
-      log(`Subscribe to topic '${topic}'`)
-    })
-
-    client.publish(
-      topic,
-      "I am database service",
-      {
-        qos: 0,
-        retain: false,
-        // TO DO remove this statement or use it correctly
-        properties: { responseTopic: "resonseTopic-uuid" },
-      },
-      (error) => {
-        if (error) {
-          log("Error: publishing on topic", topic)
-          console.error(error)
-        }
+    for (let s in DATABASE_TABLES) {
+      if (s === topics[2]) {
+        log("FOUND THIS TABLE NAME %s", s)
       }
-    )
+    }
 
-    client.on("message", (topic, payload, packet) => {
-      log("Received Message:", topic, payload.toString())
-      // we receive this response topic, then is just a request not a publishing
-      // log(packet.properties?.responseTopic)
+    if (topics.length > 3) {
+      switch (topics[3]) {
+        case DATABASE_ACTIONS.INSERT:
+          log("received insert in topic %s", topic)
+          break
 
-      database.doQuery("SELECT * FROM example_table", (err, rows) => {
-        log("passed callback to doQuery function, received rows: %o", rows)
-      })
-    })
-  }) */
+        case DATABASE_ACTIONS.SELECT:
+          log("received select in topic %s", topic)
+          break
+
+        case DATABASE_ACTIONS.UPDATE:
+          log("received update in topic %s", topic)
+          break
+
+        case DATABASE_ACTIONS.DELETE:
+          log("received delete in topic %s", topic)
+          break
+
+        default:
+          log("received unknown topic command %s", topic)
+          break
+      }
+    }
+  })
 }

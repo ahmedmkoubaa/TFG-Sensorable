@@ -38,8 +38,10 @@ import com.sensorable.services.EmpaticaTransmissionService;
 import com.sensorable.services.SensorsProviderService;
 import com.sensorable.services.WearTransmissionService;
 import com.sensorable.utils.MobileDatabaseBuilder;
+import com.sensorable.utils.MqttHelper;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 
@@ -97,6 +99,8 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
                 "Te encuentras bien, sigue así. Recuerda hacer ejercicio y tomarte la medicación cuando toque"
         );
 
+        testMQTT();
+
         // Summary, progressBar and message will be set using a system valoration
         // this system valoration will be developed in the near future
     }
@@ -105,11 +109,53 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
     protected void onStart() {
         super.onStart();
         initializeSensors();
+
+
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+    }
+
+    private void testMQTT() {
+
+        MqttHelper.connect();
+
+        executor.execute(() ->
+        {
+            List<SensorMessageEntity> content = sensorMessageDao.getAll();
+            String payload = "[ ";
+
+            for (int i = 0; i < content.size(); i++) {
+                SensorMessageEntity s = content.get(i);
+                payload += s.toJson() + ",";
+            }
+
+            payload = payload.substring(0, payload.length() - 1);
+            payload += "]";
+
+            MqttHelper.publish("sensorable/database/sensors/insert", payload.getBytes());
+            Log.i("TEST_MQTT", payload);
+
+        });
+
+
+/*
+        float[] arr = {1, 2, 3};
+
+        SensorMessageEntity msg = new SensorMessageEntity();
+        msg.deviceType = DeviceType.MOBILE;
+        msg.sensorType = Sensor.TYPE_HEART_RATE;
+        msg.values = Arrays.toString(arr);
+        msg.timestamp = new Date().getTime();
+
+        final String myStringMsg = "[ " + msg.toJson() + "]";
+
+        MqttHelper.publish("sensorable/database/sensors/insert", myStringMsg.getBytes());
+        Toast.makeText(this, "Sent mqtt message " + myStringMsg, Toast.LENGTH_LONG).show();
+*/
+
     }
 
     private void initializeSensorDataReceiver() {

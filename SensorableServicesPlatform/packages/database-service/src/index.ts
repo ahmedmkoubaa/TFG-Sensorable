@@ -5,6 +5,12 @@ import { useMyMqtt } from "../../my-mqtt/src"
 import debug from "debug"
 const log = debug("database-service")
 
+export interface QueryParams {
+  query: string
+  data?: any[]
+  queryCallback: (err: mysql.MysqlError | null, rows: any) => void
+}
+
 export function useDatabase() {
   log("called usedatabase")
   let database: mysql.Connection
@@ -44,12 +50,16 @@ export function useDatabase() {
     }
   }
 
-  function doQuery(query: string, queryCallback: (err: mysql.MysqlError | null, rows: any) => void) {
+  function doQuery(params: QueryParams) {
     checkInitialized()
 
-    database.query(query, (err, rows) => {
+    /**    
+    params.query = "INSERT INTO sensors (device_type, sensor_type, values_x, values_y, values_z, timestamp) VALUES ?"
+    params.data = [[0, 21, 67, -1, -1, 1234567981]]
+   */
+    database.query(params.query, [params.data], (err, rows) => {
       checkQueryErrors(err)
-      queryCallback(err, rows)
+      params.queryCallback(err, rows)
     })
   }
 
@@ -77,11 +87,31 @@ export function statrtDatabaseService() {
   mqtt.publish(MQTT_TEST_TOPIC, "Hello I am database service")
 
   mqtt.onMessage((topic: string, payload: Buffer) => {
-    log("received message:", topic, payload.toString())
-    const topics = topic.toUpperCase().split("/")
+    const strPayload = payload.toString()
+
+    log("received message format string: %o", strPayload)
+
+    let sensorData
+
+    try {
+      sensorData = JSON.parse(strPayload)
+      log("received message format json: %o", sensorData)
+
+      // An example of expected string format
+      // "{\"device_type\": 15,\"sensor_type\":12, \"sensor_values\": [-12, 15, 91]}"
+      // we have to use this symbol '"' and it's important to put it companied by '\'
+
+      log("el device es: ", sensorData.device_type)
+      log("el sensor es: ", sensorData.sensor_type)
+    } catch (error) {
+      log("Error, <%s> is not a valid json format", strPayload)
+    }
+
+    const topics = topic.toLowerCase().split("/")
+    const table = topics[2]
 
     for (let s in DATABASE_TABLES) {
-      if (s === topics[2]) {
+      if (s === table) {
         log("FOUND THIS TABLE NAME %s", s)
       }
     }
@@ -90,6 +120,14 @@ export function statrtDatabaseService() {
       switch (topics[3]) {
         case DATABASE_ACTIONS.INSERT:
           log("received insert in topic %s", topic)
+          database.doQuery({
+            query:
+              "INSERT INTO " + table + " (device_type, sensor_type, values_x, values_y, values_z, timestamp) VALUES ?",
+            queryCallback: (err, rows) => {
+              log("query successfully done mah G, in custom callback")
+            },
+            data: sensorData,
+          })
           break
 
         case DATABASE_ACTIONS.SELECT:

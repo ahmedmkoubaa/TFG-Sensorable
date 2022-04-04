@@ -33,7 +33,15 @@ public class SensorTransmissionCoder {
             SensorMessageEntity sensorData = new SensorMessageEntity();
             sensorData.deviceType = deviceType;
             sensorData.sensorType = sensorType;
-            sensorData.values = Arrays.toString(value);
+            sensorData.valuesX = value[0];
+            if (value.length > 1) {
+                sensorData.valuesY = value[1];
+            }
+
+            if (value.length > 2) {
+                sensorData.valuesY = value[2];
+            }
+
             sensorData.timestamp = timestamp;
 
             return sensorData;

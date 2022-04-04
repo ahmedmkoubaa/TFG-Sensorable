@@ -9,15 +9,15 @@ export const MQTT_TEST_TOPIC = "sensorable/test"
 export const MQTT_CONNECT_URL = `mqtt://${MQTT_BROKER_HOST}:${MQTT_BROKER_PORT}`
 
 export enum DATABASE_TABLES {
-  SENSORS = "SENSORS",
-  USERS = "USERS",
-  ADLS = "ADLS",
-  EVENTS = "EVENTS",
+  SENSORS = "sensors",
+  USERS = "users",
+  ADLS = "adls",
+  EVENTS = "events",
 }
 
 export enum DATABASE_ACTIONS {
-  INSERT = "INSERT",
-  UPDATE = "UPDATE",
-  DELETE = "DELETE",
-  SELECT = "SELECT",
+  INSERT = "insert",
+  UPDATE = "update",
+  DELETE = "delete",
+  SELECT = "select",
 }

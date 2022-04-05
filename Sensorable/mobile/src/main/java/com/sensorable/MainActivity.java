@@ -33,6 +33,7 @@ import com.google.android.gms.wearable.MessageClient;
 import com.google.android.gms.wearable.MessageEvent;
 import com.sensorable.activities.DetailedSensorsListActivity;
 import com.sensorable.services.AdlDetectionService;
+import com.sensorable.services.BackUpService;
 import com.sensorable.services.BluetoothDetectionService;
 import com.sensorable.services.EmpaticaTransmissionService;
 import com.sensorable.services.SensorsProviderService;
@@ -80,6 +81,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 //        initializeWearOsTranmissionService();
 //        initializeEmpaticaTransmissionService();
         initializeAdlDetectionService();
+        initializeBackUpService();
         initializeBluetoothDetectionService();
         initializeSensorsProviderService();
         initializeInfoReceiver();
@@ -99,11 +101,13 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
                 "Te encuentras bien, sigue así. Recuerda hacer ejercicio y tomarte la medicación cuando toque"
         );
 
-        testMQTT();
+//        testMQTT();
+
 
         // Summary, progressBar and message will be set using a system valoration
         // this system valoration will be developed in the near future
     }
+
 
     @Override
     protected void onStart() {
@@ -115,6 +119,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 
     @Override
     protected void onDestroy() {
+        MqttHelper.disconnect();
         super.onDestroy();
     }
 
@@ -260,6 +265,11 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
                                 Toast.LENGTH_SHORT).show();
                     }
                 }, new IntentFilter(SensorableConstants.ADL_UPDATE));
+    }
+
+    private void initializeBackUpService() {
+        startService(new Intent(this, BackUpService.class));
+
     }
 
     private void initializeEmpaticaTransmissionService() {

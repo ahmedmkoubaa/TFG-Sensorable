@@ -18,7 +18,7 @@ export function useDatabase() {
   function init() {
     database = mysql.createConnection({
       host: "127.0.0.1",
-      user: "node-service",
+      user: "database-service",
       password: "12345678",
       database: "test",
     })
@@ -52,6 +52,11 @@ export function useDatabase() {
 
   function doQuery(params: QueryParams) {
     checkInitialized()
+
+    if (params.data?.length == 0) {
+      log("No params tu push")
+      return
+    }
 
     /**    
     params.query = "INSERT INTO sensors (device_type, sensor_type, values_x, values_y, values_z, timestamp) VALUES ?"

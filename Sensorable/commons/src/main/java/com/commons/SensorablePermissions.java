@@ -27,7 +27,11 @@ public class SensorablePermissions {
             Manifest.permission.CHANGE_WIFI_STATE,
             Manifest.permission.ACCESS_NETWORK_STATE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            Manifest.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
+            Manifest.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+            Manifest.permission.WAKE_LOCK,
+            Manifest.permission.SCHEDULE_EXACT_ALARM,
+            Manifest.permission.SET_ALARM,
+            Manifest.permission.RECEIVE_BOOT_COMPLETED
     };
 
     public static void requestAll(Activity requestingActivity) {

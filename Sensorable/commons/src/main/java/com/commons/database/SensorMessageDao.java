@@ -11,15 +11,18 @@ import java.util.List;
 @Dao
 public interface SensorMessageDao {
     @Query("SELECT * FROM SensorMessageEntity")
-    public List<SensorMessageEntity> getAll();
+    List<SensorMessageEntity> getAll();
 
     @Query("SELECT * FROM SensorMessageEntity " +
             "WHERE device_type = :arg0 AND sensor_type = :arg1 AND timestamp = :arg2")
-    public SensorMessageEntity findByKey(int arg0, int arg1, long arg2);
+    SensorMessageEntity findByKey(int arg0, int arg1, long arg2);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(SensorMessageEntity device);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertAll(ArrayList<SensorMessageEntity> device);
+
+    @Query("DELETE FROM SensorMessageEntity")
+    void deleteAll();
 }

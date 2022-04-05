@@ -22,6 +22,11 @@
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.SET_ALARM"/>
+
 
     <uses-feature android:name="android.software.companion_device_setup" />
 
@@ -34,9 +39,13 @@
         android:theme="@style/Theme.MyApplication"
         tools:replace="android:theme">
         <service
-            android:name=".services.SensorsProviderService"
+            android:name=".services.BackUpService"
             android:enabled="true"
             android:exported="true"></service>
+        <service
+            android:name=".services.SensorsProviderService"
+            android:enabled="true"
+            android:exported="true" />
         <service
             android:name=".services.BluetoothDetectionService"
             android:enabled="true"
@@ -77,6 +86,8 @@
             android:name=".services.EmpaticaTransmissionService"
             android:enabled="true"
             android:exported="true" />
+
+        <receiver  android:process=":remote" android:name=".utils.AlarmReceiver"></receiver>
     </application>
 
 </manifest>

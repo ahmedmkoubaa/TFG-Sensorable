@@ -4,6 +4,7 @@ package com.sensorable.utils;
 import android.util.Log;
 
 import com.commons.SensorableConstants;
+import com.hivemq.client.mqtt.MqttClientState;
 import com.hivemq.client.mqtt.datatypes.MqttQos;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5AsyncClient;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5Client;
@@ -21,7 +22,12 @@ public class MqttHelper {
 
     // is necessary to make it blocking for lately requests
     public static void connect() {
-        client.toBlocking().connect();
+        final MqttClientState status = client.toBlocking().getState();
+
+        if (!status.isConnectedOrReconnect()) {
+            client.toBlocking().connect();
+            Log.i("MQTT", "client not connected, trying to connect");
+        }
     }
 
 

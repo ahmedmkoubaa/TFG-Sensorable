@@ -39,7 +39,7 @@ public class SensorTransmissionCoder {
             }
 
             if (value.length > 2) {
-                sensorData.valuesY = value[2];
+                sensorData.valuesZ = value[2];
             }
 
             sensorData.timestamp = timestamp;

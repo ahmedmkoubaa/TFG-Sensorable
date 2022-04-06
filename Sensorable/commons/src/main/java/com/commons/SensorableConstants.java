@@ -36,7 +36,7 @@ public class SensorableConstants {
 
     public final static long TIME_SINCE_LAST_BLUETOOTH_DETECTION = 30 * 60 * 1000; // in milliseconds
     public final static int SCHEDULE_BLUETOOTH_DISCOVERY = 5 * 1000; // in milliseconds
-    public final static int SCHEDULE_DATABASE_BACKUP = 5 * 1000; // in milliseconds
+    public final static int SCHEDULE_DATABASE_BACKUP = 5 * 60 * 1000; // in milliseconds
 
 
     // for mqtt client communication

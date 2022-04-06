@@ -78,7 +78,10 @@ public class SensorsProvider {
         if (!gpsEnabled) {
             Toast.makeText(context, "Please turn on location", Toast.LENGTH_SHORT).show();
         } else {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, listener);
+            try {locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, listener);}
+            catch (SecurityException e) {
+                Toast.makeText(context, "You should ask for permissions", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 

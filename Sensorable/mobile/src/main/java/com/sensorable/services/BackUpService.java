@@ -1,24 +1,24 @@
 package com.sensorable.services;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
+import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
-import com.sensorable.utils.AlarmReceiver;
+import com.commons.SensorableConstants;
+import com.commons.database.SensorMessageDao;
+import com.commons.database.SensorMessageEntity;
+import com.sensorable.utils.MobileDatabaseBuilder;
+import com.sensorable.utils.MqttHelper;
 
-import java.util.Calendar;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 public class BackUpService extends Service {
-    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -32,16 +32,57 @@ public class BackUpService extends Service {
 
 
     private void initializeReminders() {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(System.currentTimeMillis());
-        calendar.set(Calendar.HOUR_OF_DAY, 2);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.getTimeInMillis();
 
-        AlarmManager am = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
-        Intent i = new Intent(this, AlarmReceiver.class);
-        PendingIntent pi = PendingIntent.getBroadcast(this, 0, i, PendingIntent.FLAG_UPDATE_CURRENT);
-        am.setRepeating(AlarmManager.RTC, -1, 100, pi); // Millisec * Second * Minute
+        final Handler handler = new Handler();
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                // do something
+                MqttHelper.connect();
+
+                SensorMessageDao sensorMessageDao = MobileDatabaseBuilder.getDatabase(BackUpService.this).sensorMessageDao();
+                ExecutorService executorService = MobileDatabaseBuilder.getExecutor();
+
+                MqttHelper.connect();
+
+                executorService.execute(() ->
+                {
+                    List<SensorMessageEntity> content = sensorMessageDao.getAll();
+                    if (!content.isEmpty()) {
+
+                        final double BACKUP_PART_SIZE = 4000;
+                        final double parts = Math.ceil(content.size() / BACKUP_PART_SIZE);
+
+                        int i = 0;
+                        for (int j = 1; j <= parts; j++) {
+                            String payload = "[ ";
+
+                            for (i = (int) ((j - 1) * parts); i < content.size() && i < j * BACKUP_PART_SIZE; i++) {
+                                payload += content.get(i).toJson() + ",";
+                            }
+
+                            payload = payload.substring(0, payload.length() - 1);
+                            payload += "]";
+
+                            MqttHelper.publish("sensorable/database/sensors/insert", payload.getBytes());
+                            Log.i("TEST_MQTT", payload);
+                        }
+
+                        sensorMessageDao.deleteAll();
+                    } else {
+                        Log.i("ALARM_RECEIVER", "no rows to back up, see you soon");
+                    }
+
+                });
+
+
+                Log.i("BACKUP_SERVICE", "ALARMITAAA FIRING AGAIN");
+                handler.postDelayed(this, SensorableConstants.SCHEDULE_DATABASE_BACKUP);  // 1 second delay
+            }
+        };
+        handler.post(runnable);
+
+
     }
 
     @Nullable

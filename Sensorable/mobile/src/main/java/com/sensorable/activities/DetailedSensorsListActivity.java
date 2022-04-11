@@ -3,6 +3,7 @@ package com.sensorable.activities;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -72,6 +73,45 @@ public class DetailedSensorsListActivity extends AppCompatActivity {
                         ")";
 
                 acceleromterTextView.setText(values);
+                if (sensorEvent.values[0] < -5 || sensorEvent.values[0] > 5) {
+                    acceleromterTextView.setBackgroundColor(Color.RED);
+                }
+
+                if (sensorEvent.values[1] < -5 || sensorEvent.values[1] > 5) {
+                    acceleromterTextView.setBackgroundColor(Color.GREEN);
+                }
+
+                if (sensorEvent.values[2] < -5 || sensorEvent.values[2] > 5) {
+                    acceleromterTextView.setBackgroundColor(Color.BLUE);
+                }
+            }
+
+            @Override
+            public void onAccuracyChanged(Sensor sensor, int i) {
+            }
+        }, SensorManager.SENSOR_DELAY_NORMAL);
+
+        sensorsProvider.subscribeToSensor(Sensor.TYPE_LINEAR_ACCELERATION, new SensorEventListener() {
+            @Override
+            public void onSensorChanged(SensorEvent sensorEvent) {
+                String values = "(" +
+                        sensorEvent.values[0] + ", " +
+                        sensorEvent.values[1] + ", " +
+                        sensorEvent.values[2] +
+                        ")";
+
+                temperatureTextView.setText(values);
+                if (sensorEvent.values[0] < -5 || sensorEvent.values[0] > 5) {
+                    temperatureTextView.setBackgroundColor(Color.RED);
+                }
+
+                if (sensorEvent.values[1] < -5 || sensorEvent.values[1] > 5) {
+                    temperatureTextView.setBackgroundColor(Color.GREEN);
+                }
+
+                if (sensorEvent.values[2] < -5 || sensorEvent.values[2] > 5) {
+                    temperatureTextView.setBackgroundColor(Color.BLUE);
+                }
             }
 
             @Override

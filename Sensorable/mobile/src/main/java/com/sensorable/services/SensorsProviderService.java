@@ -70,6 +70,7 @@ public class SensorsProviderService extends Service {
         sensorsProvider.subscribeToSensor(Sensor.TYPE_STEP_COUNTER, transmissionListener, SensorManager.SENSOR_DELAY_NORMAL);
         sensorsProvider.subscribeToSensor(Sensor.TYPE_LIGHT, transmissionListener, SensorManager.SENSOR_DELAY_NORMAL);
         sensorsProvider.subscribeToSensor(Sensor.TYPE_ACCELEROMETER, transmissionListener, SensorManager.SENSOR_DELAY_NORMAL);
+        sensorsProvider.subscribeToSensor(Sensor.TYPE_LINEAR_ACCELERATION, transmissionListener, SensorManager.SENSOR_DELAY_NORMAL);
 
         sensorsProvider.subscribeToGps(new LocationListener() {
             @Override

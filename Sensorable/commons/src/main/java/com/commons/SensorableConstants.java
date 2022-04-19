@@ -18,6 +18,9 @@ public class SensorableConstants {
     public final static String SENSORS_PROVIDER_SENDS_SENSORS = "SensorProviderSendsSensors";
     public final static String SENSORS_PROVIDER_SENDS_LOCATION = "SensorsProviderSendsLocation";
 
+    // code to
+    public final static int SENSOR_GPS = 2411;
+
     public final static int COLLECTED_SENSOR_DATA_SIZE = 2048;
     public final static int WEAR_BUFFER_SIZE = 512;
     public final static int EMPATICA_BUFFER_SIZE = 512;

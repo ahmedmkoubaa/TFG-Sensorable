@@ -1,5 +1,7 @@
 use test;
 
+DROP TABLE  IF EXISTS sensors, events_for_adls, events, adls;
+
 /*EXAMPLE OF INSERT:
  INSERT INTO sensors (device_type, sensor_type, values_x, values_y, values_z, timestamp) VALUES (0,21, 67, -1, -1, 1234567981)*/
 CREATE TABLE sensors(
@@ -16,6 +18,43 @@ CREATE TABLE adls (
     id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(100) NOT NULL,
     description VARCHAR(500) NOT NULL
+);
+
+CREATE TABLE events (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    device_type INT NOT NULL,
+    sensor_type INT NOT NULL,
+    pos INT DEFAULT 0,
+    operator ENUM(
+        'GREATER',
+        'LESS',
+        'EQUAL',
+        'GREATER_EQUAL',
+        'LESS_EQUAL',
+        'NOT_EQUAL'
+    ) NOT NULL,
+    operand FLOAT NOT NULL,
+    tag ENUM(
+        'HOME',
+        'FRIENDS',
+        'FAMILY',
+        'SHOPPING',
+        'HOSPITAL',
+        'PHARMACY'
+    ),
+    CHECK (
+        pos >= 0
+        AND pos < 3
+    )
+);
+
+CREATE TABLE events_for_adls (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_adl INT,
+    id_event INT,
+    FOREIGN KEY (id_adl) REFERENCES adls(id) ON DELETE CASCADE,
+    FOREIGN KEY (id_event) REFERENCES events(id) ON DELETE CASCADE,
+    UNIQUE KEY(id_adl, id_event)
 );
 
 INSERT INTO
@@ -58,33 +97,13 @@ VALUES
         "El usuario ha estado cerca de la casa de unos amigos."
     );
 
-CREATE TABLE events (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    device_type INT NOT NULL,
-    sensor_type INT NOT NULL,
-    pos INT DEFAULT 0,
-    operator ENUM(
-        'GREATER',
-        'LESS',
-        'EQUAL',
-        'GREATER_EQUAL',
-        'LESS_EQUAL',
-        'NOT_EQUAL'
-    ) NOT NULL,
-    operand FLOAT NOT NULL,
-    tag ENUM(
-        'HOME',
-        'FRIENDS',
-        'FAMILY',
-        'SHOPPING',
-        'HOSPITAL',
-        'PHARMACY'
-    ),
-    CHECK (
-        pos >= 0
-        AND pos < 3
-    )
-);
+INSERT INTO
+    adls(title, description)
+VALUES
+    (
+        "Desplazamiento por cuenta propia usando un medio de transporte",
+        "Aparentemente se ha usado un medio de transporte para desplazarse."
+    );
 
 /*events for phone call*/
 INSERT INTO
@@ -108,6 +127,8 @@ VALUES
     (0, 1, 2, 'GREATER_EQUAL', -4);
 
 /*----------------------------------------------------------------------*/
+/*events to detect a walk*/
+/*5*/
 INSERT INTO
     events(
         id,
@@ -120,32 +141,26 @@ INSERT INTO
 VALUES
     (5, 0, 19, 0, 'GREATER_EQUAL', 1);
 
+/*6*/
 INSERT INTO
     events(device_type, sensor_type, pos, operator, operand)
 VALUES
-    (0, 10, 0, 'GREATER', 1);
+    (0, 10, 4, 'GREATER', 1);
 
-INSERT INTO
-    events(device_type, sensor_type, pos, operator, operand)
-VALUES
-    (0, 10, 1, 'GREATER', 1);
-
-INSERT INTO
-    events(device_type, sensor_type, pos, operator, operand)
-VALUES
-    (0, 10, 2, 'GREATER', 1);
-
+/*7*/
 INSERT INTO
     events(device_type, sensor_type, pos, operator, operand)
 VALUES
     (0, 21, 0, 'GREATER', 50);
 
+/*8*/
 INSERT INTO
     events(device_type, sensor_type, pos, operator, operand)
 VALUES
     (0, 21, 0, 'LESS', 80);
 
 /*far from home*/
+/*9*/
 INSERT INTO
     events(
         device_type,
@@ -158,6 +173,7 @@ INSERT INTO
 VALUES
     (0, 2411, 3, 'GREATER', 100, "HOME");
 
+/*10*/
 /*close from home*/
 INSERT INTO
     events(
@@ -172,17 +188,20 @@ VALUES
     (0, 2411, 3, 'LESS_EQUAL', 100, "HOME");
 
 /*events for workout detection (the previous were also for this)*/
+/*11*/
 INSERT INTO
     events(device_type, sensor_type, pos, operator, operand)
 VALUES
     (0, 21, 0, 'GREATER_EQUAL', 90);
 
+/*12*/
 INSERT INTO
     events(device_type, sensor_type, pos, operator, operand)
 VALUES
     (0, 21, 0, 'LESS_EQUAL', 150);
 
 /*events for places visiting detection*/
+/*13*/
 INSERT INTO
     events(
         device_type,
@@ -195,7 +214,7 @@ INSERT INTO
 VALUES
     (0, 2411, 3, 'GREATER_EQUAL', 200, "HOME");
 
-/*events for places visiting detection*/
+/*14*/
 INSERT INTO
     events(
         device_type,
@@ -208,14 +227,24 @@ INSERT INTO
 VALUES
     (0, 2411, 3, 'LESS_EQUAL', 200, "FRIENDS");
 
-CREATE TABLE events_for_adls (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    id_adl INT,
-    id_event INT,
-    FOREIGN KEY (id_adl) REFERENCES adls(id) ON DELETE CASCADE,
-    FOREIGN KEY (id_event) REFERENCES events(id) ON DELETE CASCADE,
-    UNIQUE KEY(id_adl, id_event)
-);
+/*15*/
+INSERT INTO
+    events(device_type, sensor_type, pos, operator, operand)
+VALUES
+    (0, 10, 4, 'LESS', -1);
+
+/*events for displacement*/
+/*16*/
+INSERT INTO
+    events(device_type, sensor_type, pos, operator, operand)
+VALUES
+    (0, 10, 4, 'GREATER', 2);
+
+/*17*/
+INSERT INTO
+    events(device_type, sensor_type, pos, operator, operand)
+VALUES
+    (0, 10, 4, 'LESS', -2);
 
 /*events to detect a phone call*/
 INSERT INTO
@@ -264,16 +293,6 @@ INSERT INTO
 VALUES
     (2, 9);
 
-INSERT INTO
-    events_for_adls (id_adl, id_event)
-VALUES
-    (2, 10);
-
-INSERT INTO
-    events_for_adls (id_adl, id_event)
-VALUES
-    (2, 11);
-
 /*events to detect a walk inside house*/
 INSERT INTO
     events_for_adls (id_adl, id_event)
@@ -298,17 +317,7 @@ VALUES
 INSERT INTO
     events_for_adls (id_adl, id_event)
 VALUES
-    (3, 9);
-
-INSERT INTO
-    events_for_adls (id_adl, id_event)
-VALUES
     (3, 10);
-
-INSERT INTO
-    events_for_adls (id_adl, id_event)
-VALUES
-    (3, 12);
 
 /*events to detect workout in the outside*/
 INSERT INTO
@@ -324,26 +333,41 @@ VALUES
 INSERT INTO
     events_for_adls (id_adl, id_event)
 VALUES
-    (4, 7);
-
-INSERT INTO
-    events_for_adls (id_adl, id_event)
-VALUES
-    (4, 8);
-
-INSERT INTO
-    events_for_adls (id_adl, id_event)
-VALUES
-    (4, 13);
-
-INSERT INTO
-    events_for_adls (id_adl, id_event)
-VALUES
-    (4, 14);
+    (4, 9);
 
 INSERT INTO
     events_for_adls (id_adl, id_event)
 VALUES
     (4, 11);
 
+INSERT INTO
+    events_for_adls (id_adl, id_event)
+VALUES
+    (4, 12);
+
 /*events for places visiting detection*/
+INSERT INTO
+    events_for_adls (id_adl, id_event)
+VALUES
+    (5, 13);
+
+INSERT INTO
+    events_for_adls (id_adl, id_event)
+VALUES
+    (5, 14);
+
+INSERT INTO
+    events_for_adls (id_adl, id_event)
+VALUES
+    (5, 6);
+
+/*events for displacement detection*/
+INSERT INTO
+    events_for_adls (id_adl, id_event)
+VALUES
+    (6, 15);
+
+INSERT INTO
+    events_for_adls (id_adl, id_event)
+VALUES
+    (6, 16);

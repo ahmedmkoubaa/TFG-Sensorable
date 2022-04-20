@@ -1,6 +1,6 @@
 import mysql from "mysql"
 import { MQTT_TEST_TOPIC, DATABASE_TABLES, DATABASE_ACTIONS } from "../../sensorable-constants/src"
-import { useMyMqtt } from "../../my-mqtt/src"
+import { useMyMqtt, MyMqttInterface } from "../../my-mqtt/src"
 
 import debug from "debug"
 const log = debug("database-service")
@@ -58,13 +58,35 @@ export function useDatabase() {
       return
     }
 
-    /**    
-    params.query = "INSERT INTO sensors (device_type, sensor_type, values_x, values_y, values_z, timestamp) VALUES ?"
-    params.data = [[0, 21, 67, -1, -1, 1234567981]]
-   */
     database.query(params.query, [params.data], (err, rows) => {
       checkQueryErrors(err)
       params.queryCallback(err, rows)
+    })
+  }
+
+  function informNewAdls(mqtt: MyMqttInterface) {
+    // to inform about new adls
+    doQuery({
+      query: "SELECT * FROM adls",
+      queryCallback: (err, rows) => {
+        mqtt.publish("sensorable/database/adls", rows)
+      },
+    })
+
+    // to inform about new events
+    doQuery({
+      query: "SELECT * FROM events",
+      queryCallback: (err, rows) => {
+        mqtt.publish("sensorable/database/events", rows)
+      },
+    })
+
+    // to inform about new adls and events
+    doQuery({
+      query: "SELECT * FROM events_for_adls",
+      queryCallback: (err, rows) => {
+        mqtt.publish("sensorable/database/events_for_adls", rows)
+      },
     })
   }
 

@@ -8,8 +8,14 @@ import {
 } from "../../sensorable-constants/src"
 
 import debug from "debug"
-import { MqttClient, connect, IPublishPacket } from "mqtt"
+import { MqttClient, connect } from "mqtt"
 const log = debug("my-mqtt")
+
+export interface MyMqttInterface {
+  subscribe(topic: string | string[], callback: () => void): void
+  publish(topic: string | string[], callback: () => void): void
+  onMessage(callback: (topic: string, payload: Buffer) => void): void
+}
 
 export function useMyMqtt() {
   // initialize the client connecting to default url

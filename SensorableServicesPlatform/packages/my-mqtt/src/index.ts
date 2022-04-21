@@ -13,7 +13,7 @@ const log = debug("my-mqtt")
 
 export interface MyMqttInterface {
   subscribe(topic: string | string[], callback: () => void): void
-  publish(topic: string | string[], callback: () => void): void
+  publish(topic: string, payload: string): void
   onMessage(callback: (topic: string, payload: Buffer) => void): void
 }
 

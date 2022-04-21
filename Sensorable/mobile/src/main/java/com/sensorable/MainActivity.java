@@ -41,8 +41,8 @@ import com.sensorable.services.WearTransmissionService;
 import com.sensorable.utils.MobileDatabaseBuilder;
 import com.sensorable.utils.MqttHelper;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 
@@ -101,8 +101,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
                 "Te encuentras bien, sigue así. Recuerda hacer ejercicio y tomarte la medicación cuando toque"
         );
 
-//        testMQTT();
-
+        testMQTT();
 
         // Summary, progressBar and message will be set using a system valoration
         // this system valoration will be developed in the near future
@@ -113,8 +112,6 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
     protected void onStart() {
         super.onStart();
         initializeSensors();
-
-
     }
 
     @Override
@@ -124,24 +121,20 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
     }
 
     private void testMQTT() {
-
+        Log.i("MQTT_RECEIVE_ADLS", "before connection");
         MqttHelper.connect();
 
-        executor.execute(() ->
-        {
-            List<SensorMessageEntity> content = sensorMessageDao.getAll();
-            String payload = "[ ";
+        MqttHelper.subscribe("sensorable/database/adls", mqtt5Publish -> {
 
-            for (int i = 0; i < content.size(); i++) {
-                SensorMessageEntity s = content.get(i);
-                payload += s.toJson() + ",";
+            String payload = new String(mqtt5Publish.getPayloadAsBytes());
+            String tables[] = payload.split("#");
+
+            Log.i("MQTT_RECEIVE_ADLS", "new content " + payload);
+
+            String rows[] = payload.split("\\}\\{");
+            for (String r: rows) {
+                Log.i("MQTT_RECEIVE_ADLS", "new row is" + r);
             }
-
-            payload = payload.substring(0, payload.length() - 1);
-            payload += "]";
-
-            MqttHelper.publish("sensorable/database/sensors/insert", payload.getBytes());
-            Log.i("TEST_MQTT", payload);
 
         });
 

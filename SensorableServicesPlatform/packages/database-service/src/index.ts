@@ -3,6 +3,7 @@ import { MQTT_TEST_TOPIC, DATABASE_TABLES, DATABASE_ACTIONS } from "../../sensor
 import { useMyMqtt, MyMqttInterface } from "../../my-mqtt/src"
 
 import debug from "debug"
+import { getAllJSDocTags } from "typescript"
 const log = debug("database-service")
 
 export interface QueryParams {
@@ -66,28 +67,71 @@ export function useDatabase() {
 
   function informNewAdls(mqtt: MyMqttInterface) {
     // to inform about new adls
-    doQuery({
-      query: "SELECT * FROM adls",
-      queryCallback: (err, rows) => {
-        mqtt.publish("sensorable/database/adls", rows)
-      },
-    })
 
-    // to inform about new events
-    doQuery({
-      query: "SELECT * FROM events",
-      queryCallback: (err, rows) => {
-        mqtt.publish("sensorable/database/events", rows)
-      },
-    })
+    let newAdls = ""
 
-    // to inform about new adls and events
-    doQuery({
-      query: "SELECT * FROM events_for_adls",
-      queryCallback: (err, rows) => {
-        mqtt.publish("sensorable/database/events_for_adls", rows)
-      },
-    })
+    log(
+      "esta es la funcion doQuery: %o",
+      doQuery({
+        query: "SELECT * FROM adls",
+        queryCallback: (err, rows) => {
+          // @ts-ignore
+          rows.forEach((element) => {
+            newAdls += "{" + element.id + "," + element.title + "," + element.description + "}"
+          })
+
+          newAdls += "#"
+
+          // to inform about new events
+          doQuery({
+            query: "SELECT * FROM events",
+            queryCallback: (err, rows) => {
+              // @ts-ignore
+              rows.forEach((element) => {
+                console.log("Los tags son: ", element.tag)
+
+                const res = element.tag !== null ? element.tag : "NULL"
+                console.log("Resultado es este: " + res)
+                newAdls +=
+                  "{" +
+                  element.id +
+                  "," +
+                  element.device_type +
+                  "," +
+                  element.sensor_type +
+                  "," +
+                  element.pos +
+                  "," +
+                  element.operator +
+                  "," +
+                  +element.operand +
+                  "," +
+                  (element.tag !== null ? element.tag : "NULL") +
+                  "}"
+              })
+
+              newAdls += "#"
+
+              // to inform about new adls and events
+              doQuery({
+                query: "SELECT * FROM events_for_adls",
+                queryCallback: (err, rows) => {
+                  // @ts-ignore
+                  rows.forEach((element) => {
+                    console.log(element)
+                    newAdls += "{ " + element.id + "," + element.id_adl + "," + element.id_event + " }"
+                  })
+
+                  // send this to subscribers
+                  log("Estas son las nuevas adls", newAdls)
+                  mqtt.publish("sensorable/database/adls", newAdls)
+                },
+              })
+            },
+          })
+        },
+      })
+    )
   }
 
   return {
@@ -95,6 +139,7 @@ export function useDatabase() {
     checkInitialized,
     connect,
     doQuery,
+    informNewAdls,
   }
 }
 
@@ -175,4 +220,10 @@ export function statrtDatabaseService() {
       }
     }
   })
+
+  // TODO remove the following statements are only tests
+  log("Let's test mqtt")
+  database.informNewAdls(mqtt)
 }
+
+statrtDatabaseService()

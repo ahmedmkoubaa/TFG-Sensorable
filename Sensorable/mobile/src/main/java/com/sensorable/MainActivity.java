@@ -21,10 +21,17 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import com.commons.OperatorType;
 import com.commons.SensorTransmissionCoder;
 import com.commons.SensorableConstants;
 import com.commons.SensorablePermissions;
 import com.commons.SensorsProvider;
+import com.commons.database.AdlDao;
+import com.commons.database.AdlEntity;
+import com.commons.database.EventDao;
+import com.commons.database.EventEntity;
+import com.commons.database.EventForAdlDao;
+import com.commons.database.EventForAdlEntity;
 import com.commons.database.SensorMessageDao;
 import com.commons.database.SensorMessageEntity;
 import com.commons.devicesDetection.BluetoothDevicesProvider;
@@ -41,8 +48,8 @@ import com.sensorable.services.WearTransmissionService;
 import com.sensorable.utils.MobileDatabaseBuilder;
 import com.sensorable.utils.MqttHelper;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 
@@ -127,15 +134,92 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         MqttHelper.subscribe("sensorable/database/adls", mqtt5Publish -> {
 
             String payload = new String(mqtt5Publish.getPayloadAsBytes());
-            String tables[] = payload.split("#");
+            String[] tables = payload.split("#");
 
             Log.i("MQTT_RECEIVE_ADLS", "new content " + payload);
 
-            String rows[] = payload.split("\\}\\{");
-            for (String r: rows) {
+            String adls = tables[0].substring(1, tables[0].length() - 1);
+            String events = tables[1].substring(1, tables[1].length() - 1);
+            String eventsForAdls = tables[2].substring(1, tables[2].length() - 1);
+
+            final String rowsRegex = "\\}\\{";
+
+            ArrayList<AdlEntity> adlEntities = new ArrayList<AdlEntity>();
+            String[] fields;
+
+            // adls
+            for (String r : adls.split(rowsRegex)) {
+                fields = r.split(SensorableConstants.JSON_FIELDS_SEPARATOR);
+                adlEntities.add(new AdlEntity(Integer.parseInt(fields[0]), fields[1], fields[2]));
                 Log.i("MQTT_RECEIVE_ADLS", "new row is" + r);
             }
 
+            AdlDao adlDao = MobileDatabaseBuilder.getDatabase(this).adlDao();
+            executor.execute(() -> {
+                adlDao.insertAll(adlEntities);
+            });
+
+            // events
+            ArrayList<EventEntity> eventEntities = new ArrayList<>();
+
+            for (String r : events.split(rowsRegex)) {
+                fields = r.split(SensorableConstants.JSON_FIELDS_SEPARATOR);
+
+
+                eventEntities.add(
+                        new EventEntity(
+                                Integer.parseInt(fields[0]),
+                                Integer.parseInt(fields[1]),
+                                Integer.parseInt(fields[2]),
+                                Integer.parseInt(fields[3]),
+                                OperatorType.valueOf(fields[4]),
+                                Float.parseFloat(fields[5]),
+                                fields[6]
+                        )
+                );
+
+                Log.i("MQTT_RECEIVE_ADLS", "new row is" + r);
+            }
+
+            EventDao eventDao = MobileDatabaseBuilder.getDatabase(this).eventDao();
+            executor.execute(() -> {
+                eventDao.insertAll(eventEntities);
+            });
+
+            // eventsForAdls
+            ArrayList<EventForAdlEntity> eventsForAdlsEntities = new ArrayList<>();
+            for (String r : eventsForAdls.split(rowsRegex)) {
+                fields = r.split(SensorableConstants.JSON_FIELDS_SEPARATOR);
+                eventsForAdlsEntities.add(
+                        new EventForAdlEntity(
+                                Integer.parseInt(fields[0]),
+                                Integer.parseInt(fields[1]),
+                                Integer.parseInt(fields[2])
+                        )
+                );
+
+                Log.i("MQTT_RECEIVE_ADLS", "new row is" + r);
+            }
+
+            EventForAdlDao eventForAdlDao = MobileDatabaseBuilder.getDatabase(this).eventForAdlDao();
+            executor.execute(() -> {
+                eventForAdlDao.insertAll(eventsForAdlsEntities);
+            });
+
+            executor.execute(() -> {
+                List<AdlEntity> adl = adlDao.getAll();
+                for (AdlEntity a: adl){
+                    Log.i("asdasd", a + "");
+                }
+                List<EventEntity> event = eventDao.getAll();
+                for (EventEntity a: event){
+                    Log.i("asdasd", a + "");
+                }
+                List<EventForAdlEntity> eventForAdl = eventForAdlDao.getAll();
+                for (EventForAdlEntity a: eventForAdl){
+                    Log.i("asdasd", a + "");
+                }
+            });
         });
 
 

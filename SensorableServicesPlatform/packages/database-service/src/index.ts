@@ -1,9 +1,9 @@
 import mysql from "mysql"
 import { MQTT_TEST_TOPIC, DATABASE_TABLES, DATABASE_ACTIONS } from "../../sensorable-constants/src"
 import { useMyMqtt, MyMqttInterface } from "../../my-mqtt/src"
+import { JSON_FIELDS_SEPARATOR } from "../../sensorable-constants/src"
 
 import debug from "debug"
-import { getAllJSDocTags } from "typescript"
 const log = debug("database-service")
 
 export interface QueryParams {
@@ -77,7 +77,14 @@ export function useDatabase() {
         queryCallback: (err, rows) => {
           // @ts-ignore
           rows.forEach((element) => {
-            newAdls += "{" + element.id + "," + element.title + "," + element.description + "}"
+            newAdls +=
+              "{" +
+              element.id +
+              JSON_FIELDS_SEPARATOR +
+              element.title +
+              JSON_FIELDS_SEPARATOR +
+              element.description +
+              "}"
           })
 
           newAdls += "#"
@@ -95,17 +102,17 @@ export function useDatabase() {
                 newAdls +=
                   "{" +
                   element.id +
-                  "," +
+                  JSON_FIELDS_SEPARATOR +
                   element.device_type +
-                  "," +
+                  JSON_FIELDS_SEPARATOR +
                   element.sensor_type +
-                  "," +
+                  JSON_FIELDS_SEPARATOR +
                   element.pos +
-                  "," +
+                  JSON_FIELDS_SEPARATOR +
                   element.operator +
-                  "," +
+                  JSON_FIELDS_SEPARATOR +
                   +element.operand +
-                  "," +
+                  JSON_FIELDS_SEPARATOR +
                   (element.tag !== null ? element.tag : "NULL") +
                   "}"
               })
@@ -119,7 +126,14 @@ export function useDatabase() {
                   // @ts-ignore
                   rows.forEach((element) => {
                     console.log(element)
-                    newAdls += "{ " + element.id + "," + element.id_adl + "," + element.id_event + " }"
+                    newAdls +=
+                      "{" +
+                      element.id +
+                      JSON_FIELDS_SEPARATOR +
+                      element.id_adl +
+                      JSON_FIELDS_SEPARATOR +
+                      element.id_event +
+                      "}"
                   })
 
                   // send this to subscribers

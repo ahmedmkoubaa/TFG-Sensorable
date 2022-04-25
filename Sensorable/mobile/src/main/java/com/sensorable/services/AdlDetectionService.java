@@ -9,7 +9,6 @@ import android.hardware.Sensor;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
@@ -17,21 +16,86 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import com.commons.DeviceType;
 import com.commons.SensorTransmissionCoder;
 import com.commons.SensorableConstants;
+import com.commons.database.AdlDao;
+import com.commons.database.AdlEntity;
+import com.commons.database.EventDao;
+import com.commons.database.EventEntity;
+import com.commons.database.EventForAdlDao;
+import com.commons.database.EventForAdlEntity;
+import com.commons.database.KnownLocationDao;
+import com.commons.database.KnownLocationEntity;
 import com.sensorable.utils.AdlRule;
+import com.sensorable.utils.MobileDatabaseBuilder;
+import com.sensorable.utils.SENSOR_ACTION;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.ExecutorService;
 
 public class AdlDetectionService extends Service {
+    private final ArrayList<EventEntity> events = new ArrayList<>();
+    private final ArrayList<EventForAdlEntity> eventsForAdls = new ArrayList<>();
+    private final ArrayList<AdlEntity> adls = new ArrayList<>();
+    private final ArrayList<KnownLocationEntity> knownLocations = new ArrayList<>();
+
+    private EventDao eventDao;
+    private AdlDao adlDao;
+    private EventForAdlDao eventForAdlDao;
+    private KnownLocationDao knownLocationDao;
+
     private boolean CLOSE_PROXIMITY = false;
+
+    private static boolean equal(float leftOperand, float rightOperand) {
+        return leftOperand == rightOperand;
+    }
+
+    private static boolean notEqual(float leftOperand, float rightOperand) {
+        return leftOperand != rightOperand;
+    }
+
+    private static boolean greaterEqual(float leftOperand, float rightOperand) {
+        return leftOperand >= rightOperand;
+    }
+
+    private static boolean lessEqual(float leftOperand, float rightOperand) {
+        return leftOperand <= rightOperand;
+    }
+
+    private static boolean greater(float leftOperand, float rightOperand) {
+        return leftOperand > rightOperand;
+    }
+
+    private static boolean less(float leftOperand, float rightOperand) {
+        return leftOperand < rightOperand;
+    }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Toast.makeText(this, "ADL DETECTION SERVICE", Toast.LENGTH_SHORT).show();
         initializeMobileReceiver();
+        initializeMobileDatabase();
+
         Log.i("ADL_DETECTION_SERVICE", "initialized adl detection service");
 
         return super.onStartCommand(intent, flags, startId);
+    }
+
+    // initialize data structures from the database
+    private void initializeMobileDatabase() {
+        eventDao = MobileDatabaseBuilder.getDatabase(this).eventDao();
+        eventForAdlDao = MobileDatabaseBuilder.getDatabase(this).eventForAdlDao();
+        adlDao = MobileDatabaseBuilder.getDatabase(this).adlDao();
+
+        knownLocationDao = MobileDatabaseBuilder.getDatabase(this).knownLocationDao();
+
+
+        ExecutorService executor = MobileDatabaseBuilder.getExecutor();
+        executor.execute(() -> {
+            events.addAll(eventDao.getAll());
+            adls.addAll(adlDao.getAll());
+            eventsForAdls.addAll(eventForAdlDao.getAll());
+
+            knownLocations.addAll(knownLocationDao.getAll());
+        });
     }
 
     private void sendMessageToActivity(String msg) {
@@ -61,6 +125,149 @@ public class AdlDetectionService extends Service {
     private void detectAdls(ArrayList<SensorTransmissionCoder.SensorMessage> data) {
         HashMap<Long, ArrayList<SensorTransmissionCoder.SensorMessage>> filteredData = filterData(data);
         searchPatterns(filteredData);
+    }
+
+    private HashMap<Integer, Long> evaluateEvents(HashMap<Long, ArrayList<SensorTransmissionCoder.SensorMessage>> filteredData) {
+        HashMap<Integer, Long> evaluatedEvents = new HashMap<>();
+        SensorOperation operation;
+
+        for (EventEntity e : events) {
+            for (long timestamp : filteredData.keySet()) {
+
+                // Now, we look into the sensor readings and use sensor that we want to
+                // generate conditions and later shoot rules
+                for (SensorTransmissionCoder.SensorMessage s : filteredData.get(timestamp)) {
+
+                    // evaluate the events
+                    if (s.getDeviceType() == e.deviceType && s.getSensorType() == e.sensorType) {
+                        switch (e.operator) {
+                            case EQUAL:
+                                operation = AdlDetectionService::equal;
+                                break;
+
+                            case NOT_EQUAL:
+                                operation = AdlDetectionService::notEqual;
+                                break;
+
+                            case LESS:
+                                operation = AdlDetectionService::less;
+                                break;
+
+                            case LESS_EQUAL:
+                                operation = AdlDetectionService::lessEqual;
+                                break;
+
+                            case GREATER:
+                                operation = AdlDetectionService::greater;
+                                break;
+
+                            case GREATER_EQUAL:
+                                operation = AdlDetectionService::greaterEqual;
+                                break;
+
+                            default:
+                                operation = null;
+                                Log.i("ADL_DETECTION_SERVICE", "not recognized operand, something went wrong");
+                        }
+
+                        boolean evaluation = false;
+
+                        switch (e.pos) {
+                            case SENSOR_ACTION.FIRST:
+                            case SENSOR_ACTION.SECOND:
+                            case SENSOR_ACTION.THIRD:
+
+                                evaluation = operation.operate(s.getValue()[e.pos], e.operand);
+                                break;
+
+                            case SENSOR_ACTION.DISTANCE:
+                                // Let's look for the desired location
+                                for (KnownLocationEntity k : knownLocations) {
+                                    if (k.tag.equals(e.tag)) {
+
+                                        // calculate 3d distance from current gps value (in s) and the known location whose tag fits
+                                        float distance = (float) Math.sqrt(
+                                                Math.pow(s.getValue()[0] - k.altitude, 2) +
+                                                        Math.pow(s.getValue()[1] - k.latitude, 2) +
+                                                        Math.pow(s.getValue()[2] - k.longitude, 2)
+                                        );
+
+                                        if (evaluation = operation.operate(distance, e.operand)) {
+                                            break;
+                                        }
+                                    }
+                                }
+
+                                break;
+                            case SENSOR_ACTION.ANY:
+                                evaluation = operation.operate(s.getValue()[0], e.operand) ||
+                                        operation.operate(s.getValue()[1], e.operand) ||
+                                        operation.operate(s.getValue()[2], e.operand);
+                                break;
+
+                            case SENSOR_ACTION.ALL:
+                                evaluation = operation.operate(s.getValue()[0], e.operand) &&
+                                        operation.operate(s.getValue()[1], e.operand) &&
+                                        operation.operate(s.getValue()[2], e.operand);
+
+                        }
+
+                        if (operation != null) {
+                            if (evaluation) {
+                                evaluatedEvents.put(e.id, timestamp);
+                            }
+                        } else {
+                            Log.i("ADL_DETECTION_SERVICE", "null operation, operator bad specified");
+                        }
+                    }
+                }
+            }
+        }
+
+        return evaluatedEvents;
+    }
+
+    private void searchPatternsExtended(HashMap<Long, ArrayList<SensorTransmissionCoder.SensorMessage>> filteredData) {
+        HashMap<Integer, Long> evaluatedEvents = evaluateEvents(filteredData);
+        HashMap<Integer, Boolean> processedEvaluation = new HashMap<>();
+
+
+        // get adls
+        // get events for each adl
+        // filter the received events and replace the missed ones
+        // evaluate the adl
+
+        for (AdlEntity adl : adls) {
+            ArrayList<Integer> eventsForCurrentAdl = new ArrayList<>();
+
+            // look for the events associated to the current adl
+            for (EventForAdlEntity eventForAdl : eventsForAdls) {
+                if (adl.id == eventForAdl.idAdl) {
+                    eventsForCurrentAdl.add(eventForAdl.idEvent);
+                }
+            }
+
+            // check if the events for current adl were recently evaluated
+            for (int eventId : eventsForCurrentAdl) {
+                // if the event is contained in the recent evaluation then we have it, in other case
+                // it wasn't evaluated so it will be false
+                processedEvaluation.put(eventId, evaluatedEvents.containsKey(eventId) ? true : false);
+            }
+
+            boolean finalAdlEvaluation = true;
+            
+            // this is a criteria to evaluate if an adl is happening or not
+            for (int key: processedEvaluation.keySet()) {
+                finalAdlEvaluation &= processedEvaluation.get(key);
+            }
+
+            if (finalAdlEvaluation) {
+                Log.i("ADL_DETECTION_SERVICE", "adl " + adl.title + " was detected using intersection criteria");
+            }
+
+
+        }
+
     }
 
     private void searchPatterns(HashMap<Long, ArrayList<SensorTransmissionCoder.SensorMessage>> filteredData) {
@@ -178,5 +385,11 @@ public class AdlDetectionService extends Service {
     public IBinder onBind(Intent intent) {
         return null;
     }
+
+    @FunctionalInterface
+    private interface SensorOperation {
+        boolean operate(float leftOperand, float rightOperand);
+    }
+
 
 }

@@ -101,6 +101,19 @@ public class SensorsProviderService extends Service {
 
         intent.putExtra(SensorableConstants.EXTRA_MESSAGE, bundle);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+
+        SensorTransmissionCoder.SensorMessage msg =
+                new SensorTransmissionCoder.SensorMessage(
+                        DeviceType.MOBILE,
+                        SensorableConstants.SENSOR_GPS,
+                        new float[]{
+                                (float) location.getAltitude(),
+                                (float) location.getLatitude(),
+                                (float) location.getLongitude()
+                        }
+                );
+
+        broadcastSensorMessages(msg);
     }
 
     private void broadcastSensorMessages(SensorTransmissionCoder.SensorMessage msg) {

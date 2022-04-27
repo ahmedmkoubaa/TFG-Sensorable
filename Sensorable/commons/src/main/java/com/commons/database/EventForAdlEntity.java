@@ -6,6 +6,8 @@ import androidx.room.Entity;
 import androidx.room.ForeignKey;
 import androidx.room.PrimaryKey;
 
+import java.util.ArrayList;
+
 @Entity(foreignKeys = {
         @ForeignKey(entity = AdlEntity.class,
                 parentColumns = "id",

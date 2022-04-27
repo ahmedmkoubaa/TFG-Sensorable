@@ -1,6 +1,6 @@
 package com.sensorable.utils;
 
-public class SENSOR_ACTION {
+public class SensorAction {
     public final static int FIRST = 0;
     public final static int SECOND = 1;
     public final static int THIRD = 2;

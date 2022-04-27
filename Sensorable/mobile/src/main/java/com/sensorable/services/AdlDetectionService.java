@@ -11,6 +11,7 @@ import android.os.IBinder;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
+import androidx.core.util.Pair;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.commons.DeviceType;
@@ -26,7 +27,7 @@ import com.commons.database.KnownLocationDao;
 import com.commons.database.KnownLocationEntity;
 import com.sensorable.utils.AdlRule;
 import com.sensorable.utils.MobileDatabaseBuilder;
-import com.sensorable.utils.SENSOR_ACTION;
+import com.sensorable.utils.SensorAction;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,6 +38,7 @@ public class AdlDetectionService extends Service {
     private final ArrayList<EventForAdlEntity> eventsForAdls = new ArrayList<>();
     private final ArrayList<AdlEntity> adls = new ArrayList<>();
     private final ArrayList<KnownLocationEntity> knownLocations = new ArrayList<>();
+    private final HashMap<Integer, ArrayList<Pair<Integer, Boolean>>> evaluatedAdls = new HashMap<>();
 
     private EventDao eventDao;
     private AdlDao adlDao;
@@ -93,6 +95,18 @@ public class AdlDetectionService extends Service {
             events.addAll(eventDao.getAll());
             adls.addAll(adlDao.getAll());
             eventsForAdls.addAll(eventForAdlDao.getAll());
+
+            // generation of data structure to evaluate adls
+            adls.forEach(adlEntity -> {
+                ArrayList<Pair<Integer, Boolean>> eventsOfCurrentAdl = new ArrayList<>();
+                eventsForAdls.forEach(eventForAdlEntity -> {
+                    if (eventForAdlEntity.idAdl == adlEntity.id) {
+                        eventsOfCurrentAdl.add(new Pair<>(eventForAdlEntity.idEvent, false));
+                    }
+                });
+
+                evaluatedAdls.put(adlEntity.id, eventsOfCurrentAdl);
+            });
 
             knownLocations.addAll(knownLocationDao.getAll());
         });
@@ -173,14 +187,14 @@ public class AdlDetectionService extends Service {
                         boolean evaluation = false;
 
                         switch (e.pos) {
-                            case SENSOR_ACTION.FIRST:
-                            case SENSOR_ACTION.SECOND:
-                            case SENSOR_ACTION.THIRD:
+                            case SensorAction.FIRST:
+                            case SensorAction.SECOND:
+                            case SensorAction.THIRD:
 
                                 evaluation = operation.operate(s.getValue()[e.pos], e.operand);
                                 break;
 
-                            case SENSOR_ACTION.DISTANCE:
+                            case SensorAction.DISTANCE:
                                 // Let's look for the desired location
                                 for (KnownLocationEntity k : knownLocations) {
                                     if (k.tag.equals(e.tag)) {
@@ -199,13 +213,13 @@ public class AdlDetectionService extends Service {
                                 }
 
                                 break;
-                            case SENSOR_ACTION.ANY:
+                            case SensorAction.ANY:
                                 evaluation = operation.operate(s.getValue()[0], e.operand) ||
                                         operation.operate(s.getValue()[1], e.operand) ||
                                         operation.operate(s.getValue()[2], e.operand);
                                 break;
 
-                            case SENSOR_ACTION.ALL:
+                            case SensorAction.ALL:
                                 evaluation = operation.operate(s.getValue()[0], e.operand) &&
                                         operation.operate(s.getValue()[1], e.operand) &&
                                         operation.operate(s.getValue()[2], e.operand);
@@ -231,42 +245,48 @@ public class AdlDetectionService extends Service {
         HashMap<Integer, Long> evaluatedEvents = evaluateEvents(filteredData);
         HashMap<Integer, Boolean> processedEvaluation = new HashMap<>();
 
+        for (int key : evaluatedAdls.keySet()) {
+            ArrayList<Pair<Integer, Boolean>> currentAdlEvents = evaluatedAdls.get(key);
+            int size = currentAdlEvents.size();
 
-        // get adls
-        // get events for each adl
-        // filter the received events and replace the missed ones
-        // evaluate the adl
-
-        for (AdlEntity adl : adls) {
-            ArrayList<Integer> eventsForCurrentAdl = new ArrayList<>();
-
-            // look for the events associated to the current adl
-            for (EventForAdlEntity eventForAdl : eventsForAdls) {
-                if (adl.id == eventForAdl.idAdl) {
-                    eventsForCurrentAdl.add(eventForAdl.idEvent);
+            for (int i = 0; i < size; i++) {
+                // check if previous adl in the sorted events array occurred, if happened
+                // then we check the next event, the current and update if necessary
+                if (((i > 0 && currentAdlEvents.get(i - 1).second) || size <= 1) &&
+                        evaluatedEvents.containsKey(currentAdlEvents.get(i).first)) {
+                    currentAdlEvents.set(i, new Pair<>(currentAdlEvents.get(i).first, true));
                 }
             }
-
-            // check if the events for current adl were recently evaluated
-            for (int eventId : eventsForCurrentAdl) {
-                // if the event is contained in the recent evaluation then we have it, in other case
-                // it wasn't evaluated so it will be false
-                processedEvaluation.put(eventId, evaluatedEvents.containsKey(eventId) ? true : false);
-            }
-
-            boolean finalAdlEvaluation = true;
-            
-            // this is a criteria to evaluate if an adl is happening or not
-            for (int key: processedEvaluation.keySet()) {
-                finalAdlEvaluation &= processedEvaluation.get(key);
-            }
-
-            if (finalAdlEvaluation) {
-                Log.i("ADL_DETECTION_SERVICE", "adl " + adl.title + " was detected using intersection criteria");
-            }
-
-
         }
+
+//        for (AdlEntity adl : adls) {
+//            ArrayList<Integer> eventsForCurrentAdl = new ArrayList<>();
+//
+//            // look for the events associated to the current adl
+//            for (EventForAdlEntity eventForAdl : eventsForAdls) {
+//                if (adl.id == eventForAdl.idAdl) {
+//                    eventsForCurrentAdl.add(eventForAdl.idEvent);
+//                }
+//            }
+//
+//            // check if the events for current adl were recently evaluated
+//            for (int eventId : eventsForCurrentAdl) {
+//                // if the event is contained in the recent evaluation then we have it, in other case
+//                // it wasn't evaluated so it will be false
+//                processedEvaluation.put(eventId, evaluatedEvents.containsKey(eventId) ? true : false);
+//            }
+//
+//            boolean finalAdlEvaluation = true;
+//
+//            // this is a criteria to evaluate if an adl is happening or not
+//            for (int key: processedEvaluation.keySet()) {
+//                finalAdlEvaluation &= processedEvaluation.get(key);
+//            }
+//
+//            if (finalAdlEvaluation) {
+//                Log.i("ADL_DETECTION_SERVICE", "adl " + adl.title + " was detected using intersection criteria");
+//            }
+//        }
 
     }
 

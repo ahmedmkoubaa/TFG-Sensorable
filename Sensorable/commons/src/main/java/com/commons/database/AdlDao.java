@@ -14,6 +14,9 @@ public interface AdlDao {
     @Query("SELECT * FROM AdlEntity")
     List<AdlEntity> getAll();
 
+    @Query("SELECT * FROM AdlEntity WHERE id = :arg0")
+    AdlEntity getAdlById(int arg0);
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertAll(ArrayList<AdlEntity> adls);
 }

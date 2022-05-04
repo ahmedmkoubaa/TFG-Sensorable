@@ -6,6 +6,8 @@ import androidx.room.RoomDatabase;
 import com.commons.SensorableConstants;
 import com.commons.database.AdlDao;
 import com.commons.database.AdlEntity;
+import com.commons.database.AdlRegistryDao;
+import com.commons.database.AdlRegistryEntity;
 import com.commons.database.BluetoothDeviceDao;
 import com.commons.database.BluetoothDeviceEntity;
 import com.commons.database.DetectedAdlDao;
@@ -26,7 +28,8 @@ import com.commons.database.SensorMessageEntity;
         DetectedAdlEntity.class,
         AdlEntity.class,
         EventEntity.class,
-        EventForAdlEntity.class
+        EventForAdlEntity.class,
+        AdlRegistryEntity.class
 }, version = SensorableConstants.MOBILE_DATABASE_VERSION)
 
 public abstract class MobileDatabase extends RoomDatabase {
@@ -43,6 +46,8 @@ public abstract class MobileDatabase extends RoomDatabase {
     public abstract EventDao eventDao();
 
     public abstract EventForAdlDao eventForAdlDao();
+
+    public abstract AdlRegistryDao adlRegistryDao();
 }
 
 

@@ -119,12 +119,12 @@ VALUES
 INSERT INTO
     events(device_type, sensor_type, pos, operator, operand)
 VALUES
-    (0, 1, 2, 'LESS_EQUAL', 4);
+    (0, 1, 0, 'GREATER_EQUAL', 4);
 
 INSERT INTO
     events(device_type, sensor_type, pos, operator, operand)
 VALUES
-    (0, 1, 2, 'GREATER_EQUAL', -4);
+    (0, 1, 0, 'LESS_EQUAL', -4);
 
 /*----------------------------------------------------------------------*/
 /*events to detect a walk*/

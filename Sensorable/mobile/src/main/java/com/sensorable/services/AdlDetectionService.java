@@ -19,6 +19,8 @@ import com.commons.SensorTransmissionCoder;
 import com.commons.SensorableConstants;
 import com.commons.database.AdlDao;
 import com.commons.database.AdlEntity;
+import com.commons.database.AdlRegistryDao;
+import com.commons.database.AdlRegistryEntity;
 import com.commons.database.EventDao;
 import com.commons.database.EventEntity;
 import com.commons.database.EventForAdlDao;
@@ -30,6 +32,7 @@ import com.sensorable.utils.MobileDatabaseBuilder;
 import com.sensorable.utils.SensorAction;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 
@@ -44,6 +47,8 @@ public class AdlDetectionService extends Service {
     private AdlDao adlDao;
     private EventForAdlDao eventForAdlDao;
     private KnownLocationDao knownLocationDao;
+    private AdlRegistryDao adlRegistryDao;
+    private ExecutorService executor;
 
     private boolean CLOSE_PROXIMITY = false;
 
@@ -88,9 +93,10 @@ public class AdlDetectionService extends Service {
         adlDao = MobileDatabaseBuilder.getDatabase(this).adlDao();
 
         knownLocationDao = MobileDatabaseBuilder.getDatabase(this).knownLocationDao();
+        adlRegistryDao = MobileDatabaseBuilder.getDatabase(this).adlRegistryDao();
 
 
-        ExecutorService executor = MobileDatabaseBuilder.getExecutor();
+        executor = MobileDatabaseBuilder.getExecutor();
         executor.execute(() -> {
             events.addAll(eventDao.getAll());
             adls.addAll(adlDao.getAll());
@@ -244,8 +250,8 @@ public class AdlDetectionService extends Service {
         HashMap<Integer, Boolean> evaluatedEvents = evaluateEvents(filteredData);
 
         // let's take from database adls the events registry owned by each adl
-        for (int key : databaseAdls.keySet()) {
-            ArrayList<Pair<Integer, Boolean>> eventsOfCurrentAdl = databaseAdls.get(key);
+        for (int idCurrentAdl : databaseAdls.keySet()) {
+            ArrayList<Pair<Integer, Boolean>> eventsOfCurrentAdl = databaseAdls.get(idCurrentAdl);
             int size = eventsOfCurrentAdl.size();
 
             for (int i = 0; i < size; i++) {
@@ -268,9 +274,6 @@ public class AdlDetectionService extends Service {
                 }
             }
 
-
-
-
             for (int i = size - 1; i >= 0; i--) {
                 // check if previous adl in the sorted events array occured, if happened
                 // then we check the next event, the current and update if necessary
@@ -280,7 +283,7 @@ public class AdlDetectionService extends Service {
                         eventsOfCurrentAdl.set(i, new Pair<>(event.first, false));
                     } else {
                         // descendant order, only evaluate next events if current was detected false
-                        break;
+                        /*break;*/
                     }
                 }
             }
@@ -295,6 +298,26 @@ public class AdlDetectionService extends Service {
 
             if (evaluation) {
                 Log.i("ADL_DETECTION_SERVICE", "recognized a new adl");
+                executor.execute(() -> {
+                    long currentTime = new Date().getTime();
+
+                    // interval is the current time less 5 minutes, counts made on millis
+                    long sinceTime = currentTime - SensorableConstants.TIME_SINCE_LAST_ADL_DETECTION;
+                    AdlRegistryEntity res = adlRegistryDao.getAdlRegistryAfter(sinceTime);
+
+                    if (res != null) {
+                        res.endTime = currentTime;
+                        adlRegistryDao.update(res);
+                    } else {
+                        adlRegistryDao.insert(
+                                new AdlRegistryEntity(idCurrentAdl, currentTime, currentTime)
+                        );
+                    }
+                });
+
+                // get the last database stored in the adl in the last stage of time
+                // if you get one we update the finish timestamp
+                // else you add a new row to the database
             } else {
                 Log.i("ADL_DETECTION_SERVICE", "no longer recognized an old adl");
 

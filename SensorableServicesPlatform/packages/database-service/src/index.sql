@@ -1,6 +1,6 @@
 use test;
 
-DROP TABLE  IF EXISTS sensors, events_for_adls, events, adls;
+DROP TABLE  IF EXISTS sensors, events_for_adls, events, adls;   
 
 /*EXAMPLE OF INSERT:
  INSERT INTO sensors (device_type, sensor_type, values_x, values_y, values_z, timestamp) VALUES (0,21, 67, -1, -1, 1234567981)*/

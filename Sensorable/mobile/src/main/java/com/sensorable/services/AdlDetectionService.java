@@ -274,20 +274,6 @@ public class AdlDetectionService extends Service {
                 }
             }
 
-            for (int i = size - 1; i >= 0; i--) {
-                // check if previous adl in the sorted events array occured, if happened
-                // then we check the next event, the current and update if necessary
-                Pair<Integer, Boolean> event = eventsOfCurrentAdl.get(i);
-                if (event.second) {
-                    if (evaluatedEvents.containsKey(event.first) && !evaluatedEvents.get(event.first)) {
-                        eventsOfCurrentAdl.set(i, new Pair<>(event.first, false));
-                    } else {
-                        // descendant order, only evaluate next events if current was detected false
-                        /*break;*/
-                    }
-                }
-            }
-
             boolean evaluation = true;
             for (Pair<Integer, Boolean> event : eventsOfCurrentAdl) {
                 evaluation &= event.second;
@@ -298,6 +284,7 @@ public class AdlDetectionService extends Service {
 
             if (evaluation) {
                 Log.i("ADL_DETECTION_SERVICE", "recognized a new adl");
+
                 executor.execute(() -> {
                     long currentTime = new Date().getTime();
 
@@ -314,6 +301,19 @@ public class AdlDetectionService extends Service {
                         );
                     }
                 });
+
+                // check if the adl stills being evaluated (all its events)
+                boolean previousFalse = false;
+                for (int i = 0; i < size; i++) {
+                    // check if previous adl in the sorted events array occured, if happened
+                    // then we check the next event, the current and update if necessary
+                    Pair<Integer, Boolean> event = eventsOfCurrentAdl.get(i);
+
+                    if (previousFalse || (event.second && evaluatedEvents.containsKey(event.first) && !evaluatedEvents.get(event.first))) {
+                        eventsOfCurrentAdl.set(i, new Pair<>(event.first, false));
+                        previousFalse = true;
+                    }
+                }
 
                 // get the last database stored in the adl in the last stage of time
                 // if you get one we update the finish timestamp

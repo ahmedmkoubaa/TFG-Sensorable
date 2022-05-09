@@ -8,17 +8,19 @@
   "private": true,
   "scripts": {
     "build": "tsc",
-    "start": "node ./dist/index.js",
-    "dev": "ts-node ./src/index.ts"
+    "start": "DEBUG='database-service' tsc && node ./dist/database-service/src/index.js",
+    "dev": "DEBUG='database-service' ts-node ./src/index.ts"
   },
   "dependencies": {
     "@types/node": "^17.0.21",
     "debug": "^4.3.4",
     "mqtt": "^4.3.6",
+    "mysql": "^2.18.1",
     "pure-uuid": "^1.6.2",
     "typescript": "^4.6.2"
   },
   "devDependencies": {
+    "@types/mysql": "^2.15.21",
     "ts-node": "^10.7.0"
   }
 }

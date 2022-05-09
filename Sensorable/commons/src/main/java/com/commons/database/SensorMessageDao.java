@@ -22,4 +22,7 @@ public interface SensorMessageDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertAll(ArrayList<SensorMessageEntity> device);
+
+    @Query("DELETE FROM SensorMessageEntity")
+    void deleteAll();
 }

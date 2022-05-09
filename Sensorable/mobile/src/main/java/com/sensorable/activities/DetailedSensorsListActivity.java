@@ -1,7 +1,5 @@
 package com.sensorable.activities;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -13,13 +11,14 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.commons.SensorsProvider;
 import com.sensorable.R;
-import com.sensorable.activities.AdvancedMenuActivity;
 
 public class DetailedSensorsListActivity extends AppCompatActivity {
 
-    private TextView acceleromterTextView;
+    private TextView accelerometerTextView;
     private TextView temperatureTextView;
     private TextView humidityTextView;
     private TextView proximityTextView;
@@ -28,33 +27,28 @@ public class DetailedSensorsListActivity extends AppCompatActivity {
 
     private SensorsProvider sensorsProvider;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detailed_sensors_list);
 
-        // We can pass messages from an intent to other, for now we wont
-
-       initializeAttributtesFromUI();
-
+        initializeAttributtesFromUI();
         sensorsProvider = new SensorsProvider(this);
     }
 
     private void initializeAttributtesFromUI() {
-        acceleromterTextView = (TextView) findViewById(R.id.acceleromterText);
-        temperatureTextView = (TextView) findViewById(R.id.temperatureText);
-        humidityTextView = (TextView) findViewById(R.id.humidityText);
-        proximityTextView = (TextView) findViewById(R.id.proximityText);
-        lightTextView = (TextView) findViewById(R.id.lightText);
-        advancedMenuButton = (Button) findViewById(R.id.advancedMenuButton);
+        accelerometerTextView = findViewById(R.id.acceleromterText);
+        temperatureTextView = findViewById(R.id.temperatureText);
+        humidityTextView = findViewById(R.id.humidityText);
+        proximityTextView = findViewById(R.id.proximityText);
+        lightTextView = findViewById(R.id.lightText);
+        advancedMenuButton = findViewById(R.id.advancedMenuButton);
         advancedMenuButton.setOnClickListener(v -> {
             startActivity(new Intent(
                     this,
                     AdvancedMenuActivity.class)
             );
         });
-
     }
 
     @Override
@@ -67,13 +61,12 @@ public class DetailedSensorsListActivity extends AppCompatActivity {
         sensorsProvider.subscribeToSensor(Sensor.TYPE_ACCELEROMETER, new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent sensorEvent) {
-                String values = "(" +
+                accelerometerTextView.setText("(" +
                         sensorEvent.values[0] + ", " +
                         sensorEvent.values[1] + ", " +
                         sensorEvent.values[2] +
-                        ")";
-
-                acceleromterTextView.setText(values);
+                        ")"
+                );
             }
 
             @Override
@@ -84,13 +77,11 @@ public class DetailedSensorsListActivity extends AppCompatActivity {
         sensorsProvider.subscribeToSensor(Sensor.TYPE_AMBIENT_TEMPERATURE, new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent sensorEvent) {
-                String values = sensorEvent.values[0] + "ºC";
-                temperatureTextView.setText(values);
+                temperatureTextView.setText(sensorEvent.values[0] + " ºC");
             }
 
             @Override
             public void onAccuracyChanged(Sensor sensor, int i) {
-
             }
         }, SensorManager.SENSOR_DELAY_NORMAL);
 

@@ -33,8 +33,8 @@ public class BluetoothOptionsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_bluetooth_options);
 
         initializeDatabase();
-        initializeBluetoothDevicesProvider();
         initializeAttributesFromUI();
+        initializeBluetoothDevicesProvider();
     }
 
     private void initializeDatabase() {
@@ -73,6 +73,8 @@ public class BluetoothOptionsActivity extends AppCompatActivity {
                     Log.i("BLUETOOTH_SCANNER", "added a new bluetooth device");
                 }*/
 
+                // TODO: if the user watches this screen then we want to
+                //  show detected devices in real time
                 updateFromDatabase();
 
             }

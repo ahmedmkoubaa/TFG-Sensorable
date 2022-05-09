@@ -1,68 +1,152 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 exports.__esModule = true;
-exports.runDatabaseService = void 0;
-var mqtt = __importStar(require("mqtt"));
-var pure_uuid_1 = __importDefault(require("pure-uuid"));
+exports.statrtDatabaseService = exports.useDatabase = void 0;
+var mysql_1 = __importDefault(require("mysql"));
 var src_1 = require("../../sensorable-constants/src");
-function runDatabaseService() {
-    console.log("running database service");
-    var connectUrl = src_1.MQTT_CONNECT_URL;
-    console.log("Esta es la url", connectUrl);
-    var client = mqtt.connect(src_1.MQTT_CONNECT_URL, {
-        clientId: new pure_uuid_1["default"](4).toString(),
-        clean: true,
-        connectTimeout: src_1.MQTT_TIMEOUT,
-        username: src_1.MQTT_DEFAULT_PASSWORD,
-        password: src_1.MQTT_DEFAULT_USERNAME,
-        reconnectPeriod: src_1.MQTT_RECONNECT_PERIOD
-    });
-    var topic = src_1.MQTT_TEST_TOPIC;
-    client.on("connect", function () {
-        console.log("database service connected");
-        client.subscribe([topic], function () {
-            console.log("Subscribe to topic '".concat(topic, "'"));
+var src_2 = require("../../my-mqtt/src");
+var debug_1 = __importDefault(require("debug"));
+var log = (0, debug_1["default"])("database-service");
+function useDatabase() {
+    log("called usedatabase");
+    var database;
+    function init() {
+        database = mysql_1["default"].createConnection({
+            host: "127.0.0.1",
+            user: "database-service",
+            password: "12345678",
+            database: "test"
         });
-        client.publish(topic, "I am database service", {
-            qos: 0,
-            retain: false,
-            properties: { responseTopic: "resonseTopic-uuid" }
-        }, function (error) {
-            if (error) {
-                console.error(error);
+    }
+    function checkInitialized() {
+        if (!database) {
+            throw new Error("Error: using unintialized database, call init you use the mentioned database");
+        }
+    }
+    function connect() {
+        checkInitialized();
+        database.connect(function (err) {
+            if (err) {
+                log("Error: can't connect to database server, code: %o", err);
+                throw err;
+            }
+            log("SUCCESS DATABASE CONNECTION!");
+        });
+    }
+    function checkQueryErrors(err, msg) {
+        if (err) {
+            log("Error: while executing a query -> %o optional message is -> %s", err, msg);
+            throw new Error("Error: trying to execute a query and handled the next error");
+        }
+    }
+    function doQuery(params) {
+        var _a;
+        checkInitialized();
+        if (((_a = params.data) === null || _a === void 0 ? void 0 : _a.length) == 0) {
+            log("No params tu push");
+            return;
+        }
+        database.query(params.query, [params.data], function (err, rows) {
+            checkQueryErrors(err);
+            params.queryCallback(err, rows);
+        });
+    }
+    function informNewAdls(mqtt) {
+        // to inform about new adls
+        var newAdls = "";
+        doQuery({
+            query: "SELECT * FROM adls",
+            queryCallback: function (err, rows) {
+                newAdls += rows + "#";
             }
         });
-        client.on("message", function (topic, payload, packet) {
-            var _a;
-            console.log("Received Message:", topic, payload.toString());
-            // we receive this response topic, then is just a request not a publishing
-            console.log((_a = packet.properties) === null || _a === void 0 ? void 0 : _a.responseTopic);
+        // to inform about new events
+        doQuery({
+            query: "SELECT * FROM events",
+            queryCallback: function (err, rows) {
+                mqtt.publish("sensorable/database/events", rows);
+            }
         });
+        // to inform about new adls and events
+        doQuery({
+            query: "SELECT * FROM events_for_adls",
+            queryCallback: function (err, rows) {
+                mqtt.publish("sensorable/database/events_for_adls", rows);
+            }
+        });
+        // send this to subscribers
+        console.log("Estas son las nuevas adls", newAdls);
+        mqtt.publish("sensorable/database/adls", newAdls);
+    }
+    return {
+        init: init,
+        checkInitialized: checkInitialized,
+        connect: connect,
+        doQuery: doQuery
+    };
+}
+exports.useDatabase = useDatabase;
+function statrtDatabaseService() {
+    var database = useDatabase();
+    database.init();
+    database.connect();
+    log("running database service");
+    var mqtt = (0, src_2.useMyMqtt)();
+    mqtt.subscribe(["sensorable/test", "sensorable/database/#"], function () {
+        log("subscribed to topic %o", ["sensorable/test", "sensorable/database/#"]);
+    });
+    mqtt.publish(src_1.MQTT_TEST_TOPIC, "Hello I am database service");
+    mqtt.onMessage(function (topic, payload) {
+        var strPayload = payload.toString();
+        log("received message format string: %o", strPayload);
+        var sensorData;
+        try {
+            sensorData = JSON.parse(strPayload);
+            log("received message format json: %o", sensorData);
+            // An example of expected string format
+            // "{\"device_type\": 15,\"sensor_type\":12, \"sensor_values\": [-12, 15, 91]}"
+            // we have to use this symbol '"' and it's important to put it companied by '\'
+            log("el device es: ", sensorData.device_type);
+            log("el sensor es: ", sensorData.sensor_type);
+        }
+        catch (error) {
+            log("Error, <%s> is not a valid json format", strPayload);
+        }
+        var topics = topic.toLowerCase().split("/");
+        var table = topics[2];
+        for (var s in src_1.DATABASE_TABLES) {
+            if (s === table) {
+                log("FOUND THIS TABLE NAME %s", s);
+            }
+        }
+        if (topics.length > 3) {
+            switch (topics[3]) {
+                case src_1.DATABASE_ACTIONS.INSERT:
+                    log("received insert in topic %s", topic);
+                    database.doQuery({
+                        query: "INSERT INTO " + table + " (device_type, sensor_type, values_x, values_y, values_z, timestamp) VALUES ?",
+                        queryCallback: function (err, rows) {
+                            log("query successfully done mah G, in custom callback");
+                        },
+                        data: sensorData
+                    });
+                    break;
+                case src_1.DATABASE_ACTIONS.SELECT:
+                    log("received select in topic %s", topic);
+                    break;
+                case src_1.DATABASE_ACTIONS.UPDATE:
+                    log("received update in topic %s", topic);
+                    break;
+                case src_1.DATABASE_ACTIONS.DELETE:
+                    log("received delete in topic %s", topic);
+                    break;
+                default:
+                    log("received unknown topic command %s", topic);
+                    break;
+            }
+        }
     });
 }
-exports.runDatabaseService = runDatabaseService;
+exports.statrtDatabaseService = statrtDatabaseService;

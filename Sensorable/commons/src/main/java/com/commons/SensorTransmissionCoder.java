@@ -11,9 +11,10 @@ import java.util.Arrays;
 import java.util.Date;
 
 public class SensorTransmissionCoder {
-    private static Charset charset = StandardCharsets.US_ASCII;
     private static final String FIELDS_SEPARATOR = "~";
     private static final String VALUES_SEPARATOR = ",";
+    private static Charset charset = StandardCharsets.US_ASCII;
+
     public static void setCharset(Charset newCharset) {
         charset = newCharset;
     }
@@ -21,99 +22,15 @@ public class SensorTransmissionCoder {
     public static String getFieldsSeparator() {
         return FIELDS_SEPARATOR;
     }
-    public static String getValuesSeparator() { return VALUES_SEPARATOR; }
 
-    public static class SensorMessage implements Parcelable {
-        private int sensorType;
-        private float[] value;
-        private int deviceType;
-        private long timestamp;
-
-        public SensorMessageEntity toSensorDataMessage() {
-            SensorMessageEntity sensorData = new SensorMessageEntity();
-            sensorData.deviceType = deviceType;
-            sensorData.sensorType = sensorType;
-            sensorData.values = Arrays.toString(value);
-            sensorData.timestamp = timestamp;
-
-            return sensorData;
-        }
-
-        private void initializeSensorMessage(int deviceType, int sensorType, float[] value, long timestamp) {
-            this.sensorType = sensorType;
-            this.value = value;
-            this.deviceType = deviceType;
-            this.timestamp =  timestamp;
-        }
-
-        public SensorMessage(int deviceType, int sensorType, float[] value) {
-            initializeSensorMessage(deviceType, sensorType, value, new Date().getTime());
-        }
-
-        public SensorMessage(int deviceType, int sensorType, float[] value, long timestamp) {
-            initializeSensorMessage(deviceType, sensorType, value, timestamp);
-        }
-
-        public int getDeviceType() {
-            return deviceType;
-        }
-
-        public int getSensorType() {
-            return sensorType;
-        }
-
-        public float[] getValue() {
-            return value;
-        }
-
-        public long getTimestamp() {
-            return timestamp;
-        }
-
-        public String toString() {
-            return deviceType + FIELDS_SEPARATOR +
-                    sensorType + FIELDS_SEPARATOR +
-                    Arrays.toString(value) + FIELDS_SEPARATOR +
-                    timestamp;
-        }
-
-        protected SensorMessage(Parcel in) {
-            deviceType = in.readInt();
-            sensorType = in.readInt();
-            value = decodeValue(in.readString());
-            timestamp = in.readLong();
-        }
-
-        public static final Creator<SensorMessage> CREATOR = new Creator<SensorMessage>() {
-            @Override
-            public SensorMessage createFromParcel(Parcel in) {
-                return new SensorMessage(in);
-            }
-
-            @Override
-            public SensorMessage[] newArray(int size) {
-                return new SensorMessage[size];
-            }
-        };
-
-        @Override
-        public int describeContents() {
-            return 0;
-        }
-
-        @Override
-        public void writeToParcel(Parcel parcel, int i) {
-            parcel.writeInt(deviceType);
-            parcel.writeInt(sensorType);
-            parcel.writeString(codeValue(value));
-            parcel.writeLong(timestamp);
-        }
+    public static String getValuesSeparator() {
+        return VALUES_SEPARATOR;
     }
 
     // it recevies an array and transform it to a String using the value_separator
     private static String codeValue(float[] value) {
         String msg = "";
-        for (Float f: value) {
+        for (Float f : value) {
             msg += f + VALUES_SEPARATOR;
         }
 
@@ -121,12 +38,12 @@ public class SensorTransmissionCoder {
     }
 
     // it receives a value in string format and decodes it to a normal float array
-    private static float [] decodeValue(String value) {
-        String msg[] = value.split(VALUES_SEPARATOR);
+    private static float[] decodeValue(String value) {
+        String[] msg = value.split(VALUES_SEPARATOR);
 
 
         int size = msg.length;
-        float arrayValue[] = new float[size];
+        float[] arrayValue = new float[size];
 
         for (int i = 0; i < size; i++) {
             arrayValue[i] = Float.parseFloat(msg[i]);
@@ -134,7 +51,6 @@ public class SensorTransmissionCoder {
 
         return arrayValue;
     }
-
 
     // it receives the necessary data to form a SensorMessage and it
     // transforms it to String and later to bytes
@@ -168,6 +84,101 @@ public class SensorTransmissionCoder {
 
 
         return (new SensorMessage(deviceType, sensorType, value, timestamp));
+    }
+
+    public static class SensorMessage implements Parcelable {
+        public static final Creator<SensorMessage> CREATOR = new Creator<SensorMessage>() {
+            @Override
+            public SensorMessage createFromParcel(Parcel in) {
+                return new SensorMessage(in);
+            }
+
+            @Override
+            public SensorMessage[] newArray(int size) {
+                return new SensorMessage[size];
+            }
+        };
+        private int sensorType;
+        private float[] value;
+        private int deviceType;
+        private long timestamp;
+
+        public SensorMessage(int deviceType, int sensorType, float[] value) {
+            initializeSensorMessage(deviceType, sensorType, value, new Date().getTime());
+        }
+
+        public SensorMessage(int deviceType, int sensorType, float[] value, long timestamp) {
+            initializeSensorMessage(deviceType, sensorType, value, timestamp);
+        }
+
+        protected SensorMessage(Parcel in) {
+            deviceType = in.readInt();
+            sensorType = in.readInt();
+            value = decodeValue(in.readString());
+            timestamp = in.readLong();
+        }
+
+        public SensorMessageEntity toSensorDataMessage() {
+            SensorMessageEntity sensorData = new SensorMessageEntity();
+            sensorData.deviceType = deviceType;
+            sensorData.sensorType = sensorType;
+            sensorData.valuesX = value[0];
+
+            if (value.length > 1) {
+                sensorData.valuesY = value[1];
+            }
+
+            if (value.length > 2) {
+                sensorData.valuesZ = value[2];
+            }
+
+            sensorData.timestamp = timestamp;
+
+            return sensorData;
+        }
+
+        private void initializeSensorMessage(int deviceType, int sensorType, float[] value, long timestamp) {
+            this.sensorType = sensorType;
+            this.value = value;
+            this.deviceType = deviceType;
+            this.timestamp = timestamp;
+        }
+
+        public int getDeviceType() {
+            return deviceType;
+        }
+
+        public int getSensorType() {
+            return sensorType;
+        }
+
+        public float[] getValue() {
+            return value;
+        }
+
+        public long getTimestamp() {
+            return timestamp;
+        }
+
+        public String toString() {
+            return deviceType + FIELDS_SEPARATOR +
+                    sensorType + FIELDS_SEPARATOR +
+                    Arrays.toString(value) + FIELDS_SEPARATOR +
+                    timestamp;
+        }
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel parcel, int i) {
+            parcel.writeInt(deviceType);
+            parcel.writeInt(sensorType);
+            parcel.writeString(codeValue(value));
+            parcel.writeLong(timestamp);
+        }
     }
 
 

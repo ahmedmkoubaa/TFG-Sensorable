@@ -26,15 +26,9 @@ public class AdlRegistryEntity {
     @ColumnInfo(name = "end")
     public long endTime;
 
-    public AdlRegistryEntity(int idAdl, long startTime, long endTime) {
+    public AdlRegistryEntity(@NonNull int idAdl, @NonNull long startTime, @NonNull long endTime) {
         this.idAdl = idAdl;
         this.startTime = startTime;
         this.endTime = endTime;
     }
-
 }
-
-
-
-
-

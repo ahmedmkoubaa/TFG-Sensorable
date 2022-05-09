@@ -46,8 +46,3 @@ public class EventEntity {
         this.tag = tag;
     }
 }
-
-
-
-
-

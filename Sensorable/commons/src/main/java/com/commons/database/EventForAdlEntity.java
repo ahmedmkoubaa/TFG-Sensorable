@@ -37,8 +37,3 @@ public class EventForAdlEntity {
         this.idEvent = idEvent;
     }
 }
-
-
-
-
-

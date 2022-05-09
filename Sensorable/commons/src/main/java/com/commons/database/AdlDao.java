@@ -20,6 +20,3 @@ public interface AdlDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertAll(ArrayList<AdlEntity> adls);
 }
-
-
-

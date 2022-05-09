@@ -15,10 +15,4 @@ public interface EventDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertAll(ArrayList<EventEntity> events);
-
 }
-
-
-
-
-

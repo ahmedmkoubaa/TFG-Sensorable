@@ -22,3 +22,12 @@ export enum DATABASE_ACTIONS {
   DELETE = "delete",
   SELECT = "select",
 }
+
+export enum SensorAction {
+  FIRST = 0,
+  SECOND = 1,
+  THIRD = 2,
+  DISTANCE = 3,
+  ANY = 4,
+  ALL = 5,
+}

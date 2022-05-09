@@ -15,7 +15,7 @@ public class MobileDatabaseBuilder {
                 context,
                 MobileDatabase.class,
                 SensorableConstants.MOBILE_DATABASE_NAME
-        ).fallbackToDestructiveMigration()
+        ).fallbackToDestructiveMigration() // TODO remove this option
                 .build();
     }
 

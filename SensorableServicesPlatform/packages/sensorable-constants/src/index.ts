@@ -5,6 +5,7 @@ export const MQTT_RECONNECT_PERIOD = 1000
 export const MQTT_DEFAULT_USERNAME = "default-username"
 export const MQTT_DEFAULT_PASSWORD = "default-password"
 export const MQTT_TEST_TOPIC = "sensorable/test"
+export const JSON_FIELDS_SEPARATOR = "|"
 
 export const MQTT_CONNECT_URL = `mqtt://${MQTT_BROKER_HOST}:${MQTT_BROKER_PORT}`
 
@@ -20,4 +21,13 @@ export enum DATABASE_ACTIONS {
   UPDATE = "update",
   DELETE = "delete",
   SELECT = "select",
+}
+
+export enum SensorAction {
+  FIRST = 0,
+  SECOND = 1,
+  THIRD = 2,
+  DISTANCE = 3,
+  ANY = 4,
+  ALL = 5,
 }

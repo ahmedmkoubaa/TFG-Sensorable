@@ -46,18 +46,7 @@ public class DetectedAdlsAdapter extends ArrayAdapter<DetectedAdlEntity> {
         description = adl.description;
         stats = adl.stats;
 
-        Calendar adlCalendar = Calendar.getInstance();
-        adlCalendar.setTimeInMillis(adl.firstTimestamp);
-        timestamp =
-                adlCalendar.get(Calendar.DAY_OF_MONTH) +
-                "/" +
-                adlCalendar.get(Calendar.MONTH) +
-                "/" +
-                adlCalendar.get(Calendar.YEAR) +
-                " " +
-                adlCalendar.get(Calendar.HOUR_OF_DAY) +
-                ":" +
-                adlCalendar.get(Calendar.MINUTE);
+        timestamp = SensorableDates.timestampToDate(adl.firstTimestamp);
 
         LayoutInflater inflater = LayoutInflater.from(context);
         convertView = inflater.inflate(this.resource, parent, false);

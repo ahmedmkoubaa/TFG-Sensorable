@@ -8,8 +8,8 @@
   "private": true,
   "scripts": {
     "build": "tsc",
-    "start": "tsc && node ./dist/index.js",
-    "dev": "ts-node ./src/index.ts"
+    "start": "DEBUG='database-service' tsc && node ./dist/database-service/src/index.js",
+    "dev": "DEBUG='database-service' ts-node ./src/index.ts"
   },
   "dependencies": {
     "@types/node": "^17.0.21",

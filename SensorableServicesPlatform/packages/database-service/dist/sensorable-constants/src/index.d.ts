@@ -6,4 +6,16 @@ export declare const MQTT_DEFAULT_USERNAME = "default-username";
 export declare const MQTT_DEFAULT_PASSWORD = "default-password";
 export declare const MQTT_TEST_TOPIC = "sensorable/test";
 export declare const MQTT_CONNECT_URL: string;
+export declare enum DATABASE_TABLES {
+    SENSORS = "sensors",
+    USERS = "users",
+    ADLS = "adls",
+    EVENTS = "events"
+}
+export declare enum DATABASE_ACTIONS {
+    INSERT = "insert",
+    UPDATE = "update",
+    DELETE = "delete",
+    SELECT = "select"
+}
 //# sourceMappingURL=index.d.ts.map

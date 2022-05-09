@@ -24,8 +24,13 @@ public class MqttHelper {
     public static void connect() {
         final MqttClientState status = client.toBlocking().getState();
 
+
         if (!status.isConnectedOrReconnect()) {
-            client.toBlocking().connect();
+         try {
+             client.toBlocking().connect();
+         } catch (Exception e) {
+             Log.e("MQTT", e.getMessage());
+         }
             Log.i("MQTT", "client not connected, trying to connect");
         }
     }

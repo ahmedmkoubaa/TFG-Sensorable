@@ -18,6 +18,11 @@ public class SensorableConstants {
     public final static String SENSORS_PROVIDER_SENDS_SENSORS = "SensorProviderSendsSensors";
     public final static String SENSORS_PROVIDER_SENDS_LOCATION = "SensorsProviderSendsLocation";
 
+    public final static String JSON_FIELDS_SEPARATOR = "\\|";
+
+    // code number to identify gps as a sensor
+    public final static int SENSOR_GPS = 2411;
+
     public final static int COLLECTED_SENSOR_DATA_SIZE = 2048;
     public final static int WEAR_BUFFER_SIZE = 512;
     public final static int EMPATICA_BUFFER_SIZE = 512;
@@ -25,8 +30,8 @@ public class SensorableConstants {
 
     // for mobile database
     public final static String MOBILE_DATABASE_NAME = "default-mobile-database";
-    public final static int MOBILE_DATABASE_NUMBER_THREADS = 1;
-    public final static int MOBILE_DATABASE_VERSION = 25;
+    public final static int MOBILE_DATABASE_NUMBER_THREADS = 2;
+    public final static int MOBILE_DATABASE_VERSION = 32;
 
     // time that uses the adl detection to service to filter data
     // the lower is this value more accurate is the filtering, it means
@@ -48,5 +53,8 @@ public class SensorableConstants {
     public static final String MQTT_DEFAULT_PASSWORD = "default-password";
     public static final String MQTT_TEST_TOPIC = "sensorable/test";
     public static final String  MQTT_CONNECT_URL = "broker.hivemq.com";
+
+    public static final String DATE_SEPARATOR = "/";
+    public static final String TIME_SEPARATOR = ":";
 
 }

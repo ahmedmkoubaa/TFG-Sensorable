@@ -70,6 +70,7 @@ public class SensorsProviderService extends Service {
         sensorsProvider.subscribeToSensor(Sensor.TYPE_STEP_COUNTER, transmissionListener, SensorManager.SENSOR_DELAY_NORMAL);
         sensorsProvider.subscribeToSensor(Sensor.TYPE_LIGHT, transmissionListener, SensorManager.SENSOR_DELAY_NORMAL);
         sensorsProvider.subscribeToSensor(Sensor.TYPE_ACCELEROMETER, transmissionListener, SensorManager.SENSOR_DELAY_NORMAL);
+        sensorsProvider.subscribeToSensor(Sensor.TYPE_LINEAR_ACCELERATION, transmissionListener, SensorManager.SENSOR_DELAY_NORMAL);
 
         sensorsProvider.subscribeToGps(new LocationListener() {
             @Override
@@ -100,6 +101,19 @@ public class SensorsProviderService extends Service {
 
         intent.putExtra(SensorableConstants.EXTRA_MESSAGE, bundle);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+
+        SensorTransmissionCoder.SensorMessage msg =
+                new SensorTransmissionCoder.SensorMessage(
+                        DeviceType.MOBILE,
+                        SensorableConstants.SENSOR_GPS,
+                        new float[]{
+                                (float) location.getAltitude(),
+                                (float) location.getLatitude(),
+                                (float) location.getLongitude()
+                        }
+                );
+
+        broadcastSensorMessages(msg);
     }
 
     private void broadcastSensorMessages(SensorTransmissionCoder.SensorMessage msg) {

@@ -14,7 +14,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
-// TODO test this entire file using AdlDetectionService
 public class AdlRule {
     private final String title;
     private final String description;

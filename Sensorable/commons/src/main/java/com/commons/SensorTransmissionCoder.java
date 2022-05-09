@@ -39,11 +39,11 @@ public class SensorTransmissionCoder {
 
     // it receives a value in string format and decodes it to a normal float array
     private static float[] decodeValue(String value) {
-        String msg[] = value.split(VALUES_SEPARATOR);
+        String[] msg = value.split(VALUES_SEPARATOR);
 
 
         int size = msg.length;
-        float arrayValue[] = new float[size];
+        float[] arrayValue = new float[size];
 
         for (int i = 0; i < size; i++) {
             arrayValue[i] = Float.parseFloat(msg[i]);

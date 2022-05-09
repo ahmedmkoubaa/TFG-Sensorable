@@ -5,33 +5,128 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.hardware.Sensor;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.core.util.Pair;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import com.commons.DeviceType;
+import com.commons.OperatorType;
 import com.commons.SensorTransmissionCoder;
 import com.commons.SensorableConstants;
-import com.sensorable.utils.AdlRule;
+import com.commons.database.AdlDao;
+import com.commons.database.AdlEntity;
+import com.commons.database.AdlRegistryDao;
+import com.commons.database.AdlRegistryEntity;
+import com.commons.database.EventDao;
+import com.commons.database.EventEntity;
+import com.commons.database.EventForAdlDao;
+import com.commons.database.EventForAdlEntity;
+import com.commons.database.KnownLocationDao;
+import com.commons.database.KnownLocationEntity;
+import com.sensorable.utils.MobileDatabase;
+import com.sensorable.utils.MobileDatabaseBuilder;
+import com.sensorable.utils.SensorAction;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.concurrent.ExecutorService;
 
 public class AdlDetectionService extends Service {
+    private final ArrayList<EventEntity> events = new ArrayList<>();
+    private final ArrayList<EventForAdlEntity> eventsForAdls = new ArrayList<>();
+    private final ArrayList<AdlEntity> adls = new ArrayList<>();
+    private final ArrayList<KnownLocationEntity> knownLocations = new ArrayList<>();
+    private final HashMap<Integer, ArrayList<Pair<Integer, Boolean>>> databaseAdls = new HashMap<>();
+
+    private EventDao eventDao;
+    private AdlDao adlDao;
+    private EventForAdlDao eventForAdlDao;
+    private KnownLocationDao knownLocationDao;
+    private AdlRegistryDao adlRegistryDao;
+    private ExecutorService executor;
+
     private boolean CLOSE_PROXIMITY = false;
+
+    private static boolean equal(float leftOperand, float rightOperand) {
+        return leftOperand == rightOperand;
+    }
+
+    private static boolean notEqual(float leftOperand, float rightOperand) {
+        return leftOperand != rightOperand;
+    }
+
+    private static boolean greaterEqual(float leftOperand, float rightOperand) {
+        return leftOperand >= rightOperand;
+    }
+
+    private static boolean lessEqual(float leftOperand, float rightOperand) {
+        return leftOperand <= rightOperand;
+    }
+
+    private static boolean greater(float leftOperand, float rightOperand) {
+        return leftOperand > rightOperand;
+    }
+
+    private static boolean less(float leftOperand, float rightOperand) {
+        return leftOperand < rightOperand;
+    }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Toast.makeText(this, "ADL DETECTION SERVICE", Toast.LENGTH_SHORT).show();
         initializeMobileReceiver();
+        initializeMobileDatabase();
+
         Log.i("ADL_DETECTION_SERVICE", "initialized adl detection service");
 
         return super.onStartCommand(intent, flags, startId);
+    }
+
+    // initialize data structures from the database
+    private void initializeMobileDatabase() {
+        MobileDatabase database = MobileDatabaseBuilder.getDatabase(this);
+        eventDao = database.eventDao();
+        eventForAdlDao = database.eventForAdlDao();
+        adlDao = database.adlDao();
+
+        knownLocationDao = database.knownLocationDao();
+        adlRegistryDao = database.adlRegistryDao();
+
+        executor = MobileDatabaseBuilder.getExecutor();
+
+        initializeMemoryData();
+
+    }
+
+    // it does a query to local database and extract from it the data storing it in memory
+    // data structures to manage it faster and more efficiently
+    private void initializeMemoryData() {
+        if (executor != null) {
+            executor.execute(() -> {
+                events.addAll(eventDao.getAll());
+                adls.addAll(adlDao.getAll());
+                eventsForAdls.addAll(eventForAdlDao.getAll());
+
+                // generation of data structure to evaluate adls
+                adls.forEach(adlEntity -> {
+                    ArrayList<Pair<Integer, Boolean>> eventsOfCurrentAdl = new ArrayList<>();
+                    eventsForAdls.forEach(eventForAdlEntity -> {
+                        if (eventForAdlEntity.idAdl == adlEntity.id) {
+                            eventsOfCurrentAdl.add(new Pair<>(eventForAdlEntity.idEvent, false));
+                        }
+                    });
+
+                    databaseAdls.put(adlEntity.id, eventsOfCurrentAdl);
+                });
+
+                knownLocations.addAll(knownLocationDao.getAll());
+            });
+        } else {
+            Log.i("ADL_DETECION_SERIVCE", "Executor is null, not able to get data from database at initialization");
+        }
     }
 
     private void sendMessageToActivity(String msg) {
@@ -59,59 +154,202 @@ public class AdlDetectionService extends Service {
     }
 
     private void detectAdls(ArrayList<SensorTransmissionCoder.SensorMessage> data) {
+        // first step to detect adl is filtering the received extra larga amount of data
         HashMap<Long, ArrayList<SensorTransmissionCoder.SensorMessage>> filteredData = filterData(data);
-        searchPatterns(filteredData);
+
+        // second step is evaluate only events and reuse this evaluations
+        HashMap<Integer, Boolean> evaluatedEvents = evaluateEvents(filteredData);
+
+        // third step is evaluate the adls once we got the already evaluated events
+        evaluateAdls(evaluatedEvents);
     }
 
-    private void searchPatterns(HashMap<Long, ArrayList<SensorTransmissionCoder.SensorMessage>> filteredData) {
-        boolean COUNTING_STEPS, LOW_LIGHT, VERTICAL_PHONE;
+    private HashMap<Integer, Boolean> evaluateEvents(HashMap<Long, ArrayList<SensorTransmissionCoder.SensorMessage>> filteredData) {
+        HashMap<Integer, Boolean> evaluatedEvents = new HashMap<>();
+        SensorOperation operation;
 
-        AdlRule phoneCall = new AdlRule(
-                this,
-                "Tuviste una llamada de teléfono",
-                "El sistema detectó una llamada teléfonica. El sistema se basó en tu postura corporal y en la del teléfono"
-        );
+        for (EventEntity e : events) {
+            for (long timestamp : filteredData.keySet()) {
 
-        // For each data stage of time, we are going to process the sensor reading
-        for (long key : filteredData.keySet()) {
+                // Now, we look into the sensor readings and use sensor that we want to
+                // generate conditions and later shoot rules
+                for (SensorTransmissionCoder.SensorMessage s : filteredData.get(timestamp)) {
 
-            LOW_LIGHT = VERTICAL_PHONE = COUNTING_STEPS = false;
+                    // evaluate the events
+                    if (s.getDeviceType() == e.deviceType && s.getSensorType() == e.sensorType) {
+                        operation = switchOperation(e.operator);
 
-            // Now, we look into the sensor readings and use sensor that we want to
-            // generate conditions and later shoot rules
-            for (SensorTransmissionCoder.SensorMessage s : filteredData.get(key)) {
+                        if (operation != null) {
+                            evaluatedEvents.put(
+                                    e.id,
+                                    switchOperate(operation, s.getValue(), e)
+                            );
 
-                // evaluate conditions if we have any sensor
-                switch (s.getDeviceType()) {
-                    case DeviceType.MOBILE:
-                        switch (s.getSensorType()) {
-                            case Sensor.TYPE_HEART_RATE:
-                                break;
-                            case Sensor.TYPE_PROXIMITY:
-                                CLOSE_PROXIMITY = s.getValue()[0] == 0;
-                                Log.i("ADL_DETECTION_SERVICE", "PROXIMITY " + s.getValue()[0]);
-                                break;
-
-                            case Sensor.TYPE_LIGHT:
-                                LOW_LIGHT = s.getValue()[0] <= 15;
-                                Log.i("ADL_DETECTION_SERVICE", "LIGHT " + s.getValue()[0]);
-                                break;
-
-                            case Sensor.TYPE_ACCELEROMETER:
-                                VERTICAL_PHONE = -4 <= s.getValue()[2] && s.getValue()[2] <= 4;
-                                Log.i("ADL_DETECTION_SERVICE", "ACCELEROMETER " + s.getValue()[2]);
-                                break;
-
+                        } else {
+                            Log.i("ADL_DETECTION_SERVICE", "null operation, operator bad specified");
                         }
-                        break;
+                    }
+                }
+            }
+        }
+
+        return evaluatedEvents;
+    }
+
+    private boolean switchOperate(SensorOperation operation, float[] values, EventEntity e) {
+        switch (e.pos) {
+            case SensorAction.FIRST:
+            case SensorAction.SECOND:
+            case SensorAction.THIRD:
+                return operation.operate(values[e.pos], e.operand);
+
+            case SensorAction.DISTANCE:
+                // Let's look for the desired location
+                for (KnownLocationEntity k : knownLocations) {
+                    if (k.tag.equals(e.tag)) {
+
+                        // calculate 3d distance from current gps value (in s) and the known location whose tag fits
+                        float distance = (float) Math.sqrt(
+                                Math.pow(values[0] - k.altitude, 2) +
+                                        Math.pow(values[1] - k.latitude, 2) +
+                                        Math.pow(values[2] - k.longitude, 2)
+                        );
+
+                        // when a true case is found, the loop is finished
+                        if (operation.operate(distance, e.operand)) {
+                            return true;
+                        }
+                    }
                 }
 
-                // rules to shoot
-                boolean[] values = {LOW_LIGHT, CLOSE_PROXIMITY, VERTICAL_PHONE};
-                phoneCall.checkRule(values);
+                return false;
+
+            case SensorAction.ANY:
+                return operation.operate(values[0], e.operand) ||
+                        operation.operate(values[1], e.operand) ||
+                        operation.operate(values[2], e.operand);
+
+
+            case SensorAction.ALL:
+                return operation.operate(values[0], e.operand) &&
+                        operation.operate(values[1], e.operand) &&
+                        operation.operate(values[2], e.operand);
+            default:
+                Log.i("ADL_DETECTION_SERVICE", "received a non expected position in switchOperate");
+                return false;
+        }
+    }
+
+    private SensorOperation switchOperation(OperatorType operator) {
+        switch (operator) {
+            case EQUAL:
+                return AdlDetectionService::equal;
+
+            case NOT_EQUAL:
+                return AdlDetectionService::notEqual;
+
+            case LESS:
+                return AdlDetectionService::less;
+
+            case LESS_EQUAL:
+                return AdlDetectionService::lessEqual;
+
+            case GREATER:
+                return AdlDetectionService::greater;
+
+            case GREATER_EQUAL:
+                return AdlDetectionService::greaterEqual;
+
+            default:
+                Log.i("ADL_DETECTION_SERVICE", "not recognized operand, something went wrong");
+                return null;
+        }
+    }
+
+    private void evaluateAdls(HashMap<Integer, Boolean> evaluatedEvents) {
+        // let's take from database adls the events registry owned by each adl
+        for (int idCurrentAdl : databaseAdls.keySet()) {
+            ArrayList<Pair<Integer, Boolean>> eventsOfCurrentAdl = databaseAdls.get(idCurrentAdl);
+            int size = eventsOfCurrentAdl.size();
+
+            for (int i = 0; i < size; i++) {
+                // check if previous adl in the sorted events array occured, if happened
+                // then we check the next event, the current and update if necessary
+                Pair<Integer, Boolean> event = eventsOfCurrentAdl.get(i);
+                if (!event.second) {
+
+                    // here we want to detect an adl based on the evaluation of the events. An adl
+                    // will be true if all of its events are. The events have to be completed in the
+                    // exact order, so we only check if an event is true if the previous event was.
+                    // If the event is the first or the unique in the array, we supose then that we
+                    // have the previous too. The rest is just to look for the event in the evaluated events
+                    // array and use its last value.
+                    if ((i == 0 || (i > 0 && eventsOfCurrentAdl.get(i - 1).second) || size == 1) &&
+                            evaluatedEvents.containsKey(event.first) && evaluatedEvents.get(event.first)) {
+
+                        eventsOfCurrentAdl.set(i, new Pair<>(event.first, true));
+
+                    } else {
+                        // If the value of the current event is not true
+                        // then we don't need to check the next values because
+                        // they have to be true in the specified order.
+                        break;
+                    }
+                }
+            }
+
+            boolean evaluation = true;
+            for (Pair<Integer, Boolean> event : eventsOfCurrentAdl) {
+                evaluation &= event.second;
+                if (!evaluation) {
+                    break;
+                }
+            }
+
+            if (evaluation) {
+                Log.i("ADL_DETECTION_SERVICE", "recognized a new adl");
+                updateDetectedAdlsRegistries(idCurrentAdl);
+
+                // check if the adl stills being evaluated (all its events)
+                boolean previousFalse = false;
+                for (int i = 0; i < size; i++) {
+                    // check if previous adl in the sorted events array occured, if happened
+                    // then we check the next event, the current and update if necessary
+                    Pair<Integer, Boolean> event = eventsOfCurrentAdl.get(i);
+
+                    if (previousFalse || (event.second && evaluatedEvents.containsKey(event.first) && !evaluatedEvents.get(event.first))) {
+                        eventsOfCurrentAdl.set(i, new Pair<>(event.first, false));
+                        previousFalse = true;
+                    }
+                }
+            } else {
+                Log.i("ADL_DETECTION_SERVICE", "no longer recognized an old adl");
             }
         }
     }
+
+    private void updateDetectedAdlsRegistries(final int idCurrentAdl) {
+        // get the last database stored in the adl in the last stage of time
+        // if you get one we update the finish timestamp
+        // else you add a new row to the database
+        executor.execute(() -> {
+            long currentTime = new Date().getTime();
+
+            // interval is the current time less 5 minutes, counts made on millis
+            long sinceTime = currentTime - SensorableConstants.TIME_SINCE_LAST_ADL_DETECTION;
+            AdlRegistryEntity res = adlRegistryDao.getAdlRegistryAfter(sinceTime);
+
+            if (res != null) {
+                res.endTime = currentTime;
+                adlRegistryDao.update(res);
+            } else {
+                adlRegistryDao.insert(
+                        new AdlRegistryEntity(idCurrentAdl, currentTime, currentTime)
+                );
+            }
+        });
+    }
+
 
     private HashMap<Long, ArrayList<SensorTransmissionCoder.SensorMessage>> filterData(ArrayList<SensorTransmissionCoder.SensorMessage> data) {
         long floorTimestamp;
@@ -178,5 +416,11 @@ public class AdlDetectionService extends Service {
     public IBinder onBind(Intent intent) {
         return null;
     }
+
+    @FunctionalInterface
+    private interface SensorOperation {
+        boolean operate(float leftOperand, float rightOperand);
+    }
+
 
 }

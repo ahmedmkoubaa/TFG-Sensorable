@@ -28,6 +28,7 @@ import com.commons.database.KnownLocationDao;
 import com.commons.database.KnownLocationEntity;
 import com.sensorable.utils.MobileDatabase;
 import com.sensorable.utils.MobileDatabaseBuilder;
+import com.sensorable.utils.MqttHelper;
 import com.sensorable.utils.SensorAction;
 
 import java.util.ArrayList;
@@ -36,11 +37,11 @@ import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 
 public class AdlDetectionService extends Service {
-    private final ArrayList<EventEntity> events = new ArrayList<>();
-    private final ArrayList<EventForAdlEntity> eventsForAdls = new ArrayList<>();
-    private final ArrayList<AdlEntity> adls = new ArrayList<>();
-    private final ArrayList<KnownLocationEntity> knownLocations = new ArrayList<>();
-    private final HashMap<Integer, ArrayList<Pair<Integer, Boolean>>> databaseAdls = new HashMap<>();
+    private ArrayList<EventEntity> events = new ArrayList<>();
+    private ArrayList<EventForAdlEntity> eventsForAdls = new ArrayList<>();
+    private ArrayList<AdlEntity> adls = new ArrayList<>();
+    private ArrayList<KnownLocationEntity> knownLocations = new ArrayList<>();
+    private HashMap<Integer, ArrayList<Pair<Integer, Boolean>>> databaseAdls = new HashMap<>();
 
     private EventDao eventDao;
     private AdlDao adlDao;
@@ -49,7 +50,88 @@ public class AdlDetectionService extends Service {
     private AdlRegistryDao adlRegistryDao;
     private ExecutorService executor;
 
-    private boolean CLOSE_PROXIMITY = false;
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        initializeMobileReceiver();
+        initializeMobileDatabase();
+        initializeMqttClient();
+
+        Log.i("ADL_DETECTION_SERVICE", "initialized adl detection service");
+
+        return super.onStartCommand(intent, flags, startId);
+    }
+
+    private void initializeMqttClient() {
+        Log.i("MQTT_RECEIVE_ADLS", "before connection");
+        MqttHelper.connect();
+
+        MqttHelper.subscribe("sensorable/database/adls", mqtt5Publish -> {
+            String payload = new String(mqtt5Publish.getPayloadAsBytes());
+            String[] tables = payload.split("#");
+
+            Log.i("MQTT_RECEIVE_ADLS", "new content " + payload);
+
+            String stringAdls = tables[0].substring(1, tables[0].length() - 1);
+            String stringEvents = tables[1].substring(1, tables[1].length() - 1);
+            String stringEventsForAdls = tables[2].substring(1, tables[2].length() - 1);
+
+            final String rowsRegex = "\\}\\{";
+
+            ArrayList<AdlEntity> adlEntities = new ArrayList<AdlEntity>();
+            String[] fields;
+
+            // adls
+            for (String r : stringAdls.split(rowsRegex)) {
+                fields = r.split(SensorableConstants.JSON_FIELDS_SEPARATOR);
+                adlEntities.add(new AdlEntity(Integer.parseInt(fields[0]), fields[1], fields[2]));
+                Log.i("MQTT_RECEIVE_ADLS", "new row is" + r);
+            }
+
+            // events
+            ArrayList<EventEntity> eventEntities = new ArrayList<>();
+
+            for (String r : stringEvents.split(rowsRegex)) {
+                fields = r.split(SensorableConstants.JSON_FIELDS_SEPARATOR);
+                eventEntities.add(
+                        new EventEntity(
+                                Integer.parseInt(fields[0]),
+                                Integer.parseInt(fields[1]),
+                                Integer.parseInt(fields[2]),
+                                Integer.parseInt(fields[3]),
+                                OperatorType.valueOf(fields[4]),
+                                Float.parseFloat(fields[5]),
+                                fields[6]
+                        )
+                );
+
+                Log.i("MQTT_RECEIVE_ADLS", "new row is" + r);
+            }
+
+            // eventsForAdls
+            ArrayList<EventForAdlEntity> eventsForAdlsEntities = new ArrayList<>();
+            for (String r : stringEventsForAdls.split(rowsRegex)) {
+                fields = r.split(SensorableConstants.JSON_FIELDS_SEPARATOR);
+                eventsForAdlsEntities.add(
+                        new EventForAdlEntity(
+                                Integer.parseInt(fields[0]),
+                                Integer.parseInt(fields[1]),
+                                Integer.parseInt(fields[2])
+                        )
+                );
+
+                Log.i("MQTT_RECEIVE_ADLS", "new row is" + r);
+            }
+
+            executor.execute(() -> {
+                adlDao.insertAll(adlEntities);
+                eventDao.insertAll(eventEntities);
+                eventForAdlDao.insertAll(eventsForAdlsEntities);
+
+                loadAdlsSchemeFromDatabase();
+            });
+        });
+
+    }
 
     private static boolean equal(float leftOperand, float rightOperand) {
         return leftOperand == rightOperand;
@@ -75,15 +157,7 @@ public class AdlDetectionService extends Service {
         return leftOperand < rightOperand;
     }
 
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        initializeMobileReceiver();
-        initializeMobileDatabase();
 
-        Log.i("ADL_DETECTION_SERVICE", "initialized adl detection service");
-
-        return super.onStartCommand(intent, flags, startId);
-    }
 
     // initialize data structures from the database
     private void initializeMobileDatabase() {
@@ -97,13 +171,12 @@ public class AdlDetectionService extends Service {
 
         executor = MobileDatabaseBuilder.getExecutor();
 
-        initializeMemoryData();
-
+        loadAdlsSchemeFromDatabase();
     }
 
     // it does a query to local database and extract from it the data storing it in memory
     // data structures to manage it faster and more efficiently
-    private void initializeMemoryData() {
+    private void loadAdlsSchemeFromDatabase() {
         if (executor != null) {
             executor.execute(() -> {
                 events.addAll(eventDao.getAll());
@@ -401,13 +474,6 @@ public class AdlDetectionService extends Service {
             }
         }
 
-/*      TODO remove this comment once we are confident about its usage
-        for (long key : categorization.keySet()) {
-            for (SensorTransmissionCoder.SensorMessage s : categorization.get(key)) {
-                Log.i("ADL_DETECTION_SERVICE", " filtered data -> " + s.toString());
-            }
-        }*/
-
         return categorization;
     }
 
@@ -421,6 +487,4 @@ public class AdlDetectionService extends Service {
     private interface SensorOperation {
         boolean operate(float leftOperand, float rightOperand);
     }
-
-
 }

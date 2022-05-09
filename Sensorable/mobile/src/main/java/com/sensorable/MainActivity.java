@@ -205,18 +205,6 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
             executor.execute(() -> {
                 eventForAdlDao.insertAll(eventsForAdlsEntities);
             });
-
-            executor.execute(() -> {
-                List<AdlEntity> adl = adlDao.getAll();
-                for (AdlEntity a: adl){
-                }
-                List<EventEntity> event = eventDao.getAll();
-                for (EventEntity a: event){
-                }
-                List<EventForAdlEntity> eventForAdl = eventForAdlDao.getAll();
-                for (EventForAdlEntity a: eventForAdl){
-                }
-            });
         });
 
 

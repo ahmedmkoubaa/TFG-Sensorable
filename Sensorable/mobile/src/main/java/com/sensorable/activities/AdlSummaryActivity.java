@@ -62,8 +62,7 @@ public class AdlSummaryActivity extends AppCompatActivity {
             }
 
 
-            detectedAdlsAdapter.notifyDataSetChanged();
-
+            runOnUiThread(() -> detectedAdlsAdapter.notifyDataSetChanged());
 
             Log.i("DETECTED_ADL", "updated from database");
         });

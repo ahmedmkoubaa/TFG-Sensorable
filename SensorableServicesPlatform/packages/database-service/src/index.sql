@@ -1,6 +1,9 @@
 use test;
 
-DROP TABLE  IF EXISTS sensors, events_for_adls, events, adls;   
+DROP TABLE IF EXISTS sensors,
+events_for_adls,
+events,
+adls;
 
 /*EXAMPLE OF INSERT:
  INSERT INTO sensors (device_type, sensor_type, values_x, values_y, values_z, timestamp) VALUES (0,21, 67, -1, -1, 1234567981)*/
@@ -371,3 +374,33 @@ INSERT INTO
     events_for_adls (id_adl, id_event)
 VALUES
     (6, 16);
+
+/*Example: how to add a new adl*/
+/*INSERT INTO
+    adls(title, description)
+VALUES
+    (
+        "Agitado teléfono",
+        "Hemos visto que has agitado el teléfono ferozmente, se  ha detectado pues esta pseudoadl de prueba"
+    );
+
+INSERT INTO
+    events(device_type, sensor_type, pos, operator, operand)
+VALUES
+    (0, 10, 4, 'GREATER', 5);
+
+INSERT INTO
+    events(device_type, sensor_type, pos, operator, operand)
+VALUES
+    (0, 10, 4, 'LESS', -5);
+
+INSERT INTO
+    events_for_adls (id_adl, id_event, version)
+VALUES
+    (7, 17, 1);
+
+INSERT INTO
+    events_for_adls (id_adl, id_event)
+VALUES
+    (7, 18, 1);
+    */

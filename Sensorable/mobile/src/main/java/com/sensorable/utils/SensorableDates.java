@@ -10,7 +10,7 @@ public class SensorableDates {
         adlCalendar.setTimeInMillis(timestamp);
         return adlCalendar.get(Calendar.DAY_OF_MONTH) +
                 SensorableConstants.DATE_SEPARATOR +
-                adlCalendar.get(Calendar.MONTH) +
+                adlCalendar.get(Calendar.MONTH) + 1 +
                 SensorableConstants.DATE_SEPARATOR +
                 adlCalendar.get(Calendar.YEAR) +
                 " " +

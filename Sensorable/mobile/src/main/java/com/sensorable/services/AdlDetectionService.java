@@ -37,11 +37,11 @@ import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 
 public class AdlDetectionService extends Service {
-    private ArrayList<EventEntity> events = new ArrayList<>();
-    private ArrayList<EventForAdlEntity> eventsForAdls = new ArrayList<>();
-    private ArrayList<AdlEntity> adls = new ArrayList<>();
-    private ArrayList<KnownLocationEntity> knownLocations = new ArrayList<>();
-    private HashMap<Integer, ArrayList<Pair<Integer, Boolean>>> databaseAdls = new HashMap<>();
+    private final ArrayList<EventEntity> events = new ArrayList<>();
+    private final ArrayList<EventForAdlEntity> eventsForAdls = new ArrayList<>();
+    private final ArrayList<AdlEntity> adls = new ArrayList<>();
+    private final ArrayList<KnownLocationEntity> knownLocations = new ArrayList<>();
+    private final HashMap<Integer, ArrayList<Pair<Integer, Boolean>>> databaseAdls = new HashMap<>();
 
     private EventDao eventDao;
     private AdlDao adlDao;
@@ -49,6 +49,30 @@ public class AdlDetectionService extends Service {
     private KnownLocationDao knownLocationDao;
     private AdlRegistryDao adlRegistryDao;
     private ExecutorService executor;
+
+    private static boolean equal(float leftOperand, float rightOperand) {
+        return leftOperand == rightOperand;
+    }
+
+    private static boolean notEqual(float leftOperand, float rightOperand) {
+        return leftOperand != rightOperand;
+    }
+
+    private static boolean greaterEqual(float leftOperand, float rightOperand) {
+        return leftOperand >= rightOperand;
+    }
+
+    private static boolean lessEqual(float leftOperand, float rightOperand) {
+        return leftOperand <= rightOperand;
+    }
+
+    private static boolean greater(float leftOperand, float rightOperand) {
+        return leftOperand > rightOperand;
+    }
+
+    private static boolean less(float leftOperand, float rightOperand) {
+        return leftOperand < rightOperand;
+    }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -123,6 +147,10 @@ public class AdlDetectionService extends Service {
             }
 
             executor.execute(() -> {
+                adlDao.deleteAll();
+                eventDao.deleteAll();
+                eventForAdlDao.deleteAll();
+
                 adlDao.insertAll(adlEntities);
                 eventDao.insertAll(eventEntities);
                 eventForAdlDao.insertAll(eventsForAdlsEntities);
@@ -132,32 +160,6 @@ public class AdlDetectionService extends Service {
         });
 
     }
-
-    private static boolean equal(float leftOperand, float rightOperand) {
-        return leftOperand == rightOperand;
-    }
-
-    private static boolean notEqual(float leftOperand, float rightOperand) {
-        return leftOperand != rightOperand;
-    }
-
-    private static boolean greaterEqual(float leftOperand, float rightOperand) {
-        return leftOperand >= rightOperand;
-    }
-
-    private static boolean lessEqual(float leftOperand, float rightOperand) {
-        return leftOperand <= rightOperand;
-    }
-
-    private static boolean greater(float leftOperand, float rightOperand) {
-        return leftOperand > rightOperand;
-    }
-
-    private static boolean less(float leftOperand, float rightOperand) {
-        return leftOperand < rightOperand;
-    }
-
-
 
     // initialize data structures from the database
     private void initializeMobileDatabase() {
@@ -179,6 +181,10 @@ public class AdlDetectionService extends Service {
     private void loadAdlsSchemeFromDatabase() {
         if (executor != null) {
             executor.execute(() -> {
+                events.clear();
+                adls.clear();
+                eventsForAdls.clear();
+
                 events.addAll(eventDao.getAll());
                 adls.addAll(adlDao.getAll());
                 eventsForAdls.addAll(eventForAdlDao.getAll());
@@ -345,18 +351,22 @@ public class AdlDetectionService extends Service {
             ArrayList<Pair<Integer, Boolean>> eventsOfCurrentAdl = databaseAdls.get(idCurrentAdl);
             int size = eventsOfCurrentAdl.size();
 
+            boolean evaluation = true;
             for (int i = 0; i < size; i++) {
                 // check if previous adl in the sorted events array occured, if happened
                 // then we check the next event, the current and update if necessary
                 Pair<Integer, Boolean> event = eventsOfCurrentAdl.get(i);
                 if (!event.second) {
 
-                    // here we want to detect an adl based on the evaluation of the events. An adl
-                    // will be true if all of its events are. The events have to be completed in the
-                    // exact order, so we only check if an event is true if the previous event was.
-                    // If the event is the first or the unique in the array, we supose then that we
-                    // have the previous too. The rest is just to look for the event in the evaluated events
-                    // array and use its last value.
+                    /* Here we want to detect an adl based on the evaluation of the events. An adl
+                     * will be true if all of its events are. The events have to be completed in the
+                     * exact order they were associated to the adl, so we only check if an event is
+                     * true if the previous event was.
+                     * If the event is the first or the unique in the array, we supose then that we
+                     * have the previous too (becase there isn't any previous). After this just look for
+                     * the event in the evaluated events array and use its last value.
+                     */
+
                     if ((i == 0 || (i > 0 && eventsOfCurrentAdl.get(i - 1).second) || size == 1) &&
                             evaluatedEvents.containsKey(event.first) && evaluatedEvents.get(event.first)) {
 
@@ -366,20 +376,14 @@ public class AdlDetectionService extends Service {
                         // If the value of the current event is not true
                         // then we don't need to check the next values because
                         // they have to be true in the specified order.
+                        evaluation = false;
                         break;
                     }
                 }
             }
 
-            boolean evaluation = true;
-            for (Pair<Integer, Boolean> event : eventsOfCurrentAdl) {
-                evaluation &= event.second;
-                if (!evaluation) {
-                    break;
-                }
-            }
-
-            if (evaluation) {
+            
+            if (size > 0 && evaluation) {
                 Log.i("ADL_DETECTION_SERVICE", "recognized a new adl");
                 updateDetectedAdlsRegistries(idCurrentAdl);
 

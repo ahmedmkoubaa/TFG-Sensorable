@@ -1,5 +1,10 @@
 import mysql from "mysql"
-import { MQTT_TEST_TOPIC, DATABASE_TABLES, DATABASE_ACTIONS } from "../../sensorable-constants/src"
+import {
+  MQTT_TEST_TOPIC,
+  DATABASE_TABLES,
+  DATABASE_ACTIONS,
+  JSON_TABLES_SEPARATOR,
+} from "../../sensorable-constants/src"
 import { useMyMqtt, MyMqttInterface } from "../../my-mqtt/src"
 import { JSON_FIELDS_SEPARATOR } from "../../sensorable-constants/src"
 
@@ -87,7 +92,7 @@ export function useDatabase() {
               "}"
           })
 
-          newAdls += "#"
+          newAdls += JSON_TABLES_SEPARATOR
 
           // to inform about new events
           doQuery({
@@ -117,7 +122,7 @@ export function useDatabase() {
                   "}"
               })
 
-              newAdls += "#"
+              newAdls += JSON_TABLES_SEPARATOR
 
               // to inform about new adls and events
               doQuery({

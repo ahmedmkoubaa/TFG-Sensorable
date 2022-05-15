@@ -2,9 +2,7 @@ package com.commons.database;
 
 import androidx.room.Dao;
 import androidx.room.Insert;
-import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
-import androidx.room.Update;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +15,9 @@ public interface AdlDao {
     @Query("SELECT * FROM AdlEntity WHERE id = :arg0")
     AdlEntity getAdlById(int arg0);
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert
     void insertAll(ArrayList<AdlEntity> adls);
+
+    @Query("DELETE FROM AdlEntity")
+    void deleteAll();
 }

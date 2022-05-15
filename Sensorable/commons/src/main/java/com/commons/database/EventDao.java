@@ -13,6 +13,9 @@ public interface EventDao {
     @Query("SELECT * FROM EventEntity")
     List<EventEntity> getAll();
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert()
     void insertAll(ArrayList<EventEntity> events);
+
+    @Query("DELETE FROM EventEntity")
+    void deleteAll();
 }

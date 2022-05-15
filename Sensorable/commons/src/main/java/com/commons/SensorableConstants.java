@@ -18,7 +18,9 @@ public class SensorableConstants {
     public final static String SENSORS_PROVIDER_SENDS_SENSORS = "SensorProviderSendsSensors";
     public final static String SENSORS_PROVIDER_SENDS_LOCATION = "SensorsProviderSendsLocation";
 
+    public final static String JSON_TABLES_SEPARATOR = "#";
     public final static String JSON_FIELDS_SEPARATOR = "\\|";
+    public final static String JSON_ROWS_SEPARATOR = "\\}\\{";
 
     // code number to identify gps as a sensor
     public final static int SENSOR_GPS = 2411;
@@ -46,13 +48,13 @@ public class SensorableConstants {
 
     // for mqtt client communication
     public static final int MQTT_BROKER_PORT = 1883;
-    public static  final String MQTT_BROKER_HOST = "192.168.1.108";
+    public static final String MQTT_BROKER_HOST = "192.168.1.108";
     public static final int QTT_TIMEOUT = 4000;
-    public static final int  MQTT_RECONNECT_PERIOD = 1000;
+    public static final int MQTT_RECONNECT_PERIOD = 1000;
     public static final String MQTT_DEFAULT_USERNAME = "default-username";
     public static final String MQTT_DEFAULT_PASSWORD = "default-password";
     public static final String MQTT_TEST_TOPIC = "sensorable/test";
-    public static final String  MQTT_CONNECT_URL = "broker.hivemq.com";
+    public static final String MQTT_CONNECT_URL = "broker.hivemq.com";
 
     public static final String DATE_SEPARATOR = "/";
     public static final String TIME_SEPARATOR = ":";

@@ -91,7 +91,7 @@ public class AdlDetectionService extends Service {
 
         MqttHelper.subscribe("sensorable/database/adls", mqtt5Publish -> {
             String payload = new String(mqtt5Publish.getPayloadAsBytes());
-            String[] tables = payload.split("#");
+            String[] tables = payload.split(SensorableConstants.JSON_TABLES_SEPARATOR);
 
             Log.i("MQTT_RECEIVE_ADLS", "new content " + payload);
 
@@ -99,52 +99,10 @@ public class AdlDetectionService extends Service {
             String stringEvents = tables[1].substring(1, tables[1].length() - 1);
             String stringEventsForAdls = tables[2].substring(1, tables[2].length() - 1);
 
-            final String rowsRegex = "\\}\\{";
+            ArrayList<AdlEntity> adlEntities = composeTableAdls(stringAdls);
+            ArrayList<EventEntity> eventEntities = composeTableEvents(stringEvents);
+            ArrayList<EventForAdlEntity> eventsForAdlsEntities = composeTableForEvents(stringEventsForAdls);
 
-            ArrayList<AdlEntity> adlEntities = new ArrayList<AdlEntity>();
-            String[] fields;
-
-            // adls
-            for (String r : stringAdls.split(rowsRegex)) {
-                fields = r.split(SensorableConstants.JSON_FIELDS_SEPARATOR);
-                adlEntities.add(new AdlEntity(Integer.parseInt(fields[0]), fields[1], fields[2]));
-                Log.i("MQTT_RECEIVE_ADLS", "new row is" + r);
-            }
-
-            // events
-            ArrayList<EventEntity> eventEntities = new ArrayList<>();
-
-            for (String r : stringEvents.split(rowsRegex)) {
-                fields = r.split(SensorableConstants.JSON_FIELDS_SEPARATOR);
-                eventEntities.add(
-                        new EventEntity(
-                                Integer.parseInt(fields[0]),
-                                Integer.parseInt(fields[1]),
-                                Integer.parseInt(fields[2]),
-                                Integer.parseInt(fields[3]),
-                                OperatorType.valueOf(fields[4]),
-                                Float.parseFloat(fields[5]),
-                                fields[6]
-                        )
-                );
-
-                Log.i("MQTT_RECEIVE_ADLS", "new row is" + r);
-            }
-
-            // eventsForAdls
-            ArrayList<EventForAdlEntity> eventsForAdlsEntities = new ArrayList<>();
-            for (String r : stringEventsForAdls.split(rowsRegex)) {
-                fields = r.split(SensorableConstants.JSON_FIELDS_SEPARATOR);
-                eventsForAdlsEntities.add(
-                        new EventForAdlEntity(
-                                Integer.parseInt(fields[0]),
-                                Integer.parseInt(fields[1]),
-                                Integer.parseInt(fields[2])
-                        )
-                );
-
-                Log.i("MQTT_RECEIVE_ADLS", "new row is" + r);
-            }
 
             executor.execute(() -> {
                 adlDao.deleteAll();
@@ -155,10 +113,67 @@ public class AdlDetectionService extends Service {
                 eventDao.insertAll(eventEntities);
                 eventForAdlDao.insertAll(eventsForAdlsEntities);
 
-                loadAdlsSchemeFromDatabase();
+                loadAdlsScheme();
             });
         });
 
+    }
+
+    private ArrayList<AdlEntity> composeTableAdls(final String stringAdls) {
+        ArrayList<AdlEntity> adlEntities = new ArrayList<>();
+        String[] fields;
+
+        for (String r : stringAdls.split(SensorableConstants.JSON_ROWS_SEPARATOR)) {
+            fields = r.split(SensorableConstants.JSON_FIELDS_SEPARATOR);
+            adlEntities.add(new AdlEntity(Integer.parseInt(fields[0]), fields[1], fields[2]));
+            Log.i("MQTT_RECEIVE_ADLS", "new row is" + r);
+        }
+
+        return adlEntities;
+    }
+
+    private ArrayList<EventEntity> composeTableEvents(final String stringEvents) {
+        ArrayList<EventEntity> eventEntities = new ArrayList<>();
+        String[] fields;
+
+        for (String r : stringEvents.split(SensorableConstants.JSON_ROWS_SEPARATOR)) {
+            fields = r.split(SensorableConstants.JSON_FIELDS_SEPARATOR);
+            eventEntities.add(
+                    new EventEntity(
+                            Integer.parseInt(fields[0]),
+                            Integer.parseInt(fields[1]),
+                            Integer.parseInt(fields[2]),
+                            Integer.parseInt(fields[3]),
+                            OperatorType.valueOf(fields[4]),
+                            Float.parseFloat(fields[5]),
+                            fields[6]
+                    )
+            );
+
+            Log.i("MQTT_RECEIVE_ADLS", "new row is" + r);
+        }
+
+        return eventEntities;
+    }
+
+    private ArrayList<EventForAdlEntity> composeTableForEvents(final String stringEventsForAdls) {
+        ArrayList<EventForAdlEntity> eventsForAdlsEntities = new ArrayList<>();
+        String[] fields;
+
+        for (String r : stringEventsForAdls.split(SensorableConstants.JSON_ROWS_SEPARATOR)) {
+            fields = r.split(SensorableConstants.JSON_FIELDS_SEPARATOR);
+            eventsForAdlsEntities.add(
+                    new EventForAdlEntity(
+                            Integer.parseInt(fields[0]),
+                            Integer.parseInt(fields[1]),
+                            Integer.parseInt(fields[2])
+                    )
+            );
+
+            Log.i("MQTT_RECEIVE_ADLS", "new row is" + r);
+        }
+
+        return eventsForAdlsEntities;
     }
 
     // initialize data structures from the database
@@ -173,12 +188,12 @@ public class AdlDetectionService extends Service {
 
         executor = MobileDatabaseBuilder.getExecutor();
 
-        loadAdlsSchemeFromDatabase();
+        loadAdlsScheme();
     }
 
     // it does a query to local database and extract from it the data storing it in memory
     // data structures to manage it faster and more efficiently
-    private void loadAdlsSchemeFromDatabase() {
+    private void loadAdlsScheme() {
         if (executor != null) {
             executor.execute(() -> {
                 events.clear();
@@ -382,7 +397,7 @@ public class AdlDetectionService extends Service {
                 }
             }
 
-            
+
             if (size > 0 && evaluation) {
                 Log.i("ADL_DETECTION_SERVICE", "recognized a new adl");
                 updateDetectedAdlsRegistries(idCurrentAdl);

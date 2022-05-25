@@ -15,6 +15,8 @@ import androidx.annotation.Nullable;
 import com.commons.SensorableConstants;
 import com.commons.database.BluetoothDeviceDao;
 import com.commons.database.BluetoothDeviceEntity;
+import com.commons.database.BluetoothDeviceRegistryDao;
+import com.commons.database.BluetoothDeviceRegistryEntity;
 import com.commons.devicesDetection.BluetoothDevicesProvider;
 import com.sensorable.utils.MobileDatabaseBuilder;
 
@@ -27,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 public class BluetoothDetectionService extends Service {
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private BluetoothDeviceDao bluetoothDeviceDao;
+    private BluetoothDeviceRegistryDao bluetoothDeviceRegistryDao;
     private ExecutorService executor;
 
     @Override
@@ -45,72 +48,77 @@ public class BluetoothDetectionService extends Service {
 
     private void initializeBluetoothProvider() {
         // Register of local receiver to listen to found bluetooth devices
-        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         registerReceiver(new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-
                 Log.i("BLUETOOTH_DETECTION_SERVICE", "receiving from bluetooth");
-                long currentTimestamp = new Date().getTime();
 
                 String action = intent.getAction();
                 if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-                    // Discovery has found a device. Get the BluetoothDevice
-                    // object and its info from the Intent.
-                    BluetoothDevice foundDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-
-                    executor.execute(() -> {
-                        BluetoothDeviceEntity searched = bluetoothDeviceDao.findByAddress(foundDevice.getAddress());
-
-                        if (searched == null) {
-                            // insert a new detected device into the database
-                            executor.execute(() -> {
-                                bluetoothDeviceDao.insert(new BluetoothDeviceEntity(foundDevice, currentTimestamp));
-                                Log.i("BLUETOOTH_DETECTION_SERVICE", "added a new bluetooth device");
-                            });
-                        } else {
-
-                            // if the time elapsed since last detection is below the limit that we've defined
-                            // then we update and still having a connection
-
-                            long elapsedTime = (currentTimestamp - searched.lastTimestamp);
-
-                            if (elapsedTime <= SensorableConstants.TIME_SINCE_LAST_BLUETOOTH_DETECTION) {
-
-                                executor.execute(() -> {
-                                    searched.lastTimestamp = currentTimestamp;
-                                    bluetoothDeviceDao.updateDevice(searched);
-                                    Log.i(
-                                            "BLUETOOTH_DETECTION_SERVICE",
-                                            "updating with elapsed time " + elapsedTime / 1000 + " seconds"
-                                    );
-                                });
-
-                            } else {
-                                executor.execute(() -> {
-                                    // a lot of time elapsed since the last detection, so this is a new discovery
-                                    searched.firstTimestamp = currentTimestamp;
-
-                                    bluetoothDeviceDao.insert(searched);
-                                    Log.i(
-                                            "BLUETOOTH_DETECTION_SERVICE",
-                                            "inserting new with elapsed time " + elapsedTime / 1000 + " seconds"
-                                    );
-                                });
-                            }
-                        }
-                    });
+                    bluetoothDeviceFound(intent);
                 }
             }
-        }, filter);
+        }, new IntentFilter(BluetoothDevice.ACTION_FOUND));
 
-        scheduler.scheduleAtFixedRate(new Runnable() {
-            @Override
-            public void run() {
-                Log.i("BLUETOOTH_DETECTION_SERVICE", "did discovery");
-                BluetoothDevicesProvider.startDiscovery();
-            }
+        scheduler.scheduleAtFixedRate(() -> {
+            Log.i("BLUETOOTH_DETECTION_SERVICE", "did discovery");
+            BluetoothDevicesProvider.startDiscovery();
+
         }, 0, SensorableConstants.SCHEDULE_BLUETOOTH_DISCOVERY, TimeUnit.MILLISECONDS);
+    }
+
+    private void bluetoothDeviceFound(Intent intent) {
+
+        // Discovery has found a device. Get the BluetoothDevice object and its info from the Intent.
+        BluetoothDevice foundDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+
+        // proceed to register the found device (if necessary)
+        registerNewDevice(foundDevice);
+
+        // update the registry of detected devices
+        updateRegistry(foundDevice);
+    }
+
+    private void updateRegistry(BluetoothDevice foundDevice) {
+        executor.execute(() -> {
+            long currentTimestamp = new Date().getTime();
+
+            BluetoothDeviceRegistryEntity foundRegistry =
+                    bluetoothDeviceRegistryDao.getDevicesInRange(
+                            currentTimestamp - SensorableConstants.TIME_SINCE_LAST_BLUETOOTH_DETECTION, currentTimestamp);
+
+
+            if (foundRegistry == null) {
+                // register a new detected device into the local database registry
+                bluetoothDeviceRegistryDao.insert(
+                        new BluetoothDeviceRegistryEntity(foundDevice.getAddress(), currentTimestamp)
+                );
+
+                Log.i("BLUETOOTH_DETECTION_SERVICE", "added a new bluetooth device registry");
+
+            } else {
+                foundRegistry.end = currentTimestamp;
+                bluetoothDeviceRegistryDao.updateDevice(foundRegistry);
+                Log.i(
+                        "BLUETOOTH_DETECTION_SERVICE",
+                        "inserting new with elapsed time " + ((currentTimestamp - SensorableConstants.TIME_SINCE_LAST_BLUETOOTH_DETECTION) / 1000) + " seconds"
+                );
+
+            }
+        });
+    }
+
+    private void registerNewDevice(BluetoothDevice foundDevice) {
+        executor.execute(() -> {
+            BluetoothDeviceEntity searched = bluetoothDeviceDao.findByAddress(foundDevice.getAddress());
+            if (searched == null) {
+                // insert a new detected device into the database
+                bluetoothDeviceDao.insert(new BluetoothDeviceEntity(foundDevice));
+                Log.i("BLUETOOTH_DETECTION_SERVICE", "added a new bluetooth device");
+            } else {
+                Log.i("BLUETOOTH_DETECTION_SERVICE", "bluetooth device was previously added");
+            }
+        });
     }
 
     @Nullable

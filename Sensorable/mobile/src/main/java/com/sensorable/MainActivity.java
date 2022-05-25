@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         initializeMobileDatabase();
         initializeSensorDataReceiver();
 
-//        initializeWearOsTranmissionService();
+        initializeWearOsTranmissionService();
 //        initializeEmpaticaTransmissionService();
         initializeAdlDetectionService();
         initializeBackUpService();

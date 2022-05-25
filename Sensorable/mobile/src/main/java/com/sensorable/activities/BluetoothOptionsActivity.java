@@ -9,9 +9,12 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.commons.database.BluetoothDeviceDao;
 import com.commons.database.BluetoothDeviceEntity;
+import com.commons.database.BluetoothDeviceRegistryDao;
+import com.commons.database.BluetoothDeviceRegistryEntity;
 import com.commons.devicesDetection.BluetoothDevicesProvider;
 import com.sensorable.R;
-import com.sensorable.utils.BluetoothDeviceAdapter;
+import com.sensorable.utils.BluetoothDeviceInfo;
+import com.sensorable.utils.BluetoothDeviceInfoAdapter;
 import com.sensorable.utils.MobileDatabaseBuilder;
 
 import java.util.ArrayList;
@@ -21,9 +24,10 @@ public class BluetoothOptionsActivity extends AppCompatActivity {
 
     private ListView bluetoothFoundDevices;
     private BluetoothDevicesProvider bluetoothProvider;
-    private BluetoothDeviceAdapter adapter;
-    private ArrayList<BluetoothDeviceEntity> bleArray;
+    private BluetoothDeviceInfoAdapter bluetoothDeviceInfoAdapter;
+    private ArrayList<BluetoothDeviceInfo> bleArray;
 
+    private BluetoothDeviceRegistryDao bluetoothDeviceRegistryDao;
     private BluetoothDeviceDao bluetoothDeviceDao;
     private ExecutorService executor;
 
@@ -39,6 +43,7 @@ public class BluetoothOptionsActivity extends AppCompatActivity {
 
     private void initializeDatabase() {
         bluetoothDeviceDao = MobileDatabaseBuilder.getDatabase(this).bluetoothDeviceDao();
+        bluetoothDeviceRegistryDao = MobileDatabaseBuilder.getDatabase(this).bluetoothDeviceRegistryDao();
         executor = MobileDatabaseBuilder.getExecutor();
     }
 
@@ -85,14 +90,14 @@ public class BluetoothOptionsActivity extends AppCompatActivity {
         bluetoothFoundDevices = (ListView) findViewById(R.id.foundDevices);
         bleArray = new ArrayList<>();
 
-        adapter = new BluetoothDeviceAdapter(
+        bluetoothDeviceInfoAdapter = new BluetoothDeviceInfoAdapter(
                 this,
                 R.layout.bluetooth_devices_layout,
                 bleArray
         );
 
-        adapter.setNotifyOnChange(true);
-        bluetoothFoundDevices.setAdapter(adapter);
+        bluetoothDeviceInfoAdapter.setNotifyOnChange(true);
+        bluetoothFoundDevices.setAdapter(bluetoothDeviceInfoAdapter);
 
         updateFromDatabase();
     }
@@ -100,7 +105,24 @@ public class BluetoothOptionsActivity extends AppCompatActivity {
     private void updateFromDatabase() {
         executor.execute(() -> {
             bleArray.clear();
-            bleArray.addAll(bluetoothDeviceDao.getAll());
+
+            for (BluetoothDeviceRegistryEntity registry : bluetoothDeviceRegistryDao.getAll()) {
+                BluetoothDeviceEntity device = bluetoothDeviceDao.getByAddress(registry.address);
+
+                bleArray.add(
+                        new BluetoothDeviceInfo(
+                                device.address,
+                                device.deviceName,
+                                device.bondState,
+                                device.bluetoothDeviceType,
+                                device.trusted,
+                                registry.start,
+                                registry.end)
+                );
+
+                runOnUiThread(() -> bluetoothDeviceInfoAdapter.notifyDataSetChanged());
+
+            }
         });
     }
 

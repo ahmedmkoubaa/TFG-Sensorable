@@ -76,16 +76,17 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 
         initializeMobileDatabase();
         initializeSensorDataReceiver();
+        initializeAdlDetectionService();
 
 //        initializeWearOsTranmissionService();
 //        initializeEmpaticaTransmissionService();
-        initializeAdlDetectionService();
-        initializeBackUpService();
-//        initializeBluetoothDetectionService();
+
+//        initializeBackUpService();
+        initializeBluetoothDetectionService();
         initializeSensorsProviderService();
         initializeInfoReceiver();
 
-        initializeWifiDirectDetector();
+//        initializeWifiDirectDetector();
 
         // TODO remove this progress bar statements
         userStateSummary.setClickable(false);

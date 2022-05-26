@@ -50,6 +50,7 @@ public class BluetoothOptionsActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
+
         bluetoothProvider.startScan(new ScanCallback() {
             @Override
             public void onScanResult(int callbackType, ScanResult result) {
@@ -80,14 +81,14 @@ public class BluetoothOptionsActivity extends AppCompatActivity {
 
                 // TODO: if the user watches this screen then we want to
                 //  show detected devices in real time
-                updateFromDatabase();
+                runOnUiThread(() -> updateFromDatabase());
 
             }
         });
     }
 
     private void initializeAttributesFromUI() {
-        bluetoothFoundDevices = (ListView) findViewById(R.id.foundDevices);
+        bluetoothFoundDevices = findViewById(R.id.foundDevices);
         bleArray = new ArrayList<>();
 
         bluetoothDeviceInfoAdapter = new BluetoothDeviceInfoAdapter(
@@ -103,13 +104,14 @@ public class BluetoothOptionsActivity extends AppCompatActivity {
     }
 
     private void updateFromDatabase() {
+
         executor.execute(() -> {
-            bleArray.clear();
+            ArrayList<BluetoothDeviceInfo> bleArrayCopy = new ArrayList<>();
 
             for (BluetoothDeviceRegistryEntity registry : bluetoothDeviceRegistryDao.getAll()) {
                 BluetoothDeviceEntity device = bluetoothDeviceDao.getByAddress(registry.address);
 
-                bleArray.add(
+                bleArrayCopy.add(
                         new BluetoothDeviceInfo(
                                 device.address,
                                 device.deviceName,
@@ -119,10 +121,13 @@ public class BluetoothOptionsActivity extends AppCompatActivity {
                                 registry.start,
                                 registry.end)
                 );
-
-                runOnUiThread(() -> bluetoothDeviceInfoAdapter.notifyDataSetChanged());
-
             }
+
+            runOnUiThread(() -> {
+                bleArray.clear();
+                bleArray.addAll(bleArrayCopy);
+                bluetoothDeviceInfoAdapter.notifyDataSetChanged();
+            });
         });
     }
 

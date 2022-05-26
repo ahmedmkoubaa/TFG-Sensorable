@@ -44,6 +44,8 @@ public class BluetoothDeviceInfoAdapter extends ArrayAdapter<BluetoothDeviceInfo
         BluetoothDeviceInfo item = this.getItem(position);
         String name = item.getDeviceName();
         String mac = item.getAddress();
+        String firstTiemstamp = SensorableDates.timestampToDate(item.getStart());
+        String endTimestamp = SensorableDates.timestampToDate(item.getEnd());
         boolean trusted = item.isTrusted();
 
         LayoutInflater inflater = LayoutInflater.from(context);
@@ -61,13 +63,16 @@ public class BluetoothDeviceInfoAdapter extends ArrayAdapter<BluetoothDeviceInfo
             executor.execute(() -> {
                 bluetoothDeviceDao.updateDevice(device);
             });
+
+            notifyDataSetChanged();
         });
 
         deviceName.setText(name);
         deviceMAC.setText(mac);
         deviceTrusted.setChecked(trusted);
-        first.setText(Long.toString(item.getStart()));
-        last.setText(Long.toString(item.getEnd()));
+
+        first.setText(firstTiemstamp);
+        last.setText(endTimestamp);
 
         return convertView;
     }

@@ -43,6 +43,7 @@ public class BluetoothDetectionService extends Service {
 
     private void initializeMobileDatabase() {
         bluetoothDeviceDao = MobileDatabaseBuilder.getDatabase(this).bluetoothDeviceDao();
+        bluetoothDeviceRegistryDao = MobileDatabaseBuilder.getDatabase(this).bluetoothDeviceRegistryDao();
         executor = MobileDatabaseBuilder.getExecutor();
     }
 
@@ -71,16 +72,23 @@ public class BluetoothDetectionService extends Service {
 
         // Discovery has found a device. Get the BluetoothDevice object and its info from the Intent.
         BluetoothDevice foundDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-
-        // proceed to register the found device (if necessary)
-        registerNewDevice(foundDevice);
-
+        
         // update the registry of detected devices
         updateRegistry(foundDevice);
     }
 
     private void updateRegistry(BluetoothDevice foundDevice) {
         executor.execute(() -> {
+
+            BluetoothDeviceEntity searched = bluetoothDeviceDao.findByAddress(foundDevice.getAddress());
+            if (searched == null) {
+                // insert a new detected device into the database
+                bluetoothDeviceDao.insert(new BluetoothDeviceEntity(foundDevice));
+                Log.i("BLUETOOTH_DETECTION_SERVICE", "added a new bluetooth device");
+            } else {
+                Log.i("BLUETOOTH_DETECTION_SERVICE", "bluetooth device was previously added");
+            }
+
             long currentTimestamp = new Date().getTime();
 
             BluetoothDeviceRegistryEntity foundRegistry =
@@ -108,18 +116,6 @@ public class BluetoothDetectionService extends Service {
         });
     }
 
-    private void registerNewDevice(BluetoothDevice foundDevice) {
-        executor.execute(() -> {
-            BluetoothDeviceEntity searched = bluetoothDeviceDao.findByAddress(foundDevice.getAddress());
-            if (searched == null) {
-                // insert a new detected device into the database
-                bluetoothDeviceDao.insert(new BluetoothDeviceEntity(foundDevice));
-                Log.i("BLUETOOTH_DETECTION_SERVICE", "added a new bluetooth device");
-            } else {
-                Log.i("BLUETOOTH_DETECTION_SERVICE", "bluetooth device was previously added");
-            }
-        });
-    }
 
     @Nullable
     @Override

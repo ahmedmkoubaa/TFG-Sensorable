@@ -45,10 +45,11 @@ public class AdlSummaryActivity extends AppCompatActivity {
 
     private void updateDetectedAdlsFromDatabase() {
         executor.execute(() -> {
-            adlArray.clear();
+            ArrayList<DetectedAdlInfo> adlArrayCopy = new ArrayList<>();
+
             for (AdlRegistryEntity adlRegistry : adlRegistryDao.getAll()) {
                 AdlEntity newAdl = adlDao.getAdlById(adlRegistry.idAdl);
-                adlArray.add(
+                adlArrayCopy.add(
                         new DetectedAdlInfo(
                                 adlRegistry.idAdl,
                                 newAdl.title,
@@ -59,10 +60,16 @@ public class AdlSummaryActivity extends AppCompatActivity {
                         ));
             }
 
-            runOnUiThread(() -> detectedAdlInfoAdapter.notifyDataSetChanged());
-
             Log.i("DETECTED_ADL", "updated from database");
+
+            runOnUiThread(() -> {
+                adlArray.clear();
+                adlArray.addAll(adlArrayCopy);
+                detectedAdlInfoAdapter.notifyDataSetChanged();
+            });
         });
+
+
     }
 
     private void initializeAttributesFromUI() {

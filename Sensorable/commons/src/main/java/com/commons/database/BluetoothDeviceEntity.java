@@ -6,10 +6,12 @@ import android.bluetooth.BluetoothDevice;
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.PrimaryKey;
 
-@Entity(primaryKeys = {"address"})
+@Entity
 public class BluetoothDeviceEntity {
     @NonNull
+    @PrimaryKey
     @ColumnInfo(name = "address")
     public String address;
 
@@ -29,6 +31,7 @@ public class BluetoothDeviceEntity {
     public BluetoothDeviceEntity() {
 
     }
+
     public BluetoothDeviceEntity(BluetoothDevice device) {
         this.address = device.getAddress();
         this.deviceName = device.getName();

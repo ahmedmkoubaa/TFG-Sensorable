@@ -5,31 +5,65 @@ events_for_adls,
 events,
 adls;
 
-DECLARE DEVICE_MOBILE CONSTANT number (1) := 0;
+SET
+    @DEVICE_MOBILE := 0;
 
-DECLARE DEVICE_WEAR_OS CONSTANT number (1) := 1;
+SET
+    @DEVICE_WEAR_OS := 1;
 
-DECLARE DEVICE_EMPATICA CONSTANT number (1) := 2;
+SET
+    @DEVICE_EMPATICA := 2;
 
-DECLARE TYPE_ACCELEROMETER CONSTANT number (1) := 1;
+SET
+    @TYPE_ACCELEROMETER := 1;
 
-DECLARE TYPE_LIGHT CONSTANT number (1) := 5;
+SET
+    @TYPE_LIGHT := 5;
 
-DECLARE TYPE_PRESSURE CONSTANT number (1) := 6;
+SET
+    @TYPE_PRESSURE := 6;
 
-DECLARE TYPE_LINEAR_ACCELERATION CONSTANT number (1) := 10;
+SET
+    @TYPE_PROXIMITY := 8;
 
-DECLARE TYPE_RELATIVE_HUMIDITY CONSTANT number (1) := 12;
+SET
+    @TYPE_LINEAR_ACCELERATION := 10;
 
-DECLARE TYPE_AMBIENT_TEMPERATURE CONSTANT number (1) := 13;
+SET
+    @TYPE_RELATIVE_HUMIDITY := 12;
 
-DECLARE TYPE_STEP_DETECTOR CONSTANT number (1) := 18;
+SET
+    @TYPE_AMBIENT_TEMPERATURE := 13;
 
-DECLARE TYPE_STEP_COUNTER CONSTANT number (1) := 19;
+SET
+    @TYPE_STEP_DETECTOR := 18;
 
-DECLARE TYPE_HEART_RATE CONSTANT number (1) := 21;
+SET
+    @TYPE_STEP_COUNTER := 19;
 
-DECLARE TYPE_HEART_RATE CONSTANT number (1) := 2411;
+SET
+    @TYPE_HEART_RATE := 21;
+
+SET
+    @TYPE_GPS := 2411;
+
+SET
+    @FIRST := 0;
+
+SET
+    @SECOND := 1;
+
+SET
+    @THIRD := 2;
+
+SET
+    @DISTANCE := 3;
+
+SET
+    @ANY := 4;
+
+SET
+    @ALL := 5;
 
 /*EXAMPLE OF INSERT:
  INSERT INTO sensors (device_type, sensor_type, values_x, values_y, values_z, timestamp) VALUES (0,21, 67, -1, -1, 1234567981)*/
@@ -101,22 +135,46 @@ VALUES
 INSERT INTO
     events(device_type, sensor_type, pos, operator, operand)
 VALUES
-    (0, 8, 0, 'EQUAL', 0);
+    (
+        @DEVICE_MOBILE,
+        @TYPE_PROXIMITY,
+        @FIRST,
+        'EQUAL',
+        0
+    );
 
 INSERT INTO
     events(device_type, sensor_type, pos, operator, operand)
 VALUES
-    (0, 5, 0, 'LESS_EQUAL', 120);
+    (
+        @DEVICE_MOBILE,
+        @TYPE_LIGHT,
+        @FIRST,
+        'LESS_EQUAL',
+        120
+    );
 
 INSERT INTO
     events(device_type, sensor_type, pos, operator, operand)
 VALUES
-    (0, 1, 0, 'GREATER_EQUAL', 4);
+    (
+        @DEVICE_MOBILE,
+        @TYPE_ACCELEROMETER,
+        @FIRST,
+        'GREATER_EQUAL',
+        4
+    );
 
 INSERT INTO
     events(device_type, sensor_type, pos, operator, operand)
 VALUES
-    (0, 1, 0, 'LESS_EQUAL', -4);
+    (
+        @DEVICE_MOBILE,
+        @TYPE_ACCELEROMETER,
+        @FIRST,
+        'LESS_EQUAL',
+        -4
+    );
 
 /*events for adls to detect a phone call*/
 /*version 1 (left hand)*/
@@ -165,25 +223,43 @@ VALUES
 INSERT INTO
     events(device_type, sensor_type, pos, operator, operand)
 VALUES
-    (0, 10, 4, 'GREATER', 1.5);
+    (
+        @DEVICE_MOBILE,
+        @TYPE_LINEAR_ACCELERATION,
+        @ANY,
+        'GREATER',
+        1.5
+    );
 
 /*6*/
 INSERT INTO
     events(device_type, sensor_type, pos, operator, operand)
 VALUES
-    (0, 19, 0, 'GREATER_EQUAL', 1);
+    (
+        @DEVICE_MOBILE,
+        @TYPE_STEP_COUNTER,
+        @FIRST,
+        'GREATER_EQUAL',
+        1
+    );
 
 /*7*/
 INSERT INTO
     events(device_type, sensor_type, pos, operator, operand)
 VALUES
-    (0, 21, 0, 'GREATER', 60);
+    (
+        @DEVICE_MOBILE,
+        @TYPE_HEART_RATE,
+        @FIRST,
+        'GREATER',
+        60
+    );
 
 /*8*/
 INSERT INTO
     events(device_type, sensor_type, pos, operator, operand)
 VALUES
-    (0, 21, 0, 'LESS', 80);
+    (@DEVICE_MOBILE, @TYPE_HEART_RATE, 0, 'LESS', 80);
 
 /*9*/
 /*far from home*/
@@ -197,7 +273,14 @@ INSERT INTO
         tag
     )
 VALUES
-    (0, 2411, 3, 'GREATER', 50, "HOME");
+    (
+        @DEVICE_MOBILE,
+        @TYPE_GPS,
+        @DISTANCE,
+        'GREATER',
+        50,
+        "HOME"
+    );
 
 /*events to detect a walk in the outside*/
 INSERT INTO
@@ -245,7 +328,14 @@ INSERT INTO
         tag
     )
 VALUES
-    (0, 2411, 3, 'LESS_EQUAL', 50, "HOME");
+    (
+        @DEVICE_MOBILE,
+        @TYPE_GPS,
+        @DISTANCE,
+        'LESS_EQUAL',
+        50,
+        "HOME"
+    );
 
 /*events to detect a walk inside house*/
 INSERT INTO
@@ -286,13 +376,25 @@ VALUES
 INSERT INTO
     events(device_type, sensor_type, pos, operator, operand)
 VALUES
-    (0, 10, 4, 'GREATER', 2);
+    (
+        @DEVICE_MOBILE,
+        @TYPE_LINEAR_ACCELERATION,
+        @ANY,
+        'GREATER',
+        2
+    );
 
 /*12*/
 INSERT INTO
     events(device_type, sensor_type, pos, operator, operand)
 VALUES
-    (0, 21, 0, 'GREATER_EQUAL', 85);
+    (
+        @DEVICE_MOBILE,
+        @TYPE_HEART_RATE,
+        @FIRST,
+        'GREATER_EQUAL',
+        85
+    );
 
 /*events to detect workout in the outside*/
 INSERT INTO
@@ -319,6 +421,26 @@ VALUES
     );
 
 /*events for places visiting detection*/
+/*13*/
+INSERT INTO
+    events(
+        device_type,
+        sensor_type,
+        pos,
+        operator,
+        operand,
+        tag
+    )
+VALUES
+    (
+        @DEVICE_MOBILE,
+        @TYPE_GPS,
+        @DISTANCE,
+        'GREATER_EQUAL',
+        100,
+        "HOME"
+    );
+
 /*14*/
 INSERT INTO
     events(
@@ -330,27 +452,21 @@ INSERT INTO
         tag
     )
 VALUES
-    (0, 2411, 3, 'GREATER_EQUAL', 100, "HOME");
-
-/*15*/
-INSERT INTO
-    events(
-        device_type,
-        sensor_type,
-        pos,
-        operator,
-        operand,
-        tag
-    )
-VALUES
-    (0, 2411, 3, 'LESS', 100, "FRIENDS");
+    (
+        @DEVICE_MOBILE,
+        @TYPE_GPS,
+        @DISTANCE,
+        'LESS',
+        100,
+        "FRIENDS"
+    );
 
 /*events for places visiting detection*/
 /*version 1: go walking*/
 INSERT INTO
     events_for_adls (id_adl, id_event, version)
 VALUES
-    (5, 14, 1);
+    (5, 13, 1);
 
 INSERT INTO
     events_for_adls (id_adl, id_event, version)
@@ -366,19 +482,53 @@ VALUES
 INSERT INTO
     events_for_adls (id_adl, id_event, version)
 VALUES
-    (5, 15, 1);
+    (5, 14, 1);
 
 /*version 2: go in a vehicle*/
+/*15*/
+INSERT INTO
+    events(device_type, sensor_type, pos, operator, operand)
+VALUES
+    (
+        @DEVICE_MOBILE,
+        @TYPE_LINEAR_ACCELERATION,
+        @ANY,
+        'GREATER',
+        3
+    );
+
+/*16*/
+INSERT INTO
+    events(device_type, sensor_type, pos, operator, operand)
+VALUES
+    (
+        @DEVICE_MOBILE,
+        @TYPE_LINEAR_ACCELERATION,
+        @ANY,
+        'LESS',
+        -3
+    );
+
 INSERT INTO
     events_for_adls (id_adl, id_event, version)
 VALUES
-    (5, 14, 2);
+    (5, 13, 2);
 
-/*new events here using positivo and negative strong acceleration*/
 INSERT INTO
     events_for_adls (id_adl, id_event, version)
 VALUES
     (5, 15, 2);
+
+INSERT INTO
+    events_for_adls (id_adl, id_event, version)
+VALUES
+    (5, 16, 2);
+
+/*new events here using positive and negative strong acceleration*/
+INSERT INTO
+    events_for_adls (id_adl, id_event, version)
+VALUES
+    (5, 14, 2);
 
 INSERT INTO
     adls(title, description)
@@ -388,30 +538,23 @@ VALUES
         "Aparentemente se ha usado un medio de transporte para desplazarse."
     );
 
-/*13*/
+/*events for displacement detection in a vehicle*/
 INSERT INTO
-    events(device_type, sensor_type, pos, operator, operand)
+    events_for_adls (id_adl, id_event)
 VALUES
-    (0, 21, 0, 'LESS_EQUAL', 150);
+    (6, 9);
 
-/*16*/
+/*events for displacement detection*/
 INSERT INTO
-    events(device_type, sensor_type, pos, operator, operand)
+    events_for_adls (id_adl, id_event)
 VALUES
-    (0, 10, 4, 'LESS', -1);
+    (6, 5);
 
-/*events for displacement*/
-/*17*/
+/*events for displacement detection*/
 INSERT INTO
-    events(device_type, sensor_type, pos, operator, operand)
+    events_for_adls (id_adl, id_event)
 VALUES
-    (0, 10, 4, 'GREATER', 2);
-
-/*18*/
-INSERT INTO
-    events(device_type, sensor_type, pos, operator, operand)
-VALUES
-    (0, 10, 4, 'LESS', -2);
+    (6, 6);
 
 /*events for displacement detection*/
 INSERT INTO
@@ -419,6 +562,7 @@ INSERT INTO
 VALUES
     (6, 15);
 
+/*events for displacement detection*/
 INSERT INTO
     events_for_adls (id_adl, id_event)
 VALUES

@@ -116,7 +116,6 @@ public class AdlDetectionService extends Service {
                 loadAdlsScheme();
             });
         });
-
     }
 
     private ArrayList<AdlEntity> composeTableAdls(final String stringAdls) {
@@ -166,7 +165,8 @@ public class AdlDetectionService extends Service {
                     new EventForAdlEntity(
                             Integer.parseInt(fields[0]),
                             Integer.parseInt(fields[1]),
-                            Integer.parseInt(fields[2])
+                            Integer.parseInt(fields[2]),
+                            Integer.parseInt(fields[3])
                     )
             );
 

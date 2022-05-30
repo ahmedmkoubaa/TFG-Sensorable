@@ -1,6 +1,10 @@
 package com.commons;
 
 public class SensorableConstants {
+    // for time operations
+    private final static int MINUTES_TO_SECONDS = 60;
+    private final static int SECONDS_TO_MILLIS = 1000;
+
     // for requests
     public final static int REQUEST_PERMISSIONS_CODE = 1;
     public final static int REQUEST_ENABLE_BT = 2;
@@ -32,31 +36,31 @@ public class SensorableConstants {
 
     // for mobile database
     public final static String MOBILE_DATABASE_NAME = "default-mobile-database";
-    public final static int MOBILE_DATABASE_NUMBER_THREADS = 2;
-    public final static int MOBILE_DATABASE_VERSION = 34;
+    public final static int MOBILE_DATABASE_NUMBER_THREADS = 4;
+    public final static int MOBILE_DATABASE_VERSION = 37;
 
     // time that uses the adl detection to service to filter data
     // the lower is this value more accurate is the filtering, it means
     // it filter less info and process a bigger amount of data
-    public final static int ADL_FILTER_TIME = 2000; // in milliseconds
-    public final static long TIME_SINCE_LAST_ADL_DETECTION = 5 * 60 * 1000;
-
-    public final static long TIME_SINCE_LAST_BLUETOOTH_DETECTION = 30 * 60 * 1000; // in milliseconds
-    public final static int SCHEDULE_BLUETOOTH_DISCOVERY = 5 * 1000; // in milliseconds
-    public final static int SCHEDULE_DATABASE_BACKUP = 5 * 60 * 1000; // in milliseconds
+    public final static int ADL_FILTER_TIME = 2 *  SECONDS_TO_MILLIS; // in milliseconds
+    public final static long TIME_SINCE_LAST_ADL_DETECTION = 5 * MINUTES_TO_SECONDS * SECONDS_TO_MILLIS;
+    public final static long TIME_SINCE_LAST_BLUETOOTH_DETECTION = 30 * MINUTES_TO_SECONDS * SECONDS_TO_MILLIS; // in milliseconds (those are 30 minutes)
+    public final static int SCHEDULE_BLUETOOTH_DISCOVERY = 5 * SECONDS_TO_MILLIS; // in milliseconds
+    public final static int SCHEDULE_DATABASE_BACKUP = 5 * MINUTES_TO_SECONDS * SECONDS_TO_MILLIS; // in milliseconds
 
 
     // for mqtt client communication
     public static final int MQTT_BROKER_PORT = 1883;
     public static final String MQTT_BROKER_HOST = "192.168.1.108";
-    public static final int QTT_TIMEOUT = 4000;
-    public static final int MQTT_RECONNECT_PERIOD = 1000;
     public static final String MQTT_DEFAULT_USERNAME = "default-username";
     public static final String MQTT_DEFAULT_PASSWORD = "default-password";
     public static final String MQTT_TEST_TOPIC = "sensorable/test";
     public static final String MQTT_CONNECT_URL = "broker.hivemq.com";
-
     public static final String DATE_SEPARATOR = "/";
     public static final String TIME_SEPARATOR = ":";
+
+
+    public static final int QTT_TIMEOUT = 4 * SECONDS_TO_MILLIS;
+    public static final int MQTT_RECONNECT_PERIOD = 1 * SECONDS_TO_MILLIS;
 
 }

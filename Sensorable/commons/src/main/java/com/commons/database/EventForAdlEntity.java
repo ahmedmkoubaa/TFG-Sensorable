@@ -6,8 +6,6 @@ import androidx.room.Entity;
 import androidx.room.ForeignKey;
 import androidx.room.PrimaryKey;
 
-import java.util.ArrayList;
-
 @Entity(foreignKeys = {
         @ForeignKey(entity = AdlEntity.class,
                 parentColumns = "id",
@@ -31,9 +29,15 @@ public class EventForAdlEntity {
     @ColumnInfo(name = "id_event")
     public int idEvent;
 
-    public EventForAdlEntity(@NonNull int id, @NonNull int idAdl, @NonNull int idEvent) {
+
+    @NonNull
+    @ColumnInfo(name = "version")
+    public int version;
+
+    public EventForAdlEntity(@NonNull int id, @NonNull int idAdl, @NonNull int idEvent, @NonNull int version) {
         this.id = id;
         this.idAdl = idAdl;
         this.idEvent = idEvent;
+        this.version = version;
     }
 }

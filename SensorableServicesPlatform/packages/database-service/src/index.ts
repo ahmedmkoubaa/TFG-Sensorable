@@ -98,8 +98,7 @@ export function useDatabase() {
           doQuery({
             query: "SELECT * FROM events",
             queryCallback: (err, rows) => {
-              // @ts-ignore
-              rows.forEach((element) => {
+              rows.forEach((element: any) => {
                 console.log("Los tags son: ", element.tag)
 
                 const res = element.tag !== null ? element.tag : "NULL"
@@ -126,10 +125,11 @@ export function useDatabase() {
 
               // to inform about new adls and events
               doQuery({
-                query: "SELECT * FROM events_for_adls",
+                query: "SELECT * FROM events_for_adls ORDER BY id ASC",
                 queryCallback: (err, rows) => {
-                  // @ts-ignore
-                  rows.forEach((element) => {
+                  // TODO: define a correct type for the element
+                  // (type is events_for_adls table scheme)
+                  rows.forEach((element: any) => {
                     console.log(element)
                     newAdls +=
                       "{" +
@@ -138,6 +138,8 @@ export function useDatabase() {
                       element.id_adl +
                       JSON_FIELDS_SEPARATOR +
                       element.id_event +
+                      JSON_FIELDS_SEPARATOR +
+                      element.version +
                       "}"
                   })
 

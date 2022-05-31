@@ -41,7 +41,7 @@ public class AdlDetectionService extends Service {
     private final ArrayList<EventForAdlEntity> eventsForAdls = new ArrayList<>();
     private final ArrayList<AdlEntity> adls = new ArrayList<>();
     private final ArrayList<KnownLocationEntity> knownLocations = new ArrayList<>();
-    private final HashMap<Integer, ArrayList<Pair<Integer, Boolean>>> databaseAdls = new HashMap<>();
+    private final HashMap<Integer, HashMap<Integer, ArrayList<Pair<Integer, Boolean>>>> databaseAdls = new HashMap<>();
 
     private EventDao eventDao;
     private AdlDao adlDao;
@@ -101,7 +101,7 @@ public class AdlDetectionService extends Service {
 
             ArrayList<AdlEntity> adlEntities = composeTableAdls(stringAdls);
             ArrayList<EventEntity> eventEntities = composeTableEvents(stringEvents);
-            ArrayList<EventForAdlEntity> eventsForAdlsEntities = composeTableForEvents(stringEventsForAdls);
+            ArrayList<EventForAdlEntity> eventsForAdlsEntities = composeTableEventsForAdls(stringEventsForAdls);
 
 
             executor.execute(() -> {
@@ -155,7 +155,7 @@ public class AdlDetectionService extends Service {
         return eventEntities;
     }
 
-    private ArrayList<EventForAdlEntity> composeTableForEvents(final String stringEventsForAdls) {
+    private ArrayList<EventForAdlEntity> composeTableEventsForAdls(final String stringEventsForAdls) {
         ArrayList<EventForAdlEntity> eventsForAdlsEntities = new ArrayList<>();
         String[] fields;
 
@@ -206,14 +206,23 @@ public class AdlDetectionService extends Service {
 
                 // generation of data structure to evaluate adls
                 adls.forEach(adlEntity -> {
-                    ArrayList<Pair<Integer, Boolean>> eventsOfCurrentAdl = new ArrayList<>();
+                    HashMap<Integer, ArrayList<Pair<Integer, Boolean>>> adlVersions = new HashMap<>();
+
                     eventsForAdls.forEach(eventForAdlEntity -> {
                         if (eventForAdlEntity.idAdl == adlEntity.id) {
-                            eventsOfCurrentAdl.add(new Pair<>(eventForAdlEntity.idEvent, false));
+
+                            int version = eventForAdlEntity.version;
+                            if (!adlVersions.containsKey(version)) {
+                                adlVersions.put(version, new ArrayList<>());
+                            }
+
+                            adlVersions
+                                    .get(version)
+                                    .add(new Pair<>(eventForAdlEntity.idEvent, false));
                         }
                     });
 
-                    databaseAdls.put(adlEntity.id, eventsOfCurrentAdl);
+                    databaseAdls.put(adlEntity.id, adlVersions);
                 });
 
                 knownLocations.addAll(knownLocationDao.getAll());
@@ -363,60 +372,60 @@ public class AdlDetectionService extends Service {
     private void evaluateAdls(HashMap<Integer, Boolean> evaluatedEvents) {
         // let's take from database adls the events registry owned by each adl
         for (int idCurrentAdl : databaseAdls.keySet()) {
-            ArrayList<Pair<Integer, Boolean>> eventsOfCurrentAdl = databaseAdls.get(idCurrentAdl);
-            int size = eventsOfCurrentAdl.size();
+            databaseAdls.get(idCurrentAdl).forEach((version, eventsOfCurrentAdl) -> {
+                boolean evaluation = true;
+                int size = eventsOfCurrentAdl.size();
 
-            boolean evaluation = true;
-            for (int i = 0; i < size; i++) {
-                // check if previous adl in the sorted events array occured, if happened
-                // then we check the next event, the current and update if necessary
-                Pair<Integer, Boolean> event = eventsOfCurrentAdl.get(i);
-                if (!event.second) {
-
-                    /* Here we want to detect an adl based on the evaluation of the events. An adl
-                     * will be true if all of its events are. The events have to be completed in the
-                     * exact order they were associated to the adl, so we only check if an event is
-                     * true if the previous event was.
-                     * If the event is the first or the unique in the array, we supose then that we
-                     * have the previous too (becase there isn't any previous). After this just look for
-                     * the event in the evaluated events array and use its last value.
-                     */
-
-                    if ((i == 0 || (i > 0 && eventsOfCurrentAdl.get(i - 1).second) || size == 1) &&
-                            evaluatedEvents.containsKey(event.first) && evaluatedEvents.get(event.first)) {
-
-                        eventsOfCurrentAdl.set(i, new Pair<>(event.first, true));
-
-                    } else {
-                        // If the value of the current event is not true
-                        // then we don't need to check the next values because
-                        // they have to be true in the specified order.
-                        evaluation = false;
-                        break;
-                    }
-                }
-            }
-
-
-            if (size > 0 && evaluation) {
-                Log.i("ADL_DETECTION_SERVICE", "recognized a new adl");
-                updateDetectedAdlsRegistries(idCurrentAdl);
-
-                // check if the adl stills being evaluated (all its events)
-                boolean previousFalse = false;
                 for (int i = 0; i < size; i++) {
                     // check if previous adl in the sorted events array occured, if happened
                     // then we check the next event, the current and update if necessary
                     Pair<Integer, Boolean> event = eventsOfCurrentAdl.get(i);
+                    if (!event.second) {
+                        /*
+                         * Here we want to detect an adl based on the evaluation of the events. An adl
+                         * will be true if all of its events are. The events have to be completed in the
+                         * exact order they were associated to the adl, so we only check if an event is
+                         * true if the previous event was.
+                         * If the event is the first or the unique in the array, we supose then that we
+                         * have the previous too (becase there isn't any previous). After this just look for
+                         * the event in the evaluated events array and use its last value.
+                         */
 
-                    if (previousFalse || (event.second && evaluatedEvents.containsKey(event.first) && !evaluatedEvents.get(event.first))) {
-                        eventsOfCurrentAdl.set(i, new Pair<>(event.first, false));
-                        previousFalse = true;
+                        if ((i == 0 || (i > 0 && eventsOfCurrentAdl.get(i - 1).second) || size == 1) &&
+                                evaluatedEvents.containsKey(event.first) && evaluatedEvents.get(event.first)) {
+                            eventsOfCurrentAdl.set(i, new Pair<>(event.first, true));
+
+                        } else {
+                            // If the value of the current event is not true
+                            // then we don't need to check the next values because
+                            // they have to be true in the specified order.
+                            evaluation = false;
+                            break;
+                        }
                     }
                 }
-            } else {
-                Log.i("ADL_DETECTION_SERVICE", "no longer recognized an old adl");
-            }
+
+                if (size > 0 && evaluation) {
+                    Log.i("ADL_DETECTION_SERVICE", "recognized a new adl");
+                    updateDetectedAdlsRegistries(idCurrentAdl);
+
+                    // check if the adl stills being evaluated (all its events)
+                    boolean previousFalse = false;
+                    for (int i = 0; i < size; i++) {
+                        // check if previous adl in the sorted events array occured, if happened
+                        // then we check the next event, the current and update if necessary
+                        Pair<Integer, Boolean> event = eventsOfCurrentAdl.get(i);
+
+                        if (previousFalse || (event.second && evaluatedEvents.containsKey(event.first) && !evaluatedEvents.get(event.first))) {
+                            eventsOfCurrentAdl.set(i, new Pair<>(event.first, false));
+                            previousFalse = true;
+                        }
+                    }
+                } else {
+                    Log.i("ADL_DETECTION_SERVICE", "no longer recognized an old adl");
+                }
+            });
+
         }
     }
 

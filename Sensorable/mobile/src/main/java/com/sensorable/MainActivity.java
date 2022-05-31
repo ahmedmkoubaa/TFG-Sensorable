@@ -72,6 +72,8 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         SensorablePermissions.requestAll(this);
         SensorablePermissions.ignoreBatteryOptimization(this);
 
+        MqttHelper.connect();
+
         initializeAttributesFromUI();
 
         initializeMobileDatabase();
@@ -86,7 +88,22 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         initializeSensorsProviderService();
         initializeInfoReceiver();
 
+        initializeSensors();
+
 //        initializeWifiDirectDetector();
+        testMqtt();
+
+    }
+
+
+    private void testMqtt() {
+        MqttHelper.connect();
+        MqttHelper.publish("sensorable/test", ("hola").getBytes(), "7912719");
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
 
         // TODO remove this progress bar statements
         userStateSummary.setClickable(false);
@@ -101,16 +118,8 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
                 "Te encuentras bien, sigue así. Recuerda hacer ejercicio y tomarte la medicación cuando toque"
         );
 
-
         // Summary, progressBar and message will be set using a system valoration
         // this system valoration will be developed in the near future
-    }
-
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        initializeSensors();
     }
 
     @Override

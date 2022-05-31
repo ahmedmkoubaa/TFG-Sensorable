@@ -43,7 +43,8 @@ public class MqttHelper {
 
     public static void subscribe(String topic, Consumer<Mqtt5Publish> callback) {
         client.toAsync()
-                .subscribeWith().topicFilter(topic)
+                .subscribeWith()
+                .topicFilter(topic)
                 .noLocal(true)
                 .retainHandling(Mqtt5RetainHandling.DO_NOT_SEND)
                 .retainAsPublished(true)
@@ -66,6 +67,21 @@ public class MqttHelper {
                 .topic(topic)
                 .qos(MqttQos.EXACTLY_ONCE)
                 .payload(payload)
+                .send()
+                .whenComplete((mqtt5PublishResult, throwable) ->
+                        Log.i("MQTT", throwable == null ? "success in publishment" : throwable.getMessage())
+                )
+                .thenAccept(accept -> Log.i("MQTT", "published the message"));
+    }
+
+    public static void publish(final String topic, final byte[] payload, final String responseTopic) {
+        client.connect();
+        client.toAsync()
+                .publishWith()
+                .topic(topic)
+                .qos(MqttQos.EXACTLY_ONCE)
+                .payload(payload)
+                .responseTopic(responseTopic)
                 .send()
                 .whenComplete((mqtt5PublishResult, throwable) ->
                         Log.i("MQTT", throwable == null ? "success in publishment" : throwable.getMessage())

@@ -5,10 +5,11 @@ import {
   DATABASE_ACTIONS,
   JSON_TABLES_SEPARATOR,
 } from "../../sensorable-constants/src"
-import { useMyMqtt, MyMqttInterface } from "../../my-mqtt/src"
+import { useMyMqtt, MyMqttInterface, IPublishPacket } from "../../my-mqtt/src"
 import { JSON_FIELDS_SEPARATOR } from "../../sensorable-constants/src"
 
 import debug from "debug"
+
 const log = debug("database-service")
 
 export interface QueryParams {
@@ -75,84 +76,70 @@ export function useDatabase() {
 
     let newAdls = ""
 
-    log(
-      "esta es la funcion doQuery: %o",
-      doQuery({
-        query: "SELECT * FROM adls",
-        queryCallback: (err, rows) => {
-          // @ts-ignore
-          rows.forEach((element) => {
-            newAdls +=
-              "{" +
-              element.id +
-              JSON_FIELDS_SEPARATOR +
-              element.title +
-              JSON_FIELDS_SEPARATOR +
-              element.description +
-              "}"
-          })
+    doQuery({
+      query: "SELECT * FROM adls",
+      queryCallback: (err, rows) => {
+        // @ts-ignore
+        rows.forEach((element) => {
+          newAdls +=
+            "{" + element.id + JSON_FIELDS_SEPARATOR + element.title + JSON_FIELDS_SEPARATOR + element.description + "}"
+        })
 
-          newAdls += JSON_TABLES_SEPARATOR
+        newAdls += JSON_TABLES_SEPARATOR
 
-          // to inform about new events
-          doQuery({
-            query: "SELECT * FROM events",
-            queryCallback: (err, rows) => {
-              rows.forEach((element: any) => {
-                console.log("Los tags son: ", element.tag)
+        // to inform about new events
+        doQuery({
+          query: "SELECT * FROM events",
+          queryCallback: (err, rows) => {
+            rows.forEach((element: any) => {
+              newAdls +=
+                "{" +
+                element.id +
+                JSON_FIELDS_SEPARATOR +
+                element.device_type +
+                JSON_FIELDS_SEPARATOR +
+                element.sensor_type +
+                JSON_FIELDS_SEPARATOR +
+                element.pos +
+                JSON_FIELDS_SEPARATOR +
+                element.operator +
+                JSON_FIELDS_SEPARATOR +
+                +element.operand +
+                JSON_FIELDS_SEPARATOR +
+                (element.tag !== null ? element.tag : "NULL") +
+                "}"
+            })
 
-                const res = element.tag !== null ? element.tag : "NULL"
-                console.log("Resultado es este: " + res)
-                newAdls +=
-                  "{" +
-                  element.id +
-                  JSON_FIELDS_SEPARATOR +
-                  element.device_type +
-                  JSON_FIELDS_SEPARATOR +
-                  element.sensor_type +
-                  JSON_FIELDS_SEPARATOR +
-                  element.pos +
-                  JSON_FIELDS_SEPARATOR +
-                  element.operator +
-                  JSON_FIELDS_SEPARATOR +
-                  +element.operand +
-                  JSON_FIELDS_SEPARATOR +
-                  (element.tag !== null ? element.tag : "NULL") +
-                  "}"
-              })
+            newAdls += JSON_TABLES_SEPARATOR
 
-              newAdls += JSON_TABLES_SEPARATOR
+            // to inform about new adls and events
+            doQuery({
+              query: "SELECT * FROM events_for_adls ORDER BY id ASC",
+              queryCallback: (err, rows) => {
+                // TODO: define a correct type for the element
+                // (type is events_for_adls table scheme)
+                rows.forEach((element: any) => {
+                  newAdls +=
+                    "{" +
+                    element.id +
+                    JSON_FIELDS_SEPARATOR +
+                    element.id_adl +
+                    JSON_FIELDS_SEPARATOR +
+                    element.id_event +
+                    JSON_FIELDS_SEPARATOR +
+                    element.version +
+                    "}"
+                })
 
-              // to inform about new adls and events
-              doQuery({
-                query: "SELECT * FROM events_for_adls ORDER BY id ASC",
-                queryCallback: (err, rows) => {
-                  // TODO: define a correct type for the element
-                  // (type is events_for_adls table scheme)
-                  rows.forEach((element: any) => {
-                    console.log(element)
-                    newAdls +=
-                      "{" +
-                      element.id +
-                      JSON_FIELDS_SEPARATOR +
-                      element.id_adl +
-                      JSON_FIELDS_SEPARATOR +
-                      element.id_event +
-                      JSON_FIELDS_SEPARATOR +
-                      element.version +
-                      "}"
-                  })
-
-                  // send this to subscribers
-                  log("Estas son las nuevas adls", newAdls)
-                  mqtt.publish("sensorable/database/adls", newAdls)
-                },
-              })
-            },
-          })
-        },
-      })
-    )
+                // send this to subscribers
+                log("Estas son las nuevas adls", newAdls)
+                mqtt.publish("sensorable/database/adls", newAdls)
+              },
+            })
+          },
+        })
+      },
+    })
   }
 
   return {
@@ -179,10 +166,11 @@ export function statrtDatabaseService() {
 
   mqtt.publish(MQTT_TEST_TOPIC, "Hello I am database service")
 
-  mqtt.onMessage((topic: string, payload: Buffer) => {
+  mqtt.onMessage((topic: string, payload: Buffer, packet: IPublishPacket) => {
     const strPayload = payload.toString()
 
-    log("received message format string: %o", strPayload)
+    log("this is the packet %o", packet)
+    log("those are the properties %o", packet.properties)
 
     let sensorData
 

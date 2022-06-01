@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 //        initializeWearOsTranmissionService();
 //        initializeEmpaticaTransmissionService();
 
-//        initializeBackUpService();
+        initializeBackUpService();
         initializeBluetoothDetectionService();
         initializeSensorsProviderService();
         initializeInfoReceiver();
@@ -98,7 +98,17 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 
     private void testMqtt() {
         MqttHelper.connect();
-        MqttHelper.publish("sensorable/test", ("hola").getBytes(), "7912719");
+
+        final int id = 1;
+        final String topic = "sensorable/database/adls/request";
+        final String responseTopic = topic +"/"+ id;
+
+        MqttHelper.publish(topic, String.valueOf(id).getBytes(), responseTopic);
+
+        MqttHelper.subscribe(responseTopic, response -> {
+            String payload = new String(response.getPayloadAsBytes());
+            Log.i("TEST_MQTT", payload);
+        });
     }
 
     @Override

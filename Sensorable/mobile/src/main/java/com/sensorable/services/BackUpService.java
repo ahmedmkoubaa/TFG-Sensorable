@@ -32,7 +32,6 @@ public class BackUpService extends Service {
 
 
     private void initializeReminders() {
-
         final Handler handler = new Handler();
         Runnable runnable = new Runnable() {
             @Override
@@ -81,8 +80,6 @@ public class BackUpService extends Service {
             }
         };
         handler.post(runnable);
-
-
     }
 
     @Nullable

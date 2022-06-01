@@ -116,6 +116,9 @@ public class AdlDetectionService extends Service {
                 loadAdlsScheme();
             });
         });
+
+        // ask for new adls scheme
+        MqttHelper.publish("sensorable/database/adls/request/generics", ("").getBytes());
     }
 
     private ArrayList<AdlEntity> composeTableAdls(final String stringAdls) {

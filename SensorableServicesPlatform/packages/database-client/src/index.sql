@@ -3,7 +3,8 @@ use test;
 DROP TABLE IF EXISTS sensors,
 events_for_adls,
 events,
-adls;
+adls,
+users;
 
 SET
     @DEVICE_MOBILE := 0;
@@ -119,6 +120,18 @@ CREATE TABLE events_for_adls (
     FOREIGN KEY (id_adl) REFERENCES adls(id) ON DELETE CASCADE,
     FOREIGN KEY (id_event) REFERENCES events(id) ON DELETE CASCADE,
     UNIQUE KEY(id_adl, id_event, version)
+);
+
+CREATE TABLE users (id INT AUTO_INCREMENT PRIMARY KEY);
+
+CREATE TABLE custom_adls_for_users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_user INT NOT NULL,
+    id_adl INT NOT NULL,
+    version INT DEFAULT 1,
+    FOREIGN KEY (id_user) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (id_adl) REFERENCES adls(id) ON DELETE CASCADE,
+    UNIQUE KEY(id_user, id_adl, version)
 );
 
 /*----------------------------------------------------------------------*/
@@ -597,3 +610,64 @@ VALUES
  VALUES
  (7, 18, 1);
  */
+;
+
+/*GET THE CUSTOM ADLS*/
+SELECT
+    *
+FROM
+    adls
+WHERE
+    id IN (
+        SELECT
+            id_adl
+        FROM
+            custom_adls_for_users
+        WHERE
+            id_user = 1
+    );
+
+/*GET THE EVENTS FOR ADLS RELATIONS BY VERSION*/
+SELECT
+    *
+FROM
+    events_for_adls
+WHERE
+    EXISTS (
+        SELECT
+            *
+        FROM
+            custom_adls_for_users
+        WHERE
+            custom_adls_for_users.id_user = 1
+            and custom_adls_for_users.id_adl = events_for_adls.id_adl
+            and custom_adls_for_users.version = events_for_adls.version
+    )
+ORDER BY
+    id ASC;
+
+/*GET THE EVENTS*/
+SELECT
+    *
+FROM
+    events
+WHERE
+    id IN (
+        SELECT
+            id_event
+        FROM
+            events_for_adls
+        WHERE
+            EXISTS (
+                SELECT
+                    *
+                FROM
+                    custom_adls_for_users
+                WHERE
+                    custom_adls_for_users.id_user = 1
+                    and custom_adls_for_users.id_adl = events_for_adls.id_adl
+                    and custom_adls_for_users.version = events_for_adls.version
+            )
+        ORDER BY
+            id ASC
+    );

@@ -91,24 +91,23 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         initializeSensors();
 
 //        initializeWifiDirectDetector();
-        testMqtt();
+//        testMqtt();
 
     }
 
 
     private void testMqtt() {
-        MqttHelper.connect();
-
-        final int id = 1;
-        final String topic = "sensorable/database/adls/request";
-        final String responseTopic = topic +"/"+ id;
-
-        MqttHelper.publish(topic, String.valueOf(id).getBytes(), responseTopic);
-
-        MqttHelper.subscribe(responseTopic, response -> {
-            String payload = new String(response.getPayloadAsBytes());
-            Log.i("TEST_MQTT", payload);
-        });
+//        MqttHelper.connect();
+//
+//        final int id = 1;
+//        final String topic = "sensorable/database/adls/custom/request";
+//        final String responseTopic = topic +"/"+ id;
+//
+//        MqttHelper.publish(topic, String.valueOf(id).getBytes(), responseTopic);
+//        MqttHelper.subscribe(responseTopic, response -> {
+//            String payload = new String(response.getPayloadAsBytes());
+//            Log.i("TEST_MQTT", payload);
+//        });
     }
 
     @Override

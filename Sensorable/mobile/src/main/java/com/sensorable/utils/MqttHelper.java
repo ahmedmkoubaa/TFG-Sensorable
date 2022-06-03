@@ -11,6 +11,7 @@ import com.hivemq.client.mqtt.mqtt5.Mqtt5Client;
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
 import com.hivemq.client.mqtt.mqtt5.message.subscribe.Mqtt5RetainHandling;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 public class MqttHelper {
@@ -41,6 +42,12 @@ public class MqttHelper {
         });
     }
 
+    public static void subscribe(List<String> topics, Consumer<Mqtt5Publish> callback) {
+        for (String topic : topics) {
+            subscribe(topic, callback);
+        }
+    }
+
     public static void subscribe(String topic, Consumer<Mqtt5Publish> callback) {
         client.toAsync()
                 .subscribeWith()
@@ -58,6 +65,10 @@ public class MqttHelper {
 
     public static void publish() {
         publish(SensorableConstants.MQTT_TEST_TOPIC, ("test message").getBytes());
+    }
+
+    public static void publish(final String topic) {
+        publish(topic, "".getBytes());
     }
 
     public static void publish(final String topic, final byte[] payload) {

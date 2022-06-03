@@ -56,6 +56,13 @@ public class SensorableConstants {
     public static final String MQTT_DEFAULT_PASSWORD = "default-password";
     public static final String MQTT_TEST_TOPIC = "sensorable/test";
     public static final String MQTT_CONNECT_URL = "broker.hivemq.com";
+    public static final String MQTT_REQUEST_CUSTOM_ADLS =  "sensorable/database/adls/custom/request";
+    public static final String MQQTT_INFORM_CUSTOM_ADLS =  "sensorable/database/adls/custom/inform";
+
+    public static final String MQTT_REQUEST_GENERIC_ADLS =  "sensorable/database/adls/generics/request";
+    public static final String MQTT_INFORM_GENERIC_ADLS =  "sensorable/database/adls/generics/inform";
+
+
     public static final String DATE_SEPARATOR = "/";
     public static final String TIME_SEPARATOR = ":";
 

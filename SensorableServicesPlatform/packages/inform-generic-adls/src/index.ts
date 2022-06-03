@@ -1,9 +1,9 @@
-import { useMyMqtt, MyMqttInterface } from "../../my-mqtt/src"
+import { useMyMqtt } from "../../my-mqtt/src"
 import { databaseManager } from "../../database-client/src"
 import { JSON_FIELDS_SEPARATOR, JSON_TABLES_SEPARATOR } from "../../sensorable-constants/src"
 
 import debug from "debug"
-const log = debug("inform-adls-scheme-service")
+const log = debug("inform-generic-adls")
 
 export function startInformAdlsSchemeService() {
   const manager = databaseManager()
@@ -14,8 +14,8 @@ export function startInformAdlsSchemeService() {
 
   log("running service")
 
-  mqtt.subscribe(["sensorable/database/adls/request/generics"], () => {
-    log("subscribed to topic %o", ["sensorable/database/adls/request/generics"])
+  mqtt.subscribe(["sensorable/database/adls/generics/request"], () => {
+    log("subscribed to topic %o", ["sensorable/database/adls/generics/request"])
   })
 
   mqtt.onMessage((topic: string, payload: Buffer) => {
@@ -80,7 +80,7 @@ export function startInformAdlsSchemeService() {
                 })
 
                 // send this to subscribers
-                mqtt.publish("sensorable/database/adls", newAdls)
+                mqtt.publish("sensorable/database/adls/generics/inform", newAdls)
               },
             })
           },

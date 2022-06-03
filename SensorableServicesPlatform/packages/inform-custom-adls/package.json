@@ -1,5 +1,5 @@
 {
-  "name": "inform-adls-scheme-service",
+  "name": "inform-custom-adls",
   "version": "1.0.0",
   "main": "dist/index.js",
   "repository": "https://github.com/ahmedmkoubaa/TFG-Sensorable",
@@ -8,8 +8,8 @@
   "private": true,
   "scripts": {
     "build": "tsc",
-    "start": "DEBUG='inform-adls-scheme-service' tsc && node ./dist/inform-adls-scheme-service/src/index.js",
-    "dev": "DEBUG='inform-adls-scheme-service' ts-node ./src/index.ts"
+    "start": "DEBUG='inform-custom-adls' tsc && node ./dist/inform-custom-adls/src/index.js",
+    "dev": "DEBUG='inform-custom-adls' ts-node ./src/index.ts"
   },
   "dependencies": {
     "typescript": "^4.6.2"

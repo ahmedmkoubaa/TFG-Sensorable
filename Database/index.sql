@@ -3,7 +3,8 @@ use test;
 DROP TABLE IF EXISTS sensors,
 events_for_adls,
 events,
-adls;
+adls,
+users;
 
 SET
     @DEVICE_MOBILE := 0;
@@ -119,6 +120,25 @@ CREATE TABLE events_for_adls (
     FOREIGN KEY (id_adl) REFERENCES adls(id) ON DELETE CASCADE,
     FOREIGN KEY (id_event) REFERENCES events(id) ON DELETE CASCADE,
     UNIQUE KEY(id_adl, id_event, version)
+);
+
+CREATE TABLE users (id INT AUTO_INCREMENT PRIMARY KEY);
+
+CREATE TABLE custom_adls_for_users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_user INT NOT NULL,
+    id_adl INT NOT NULL,
+    version INT DEFAULT 1,
+    FOREIGN KEY (id_user) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (id_adl) REFERENCES adls(id) ON DELETE CASCADE,
+    UNIQUE KEY(id_user, id_adl, version)
+);
+
+CREATE TABLE generic_adls (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_adl INT NOT NULL,
+    version INT DEFAULT 1,
+    FOREIGN KEY (id_adl) REFERENCES adls(id)
 );
 
 /*----------------------------------------------------------------------*/
@@ -597,3 +617,92 @@ VALUES
  VALUES
  (7, 18, 1);
  */
+;
+
+/*GET THE CUSTOM AND GENERICS ADLS*/
+SELECT
+    *
+FROM
+    adls
+WHERE
+    id IN (
+        SELECT
+            id_adl
+        FROM
+            custom_adls_for_users
+        WHERE
+            id_user = 1
+        UNION
+        SELECT
+            id_adl
+        FROM
+            generic_adls
+    );
+
+/*GET THE EVENTS FOR ADLS RELATIONS BY VERSION*/
+SELECT
+    DISTINCT events_for_adls.*
+FROM
+    events_for_adls,
+    custom_adls_for_users,
+    generic_adls
+WHERE
+    (
+        /*look for the custom adls*/
+        custom_adls_for_users.id_adl = events_for_adls.id_adl
+        AND custom_adls_for_users.version = events_for_adls.version
+    )
+    OR (
+        /*look for the generic adls*/
+        generic_adls.id_adl = events_for_adls.id_adl
+        AND generic_adls.version = events_for_adls.version
+    )
+    AND custom_adls_for_users.id_user = 1
+ORDER BY
+    id ASC,
+    id_adl ASC,
+    id_event ASC;
+
+/*GET THE EVENTS*/
+SELECT
+    *
+FROM
+    events
+WHERE
+    events.id IN (
+        SELECT
+            DISTINCT id_event
+        FROM
+            events_for_adls,
+            custom_adls_for_users,
+            generic_adls
+        WHERE
+            (
+                /*look for the custom adls*/
+                custom_adls_for_users.id_adl = events_for_adls.id_adl
+                AND custom_adls_for_users.version = events_for_adls.version
+            )
+            OR (
+                /*look for the generic adls*/
+                generic_adls.id_adl = events_for_adls.id_adl
+                AND generic_adls.version = events_for_adls.version
+            )
+            AND custom_adls_for_users.id_user = 1
+    );
+
+/*example of union of generics columns and custom columns*/
+select
+    id_adl,
+    version
+from
+    custom_adls_for_users
+where
+    id_user = 1
+UNION
+select
+    id_adl,
+    version
+from
+    generic_adls
+order by
+    id_adl

@@ -72,6 +72,8 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         SensorablePermissions.requestAll(this);
         SensorablePermissions.ignoreBatteryOptimization(this);
 
+        MqttHelper.connect();
+
         initializeAttributesFromUI();
 
         initializeMobileDatabase();
@@ -81,12 +83,36 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 //        initializeWearOsTranmissionService();
 //        initializeEmpaticaTransmissionService();
 
-//        initializeBackUpService();
+        initializeBackUpService();
         initializeBluetoothDetectionService();
         initializeSensorsProviderService();
         initializeInfoReceiver();
 
+        initializeSensors();
+
 //        initializeWifiDirectDetector();
+//        testMqtt();
+
+    }
+
+
+    private void testMqtt() {
+//        MqttHelper.connect();
+//
+//        final int id = 1;
+//        final String topic = "sensorable/database/adls/custom/request";
+//        final String responseTopic = topic +"/"+ id;
+//
+//        MqttHelper.publish(topic, String.valueOf(id).getBytes(), responseTopic);
+//        MqttHelper.subscribe(responseTopic, response -> {
+//            String payload = new String(response.getPayloadAsBytes());
+//            Log.i("TEST_MQTT", payload);
+//        });
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
 
         // TODO remove this progress bar statements
         userStateSummary.setClickable(false);
@@ -101,16 +127,8 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
                 "Te encuentras bien, sigue así. Recuerda hacer ejercicio y tomarte la medicación cuando toque"
         );
 
-
         // Summary, progressBar and message will be set using a system valoration
         // this system valoration will be developed in the near future
-    }
-
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        initializeSensors();
     }
 
     @Override

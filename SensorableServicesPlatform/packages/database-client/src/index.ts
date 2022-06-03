@@ -1,11 +1,6 @@
 import mysql from "mysql"
-import {
-  MQTT_TEST_TOPIC,
-  DATABASE_TABLES,
-  DATABASE_ACTIONS,
-  JSON_TABLES_SEPARATOR,
-} from "../../sensorable-constants/src"
-import { useMyMqtt, MyMqttInterface, IPublishPacket } from "../../my-mqtt/src"
+import { MQTT_TEST_TOPIC, JSON_TABLES_SEPARATOR } from "../../sensorable-constants/src"
+import { useMyMqtt, IPublishPacket } from "../../my-mqtt/src"
 import { JSON_FIELDS_SEPARATOR } from "../../sensorable-constants/src"
 
 import debug from "debug"
@@ -105,7 +100,7 @@ export function statrtDatabaseService() {
     handleInformAdlsRequest(topic, payload, packet, manager)
   })
 
-  // TODO remove the following statements are only tests
+  // TODO: remove the following statements are only tests
   log("Let's test mqtt")
 }
 

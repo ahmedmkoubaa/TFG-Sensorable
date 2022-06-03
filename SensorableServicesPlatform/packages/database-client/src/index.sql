@@ -134,6 +134,13 @@ CREATE TABLE custom_adls_for_users (
     UNIQUE KEY(id_user, id_adl, version)
 );
 
+CREATE TABLE generic_adls (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_adl INT NOT NULL,
+    version INT DEFAULT 1,
+    FOREIGN KEY (id_adl) REFERENCES adls(id)
+);
+
 /*----------------------------------------------------------------------*/
 /*phone call adl detection*/
 INSERT INTO
@@ -612,7 +619,7 @@ VALUES
  */
 ;
 
-/*GET THE CUSTOM ADLS*/
+/*GET THE CUSTOM AND GENERICS ADLS*/
 SELECT
     *
 FROM
@@ -625,26 +632,36 @@ WHERE
             custom_adls_for_users
         WHERE
             id_user = 1
+        UNION
+        SELECT
+            id_adl
+        FROM
+            generic_adls
     );
 
 /*GET THE EVENTS FOR ADLS RELATIONS BY VERSION*/
 SELECT
-    *
+    DISTINCT events_for_adls.*
 FROM
-    events_for_adls
+    events_for_adls,
+    custom_adls_for_users,
+    generic_adls
 WHERE
-    EXISTS (
-        SELECT
-            *
-        FROM
-            custom_adls_for_users
-        WHERE
-            custom_adls_for_users.id_user = 1
-            and custom_adls_for_users.id_adl = events_for_adls.id_adl
-            and custom_adls_for_users.version = events_for_adls.version
+    (
+        /*look for the custom adls*/
+        custom_adls_for_users.id_adl = events_for_adls.id_adl
+        AND custom_adls_for_users.version = events_for_adls.version
     )
+    OR (
+        /*look for the generic adls*/
+        generic_adls.id_adl = events_for_adls.id_adl
+        AND generic_adls.version = events_for_adls.version
+    )
+    AND custom_adls_for_users.id_user = 1
 ORDER BY
-    id ASC;
+    id ASC,
+    id_adl ASC,
+    id_event ASC;
 
 /*GET THE EVENTS*/
 SELECT
@@ -652,22 +669,40 @@ SELECT
 FROM
     events
 WHERE
-    id IN (
+    events.id IN (
         SELECT
-            id_event
+            DISTINCT id_event
         FROM
-            events_for_adls
+            events_for_adls,
+            custom_adls_for_users,
+            generic_adls
         WHERE
-            EXISTS (
-                SELECT
-                    *
-                FROM
-                    custom_adls_for_users
-                WHERE
-                    custom_adls_for_users.id_user = 1
-                    and custom_adls_for_users.id_adl = events_for_adls.id_adl
-                    and custom_adls_for_users.version = events_for_adls.version
+            (
+                /*look for the custom adls*/
+                custom_adls_for_users.id_adl = events_for_adls.id_adl
+                AND custom_adls_for_users.version = events_for_adls.version
             )
-        ORDER BY
-            id ASC
+            OR (
+                /*look for the generic adls*/
+                generic_adls.id_adl = events_for_adls.id_adl
+                AND generic_adls.version = events_for_adls.version
+            )
+            AND custom_adls_for_users.id_user = 1
     );
+
+/*example of union of generics columns and custom columns*/
+select
+    id_adl,
+    version
+from
+    custom_adls_for_users
+where
+    id_user = 1
+UNION
+select
+    id_adl,
+    version
+from
+    generic_adls
+order by
+    id_adl

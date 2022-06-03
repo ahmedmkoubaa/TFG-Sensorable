@@ -20,6 +20,7 @@ export function startSensorsBackUpService() {
     log("received message in sensors-back-up-service topic:", topic)
     manager.doQuery({
       query: "INSERT INTO sensors (device_type, sensor_type, values_x, values_y, values_z, timestamp) VALUES ?",
+      data: JSON.parse(payload.toString()),
       queryCallback: (err, rows) => {
         if (!err) {
           log("SensorData was inserted correctly")
@@ -27,7 +28,6 @@ export function startSensorsBackUpService() {
           log("Error inserting sensor data in sensors table in sensors-back-up-service")
         }
       },
-      data: JSON.parse(payload.toString()),
     })
   })
 }

@@ -22,12 +22,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class WearSensorDataSender {
-    private Activity context;
-    private CapabilityInfo capabilityInfo;
-    private ExecutorService executorService = Executors.newFixedThreadPool(1);
-
     private static final String WEAR_DATA_RECEPTION = "wear_data_reception";
     private static final String WEAR_DATA_RECEPTION_MESSAGE_PATH = "/wear_data_reception";
+    private final Activity context;
+    private CapabilityInfo capabilityInfo;
+    private final ExecutorService executorService = Executors.newFixedThreadPool(1);
 
     public WearSensorDataSender(Activity context) {
         this.context = context;
@@ -41,14 +40,10 @@ public class WearSensorDataSender {
         executorService.execute(new Runnable() {
             @Override
             public void run() {
-
                 try {
-
                     capabilityInfo = Tasks.await(
                             Wearable.getCapabilityClient(context).getCapability(
                                     WEAR_DATA_RECEPTION, CapabilityClient.FILTER_REACHABLE));
-
-
                 } catch (ExecutionException e) {
                     e.printStackTrace();
                 } catch (InterruptedException e) {

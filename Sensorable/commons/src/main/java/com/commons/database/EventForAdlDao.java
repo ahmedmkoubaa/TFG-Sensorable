@@ -13,7 +13,7 @@ public interface EventForAdlDao {
     @Query("SELECT * FROM EventForAdlEntity")
     List<EventForAdlEntity> getAll();
 
-    @Insert()
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertAll(ArrayList<EventForAdlEntity> eventsforAdls);
 
     @Query("DELETE FROM EventForAdlEntity")

@@ -22,7 +22,8 @@ public class WearTransmissionService extends WearableListenerService {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Toast.makeText(this, "WEAR SERVICE", Toast.LENGTH_SHORT).show();
+        sensorMessagesBuffer = new ArrayList<>();
+        Toast.makeText(this, "WEAR OS SERVICE", Toast.LENGTH_SHORT).show();
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -32,7 +33,6 @@ public class WearTransmissionService extends WearableListenerService {
         SensorTransmissionCoder.SensorMessage message = SensorTransmissionCoder.decodeMessage(messageEvent.getData());
         sendMessageToActivity(message);
     }
-
 
     private void sendMessageToActivity(SensorTransmissionCoder.SensorMessage msg) {
 

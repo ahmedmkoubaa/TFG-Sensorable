@@ -21,6 +21,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import com.commons.DeviceType;
+import com.commons.EmpaticaSensorType;
 import com.commons.SensorTransmissionCoder;
 import com.commons.SensorableConstants;
 import com.commons.SensorablePermissions;
@@ -65,7 +67,6 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -78,37 +79,22 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 
         initializeMobileDatabase();
         initializeSensorDataReceiver();
-        initializeAdlDetectionService();
-
-//        initializeWearOsTranmissionService();
-//        initializeEmpaticaTransmissionService();
-
-        initializeBackUpService();
-        initializeBluetoothDetectionService();
-        initializeSensorsProviderService();
         initializeInfoReceiver();
+
+        initializeWearOsTranmissionService();
+        initializeEmpaticaTransmissionService();
+
+        initializeSensorsProviderService();
+        initializeAdlDetectionService();
+        initializeBackUpService();
+//        initializeBluetoothDetectionService();
 
         initializeSensors();
 
 //        initializeWifiDirectDetector();
-//        testMqtt();
 
     }
 
-
-    private void testMqtt() {
-//        MqttHelper.connect();
-//
-//        final int id = 1;
-//        final String topic = "sensorable/database/adls/custom/request";
-//        final String responseTopic = topic +"/"+ id;
-//
-//        MqttHelper.publish(topic, String.valueOf(id).getBytes(), responseTopic);
-//        MqttHelper.subscribe(responseTopic, response -> {
-//            String payload = new String(response.getPayloadAsBytes());
-//            Log.i("TEST_MQTT", payload);
-//        });
-    }
 
     @Override
     protected void onStart() {
@@ -133,7 +119,6 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 
     @Override
     protected void onDestroy() {
-        MqttHelper.disconnect();
         super.onDestroy();
     }
 
@@ -145,6 +130,17 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
                         Bundle b = intent.getBundleExtra(SensorableConstants.EXTRA_MESSAGE);
                         ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage = b.getParcelableArrayList(SensorableConstants.BROADCAST_MESSAGE);
                         collectReceivedSensorData(arrayMessage);
+
+                        arrayMessage.forEach(sensorMessage -> {
+                            if (sensorMessage.getSensorType() == Sensor.TYPE_HEART_RATE) {
+                                hearRateText.setText(Math.round(sensorMessage.getValue()[0]) + " ppm");
+                                Log.i("EMPATICA_RECEIVED_DATA", "received data fro empatica");
+                                return;
+                            } else if ((sensorMessage.getDeviceType() == DeviceType.EMPATICA && sensorMessage.getSensorType() == EmpaticaSensorType.IBI)) {
+                                hearRateText.setText(Math.round(60 / sensorMessage.getValue()[0]) + " ppm");
+                            }
+
+                        });
                     }
                 };
     }
@@ -253,6 +249,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         LocalBroadcastManager.getInstance(MainActivity.this).registerReceiver(
                 sensorDataReceiver,
                 new IntentFilter(SensorableConstants.EMPATICA_SENDS_SENSOR_DATA));
+
     }
 
     private void initializeWearOsTranmissionService() {
@@ -288,7 +285,6 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
                 new BroadcastReceiver() {
                     @Override
                     public void onReceive(Context context, Intent intent) {
-
                         String msg = intent.getStringExtra(SensorableConstants.EXTRA_MESSAGE);
                         Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
                     }

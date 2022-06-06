@@ -2,14 +2,15 @@ package com.sensorable.services;
 
 import android.app.Service;
 import android.content.Intent;
-
 import android.os.Bundle;
 import android.os.IBinder;
-
 
 import androidx.annotation.Nullable;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import com.commons.DeviceType;
+import com.commons.EmpaticaSensorType;
+import com.commons.SensorTransmissionCoder;
 import com.commons.SensorableConstants;
 import com.empatica.empalink.ConnectionNotAllowedException;
 import com.empatica.empalink.EmpaDeviceManager;
@@ -19,20 +20,12 @@ import com.empatica.empalink.config.EmpaStatus;
 import com.empatica.empalink.delegate.EmpaDataDelegate;
 import com.empatica.empalink.delegate.EmpaStatusDelegate;
 
-import com.commons.DeviceType;
-import com.commons.EmpaticaSensorType;
-import com.commons.SensorTransmissionCoder;
-
 import java.util.ArrayList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class EmpaticaTransmissionService extends Service implements EmpaDataDelegate, EmpaStatusDelegate {
-    private ArrayList<SensorTransmissionCoder.SensorMessage> sensorMessagesBuffer;
-
-    private EmpaDeviceManager deviceManager;
     private static final String EMPATICA_API_KEY = "e910f7a73ce74dbd99b774b9f6010ab5";
-    private ExecutorService executorService = Executors.newFixedThreadPool(1);
+    private ArrayList<SensorTransmissionCoder.SensorMessage> sensorMessagesBuffer;
+    private EmpaDeviceManager deviceManager;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -54,7 +47,6 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
 
 
     private void sendMessageToActivity(SensorTransmissionCoder.SensorMessage msg) {
-
         sensorMessagesBuffer.add(msg);
         if (sensorMessagesBuffer.size() >= SensorableConstants.EMPATICA_BUFFER_SIZE) {
             Intent intent = new Intent(SensorableConstants.EMPATICA_SENDS_SENSOR_DATA);
@@ -91,8 +83,9 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
 
             // The device manager has established a connection
         } else if (status == EmpaStatus.CONNECTED) {
-            sendInfoMessage("CONNECTED");
 
+            sendInfoMessage("CONNECTED");
+            deviceManager.stopScanning();
             // The device manager connected to a device
 
         } else if (status == EmpaStatus.DISCONNECTED) {
@@ -112,7 +105,8 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
 
         if (allowed) {
             // Stop scanning. The first allowed device will do.
-            deviceManager.stopScanning();
+//            deviceManager.stopScanning();
+
             try {
                 // Connect to the device
                 deviceManager.connectDevice(bluetoothDevice);
@@ -132,37 +126,37 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
 
     @Override
     public void didReceiveGSR(float gsr, double timestamp) {
-        float values[] = {gsr};
+        float[] values = {gsr};
         sendMessageToActivity(EmpaticaSensorType.GSR, values);
     }
 
     @Override
     public void didReceiveBVP(float bvp, double timestamp) {
-        float values[] = {bvp};
+        float[] values = {bvp};
         sendMessageToActivity(EmpaticaSensorType.BVP, values);
     }
 
     @Override
     public void didReceiveIBI(float ibi, double timestamp) {
-        float values[] = {ibi};
+        float[] values = {ibi};
         sendMessageToActivity(EmpaticaSensorType.IBI, values);
     }
 
     @Override
     public void didReceiveTemperature(float t, double timestamp) {
-        float values[] = {t};
+        float[] values = {t};
         sendMessageToActivity(EmpaticaSensorType.TEMPERATURE, values);
     }
 
     @Override
     public void didReceiveAcceleration(int x, int y, int z, double timestamp) {
-        float values[] = {x, y, z};
+        float[] values = {x, y, z};
         sendMessageToActivity(EmpaticaSensorType.ACCELEROMETER, values);
     }
 
     @Override
     public void didReceiveBatteryLevel(float level, double timestamp) {
-        float values[] = {level};
+        float[] values = {level};
         sendMessageToActivity(EmpaticaSensorType.BATTERY_LEVEL, values);
     }
 
@@ -189,7 +183,6 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
 
     @Override
     public void didRequestEnableBluetooth() {
-
         sendInfoMessage("ENCIENDE EL BLUETOOTH POR FAVOR");
     }
 
@@ -200,7 +193,6 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
 
     @Override
     public void didUpdateOnWristStatus(int status) {
-
         sendInfoMessage("WRIST STATUS CHANGED");
     }
 }

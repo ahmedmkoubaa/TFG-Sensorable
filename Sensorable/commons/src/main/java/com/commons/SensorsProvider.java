@@ -2,7 +2,6 @@ package com.commons;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEventListener;
@@ -78,8 +77,9 @@ public class SensorsProvider {
         if (!gpsEnabled) {
             Toast.makeText(context, "Please turn on location", Toast.LENGTH_SHORT).show();
         } else {
-            try {locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, listener);}
-            catch (SecurityException e) {
+            try {
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, listener);
+            } catch (SecurityException e) {
                 Toast.makeText(context, "You should ask for permissions", Toast.LENGTH_SHORT).show();
             }
         }
@@ -92,11 +92,6 @@ public class SensorsProvider {
 
         return SensorablePermissions.isGranted(context, Manifest.permission.ACCESS_FINE_LOCATION) &&
                 SensorablePermissions.isGranted(context, Manifest.permission.ACCESS_COARSE_LOCATION);
-
-
-
-
-
     }
 
 

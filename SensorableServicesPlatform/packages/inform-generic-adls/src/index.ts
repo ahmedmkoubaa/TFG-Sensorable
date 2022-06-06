@@ -5,14 +5,14 @@ import { JSON_FIELDS_SEPARATOR, JSON_TABLES_SEPARATOR } from "../../sensorable-c
 import debug from "debug"
 const log = debug("inform-generic-adls")
 
-export function startInformAdlsSchemeService() {
+export function startInformGenericAdls() {
   const manager = databaseManager()
   manager.init()
   manager.connect()
 
   const mqtt = useMyMqtt()
 
-  log("running service")
+  log("running service inform-generic-adls")
 
   mqtt.subscribe(["sensorable/database/adls/generics/request"], () => {
     log("subscribed to topic %o", ["sensorable/database/adls/generics/request"])
@@ -89,5 +89,3 @@ export function startInformAdlsSchemeService() {
     })
   })
 }
-
-startInformAdlsSchemeService()

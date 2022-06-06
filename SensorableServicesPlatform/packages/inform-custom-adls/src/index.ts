@@ -1,4 +1,4 @@
-import { useMyMqtt, MyMqttInterface } from "../../my-mqtt/src"
+import { useMyMqtt } from "../../my-mqtt/src"
 import { databaseManager } from "../../database-client/src"
 import { JSON_FIELDS_SEPARATOR, JSON_TABLES_SEPARATOR } from "../../sensorable-constants/src"
 
@@ -6,7 +6,7 @@ import debug from "debug"
 import { IPublishPacket } from "mqtt"
 const log = debug("inform-custom-adls")
 
-export function startInformAdlsSchemeService() {
+export function startInformCustomAdls() {
   const manager = databaseManager()
   manager.init()
   manager.connect()
@@ -111,5 +111,3 @@ export function startInformAdlsSchemeService() {
     })
   })
 }
-
-startInformAdlsSchemeService()

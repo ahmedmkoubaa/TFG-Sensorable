@@ -33,6 +33,7 @@ import com.sensorable.utils.MqttHelper;
 import com.sensorable.utils.SensorAction;
 
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
@@ -88,7 +89,8 @@ public class AdlDetectionService extends Service {
     }
 
     private void initializeMqttClient() {
-        final Consumer<Mqtt5Publish> handleAdlsScheme = (mqtt5Publish) -> {
+        final Consumer<Mqtt5Publish> handleAdlsScheme = mqtt5Publish -> {
+
             String payload = new String(mqtt5Publish.getPayloadAsBytes());
             String[] tables = payload.split(SensorableConstants.JSON_TABLES_SEPARATOR);
 
@@ -98,11 +100,17 @@ public class AdlDetectionService extends Service {
             String stringEvents = tables[1].substring(1, tables[1].length() - 1);
             String stringEventsForAdls = tables[2].substring(1, tables[2].length() - 1);
 
-            updateFromDatabase(
-                    composeTableAdls(stringAdls),
-                    composeTableEvents(stringEvents),
-                    composeTableEventsForAdls(stringEventsForAdls)
-            );
+
+            try {
+                updateFromDatabase(
+                        composeTableAdls(stringAdls),
+                        composeTableEvents(stringEvents),
+                        composeTableEventsForAdls(stringEventsForAdls)
+                );
+            } catch (ConcurrentModificationException e) {
+                Log.e("ADL_DETECION_SERVICE", "Error executing more than once the updatefromdataase function");
+            }
+
         };
 
         Log.i("MQTT_RECEIVE_ADLS", "before connection");
@@ -130,7 +138,7 @@ public class AdlDetectionService extends Service {
         return someString.substring(1, someString.length() - 1);
     }
 
-    private void updateFromDatabase(ArrayList<AdlEntity> adlEntities, ArrayList<EventEntity> eventEntities, ArrayList<EventForAdlEntity> eventsForAdlsEntities) {
+    private void updateFromDatabase(final ArrayList<AdlEntity> adlEntities, final ArrayList<EventEntity> eventEntities, final ArrayList<EventForAdlEntity> eventsForAdlsEntities) {
         executor.execute(() -> {
             adlDao.deleteAll();
             eventDao.deleteAll();
@@ -214,7 +222,7 @@ public class AdlDetectionService extends Service {
 
         executor = MobileDatabaseBuilder.getExecutor();
 
-//        loadAdlsScheme();
+        loadAdlsScheme();
     }
 
     // it does a query to local database and extract from it the data storing it in memory

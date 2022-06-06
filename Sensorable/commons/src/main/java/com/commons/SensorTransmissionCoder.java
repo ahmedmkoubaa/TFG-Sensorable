@@ -55,10 +55,7 @@ public class SensorTransmissionCoder {
     // it receives the necessary data to form a SensorMessage and it
     // transforms it to String and later to bytes
     public static byte[] codeMessage(int device, int sensorType, float[] value, float timestamp) {
-        String msg = device + FIELDS_SEPARATOR + sensorType + FIELDS_SEPARATOR;
-        msg += codeValue(value);
-        msg += FIELDS_SEPARATOR + timestamp;
-
+        String msg = device + FIELDS_SEPARATOR + sensorType + FIELDS_SEPARATOR + codeValue(value) + FIELDS_SEPARATOR + timestamp;
         byte[] sensorData = msg.getBytes(charset);
         return sensorData;
     }

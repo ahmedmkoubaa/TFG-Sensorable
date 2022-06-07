@@ -41,10 +41,10 @@ public class WearTransmissionService extends WearableListenerService {
             Intent intent = new Intent(SensorableConstants.WEAR_SENDS_SENSOR_DATA);
             // You can also include some extra data.
 
-            Bundle empaticaBundle = new Bundle();
-            empaticaBundle.putParcelableArrayList(SensorableConstants.BROADCAST_MESSAGE, new ArrayList<>(sensorMessagesBuffer));
+            Bundle wearBundle = new Bundle();
+            wearBundle.putParcelableArrayList(SensorableConstants.BROADCAST_MESSAGE, new ArrayList<>(sensorMessagesBuffer));
 
-            intent.putExtra(SensorableConstants.EXTRA_MESSAGE, empaticaBundle);
+            intent.putExtra(SensorableConstants.EXTRA_MESSAGE, wearBundle);
             LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
 
             // reset buffer

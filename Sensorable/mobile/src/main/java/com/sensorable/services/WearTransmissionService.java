@@ -18,11 +18,11 @@ import java.util.ArrayList;
 
 
 public class WearTransmissionService extends WearableListenerService {
-    private ArrayList<SensorTransmissionCoder.SensorMessage> sensorMessagesBuffer;
+    private ArrayList<SensorTransmissionCoder.SensorMessage> sensorMessagesBuffer = new ArrayList<>();;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        sensorMessagesBuffer = new ArrayList<>();
+
         Toast.makeText(this, "WEAR OS SERVICE", Toast.LENGTH_SHORT).show();
         return super.onStartCommand(intent, flags, startId);
     }

@@ -1,4 +1,5 @@
 package com.sensorable;
+
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -15,15 +16,23 @@ import com.commons.SensorsProvider;
 
 
 public class MainActivity extends WearableActivity {
+    private final int[] listenedSensors = {
+            Sensor.TYPE_HEART_RATE,
+            Sensor.TYPE_STEP_COUNTER,
+            Sensor.TYPE_LIGHT,
+            Sensor.TYPE_PROXIMITY,
+            Sensor.TYPE_LINEAR_ACCELERATION
+    };
 
     private TextView heartText;
     private TextView lightText;
     private SensorsProvider sensorsProvider;
     private Button send, sendStepCounter;
-
-
     private WearSensorDataSender sensorSender;
     private float[] lastHeartRateValue;
+
+    private SensorEventListener heartRateListener;
+    private SensorEventListener stepCounterListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,10 +42,10 @@ public class MainActivity extends WearableActivity {
         // request all necessary permissions
         SensorablePermissions.requestAll(this);
 
-        heartText = (TextView) findViewById(R.id.heartRateText);
-        lightText = (TextView) findViewById(R.id.temperatureText);
-        send = (Button) findViewById(R.id.buttonSendHeartRate);
-        sendStepCounter = (Button) findViewById(R.id.buttonSendStepCounter);
+        heartText = findViewById(R.id.heartRateText);
+        lightText = findViewById(R.id.temperatureText);
+        send = findViewById(R.id.buttonSendHeartRate);
+        sendStepCounter = findViewById(R.id.buttonSendStepCounter);
 
         send.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -48,7 +57,7 @@ public class MainActivity extends WearableActivity {
         sendStepCounter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                float value[] = new float[1];
+                float[] value = new float[1];
                 value[0] = 12312;
                 Toast.makeText(MainActivity.this, "enviando step counter", Toast.LENGTH_LONG).show();
                 sensorSender.sendMessage(Sensor.TYPE_STEP_COUNTER, value);
@@ -59,51 +68,69 @@ public class MainActivity extends WearableActivity {
         sensorsProvider = new SensorsProvider(this);
         sensorSender = new WearSensorDataSender(this);
 
+        initializeListenersForUI();
+        initializeSensorsDataSendingListeners();
+
+    }
+
+    private void initializeSensorsDataSendingListeners() {
+        SensorEventListener listenerDataSender = new SensorEventListener() {
+            @Override
+            public void onSensorChanged(SensorEvent sensorEvent) {
+                sensorSender.sendMessage(sensorEvent.sensor.getType(), sensorEvent.values);
+            }
+
+            @Override
+            public void onAccuracyChanged(Sensor sensor, int i) {
+            }
+        };
+
+
+        for (int sensorCode : listenedSensors) {
+            sensorsProvider.subscribeToSensor(sensorCode, listenerDataSender, SensorManager.SENSOR_DELAY_NORMAL);
+        }
+    }
+
+    private void initializeListenersForUI() {
+        heartRateListener = new SensorEventListener() {
+            @Override
+            public void onSensorChanged(SensorEvent sensorEvent) {
+                heartText.setText(Math.round(sensorEvent.values[0]) + " ppm");
+                lastHeartRateValue = sensorEvent.values;
+
+            }
+
+            @Override
+            public void onAccuracyChanged(Sensor sensor, int i) {
+            }
+        };
+
+        stepCounterListener = new SensorEventListener() {
+            @Override
+            public void onSensorChanged(SensorEvent sensorEvent) {
+                lightText.setText(Math.round(sensorEvent.values[0]) + " pasos");
+            }
+
+            @Override
+            public void onAccuracyChanged(Sensor sensor, int i) {
+            }
+        };
+
+        sensorsProvider.subscribeToSensor(Sensor.TYPE_HEART_RATE, heartRateListener, SensorManager.SENSOR_DELAY_NORMAL);
+        sensorsProvider.subscribeToSensor(Sensor.TYPE_STEP_COUNTER, stepCounterListener, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
 
-        sensorsProvider.subscribeToSensor(Sensor.TYPE_HEART_RATE, new SensorEventListener() {
-            @Override
-            public void onSensorChanged(SensorEvent sensorEvent) {
-                String values = " " + sensorEvent.values[0] + " ppm";
-                heartText.setText(values);
-                lastHeartRateValue = sensorEvent.values;
-                sensorSender.sendMessage(Sensor.TYPE_HEART_RATE, sensorEvent.values);
-            }
+    }
 
-            @Override
-            public void onAccuracyChanged(Sensor sensor, int i) {
-                if (i <= 0) {
-                    Toast.makeText(
-                            MainActivity.this,
-                            "HEART SENSOR NOT AVAILABLE",
-                            Toast.LENGTH_SHORT
-                    ).show();
-                }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
 
-            }
-        }, SensorManager.SENSOR_DELAY_FASTEST);
-
-        sensorsProvider.subscribeToSensor(Sensor.TYPE_LIGHT, new SensorEventListener() {
-            @Override
-            public void onSensorChanged(SensorEvent sensorEvent) {
-                String values = " " + sensorEvent.values[0] + " lm";
-                lightText.setText(values);
-            }
-
-            @Override
-            public void onAccuracyChanged(Sensor sensor, int i) {
-                if (i <= 0) {
-                    Toast.makeText(
-                            MainActivity.this,
-                            "AMBIENT TEMPERATURE NOT AVAILABLE",
-                            Toast.LENGTH_SHORT
-                    ).show();
-                }
-            }
-        }, SensorManager.SENSOR_DELAY_NORMAL);
+        sensorsProvider.unsubscribeToSensor(heartRateListener);
+        sensorsProvider.unsubscribeToSensor(stepCounterListener);
     }
 }

@@ -134,9 +134,9 @@ public class SensorTransmissionCoder {
         }
 
         private void initializeSensorMessage(int deviceType, int sensorType, float[] value, long timestamp) {
+            this.deviceType = deviceType;
             this.sensorType = sensorType;
             this.value = value;
-            this.deviceType = deviceType;
             this.timestamp = timestamp;
         }
 

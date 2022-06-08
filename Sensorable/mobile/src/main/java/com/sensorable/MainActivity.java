@@ -50,11 +50,11 @@ import java.util.concurrent.ExecutorService;
 
 public class MainActivity extends AppCompatActivity implements MessageClient.OnMessageReceivedListener {
 
-    private ArrayList<SensorTransmissionCoder.SensorMessage> sensorDataBuffer;
+    private final ArrayList<SensorTransmissionCoder.SensorMessage> sensorDataBuffer = new ArrayList<>();
     private Button userStateSummary;
     private ProgressBar useStateProgressBar;
     private TextView userStateMessage;
-    private TextView hearRateText, stepCounterText;
+    private TextView heartRateText, stepCounterText;
     private SensorsProvider sensorsProvider;
     private Button moreSensorsButton;
 
@@ -87,9 +87,9 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         initializeSensorsProviderService();
         initializeAdlDetectionService();
         initializeBackUpService();
-//        initializeBluetoothDetectionService();
+        initializeBluetoothDetectionService();
 
-        initializeSensors();
+//        initializeSensors();
 
 //        initializeWifiDirectDetector();
 
@@ -132,12 +132,32 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
                         collectReceivedSensorData(arrayMessage);
 
                         arrayMessage.forEach(sensorMessage -> {
-                            if (sensorMessage.getSensorType() == Sensor.TYPE_HEART_RATE) {
-                                hearRateText.setText(Math.round(sensorMessage.getValue()[0]) + " ppm");
-                                Log.i("EMPATICA_RECEIVED_DATA", "received data fro empatica");
-                                return;
-                            } else if ((sensorMessage.getDeviceType() == DeviceType.EMPATICA && sensorMessage.getSensorType() == EmpaticaSensorType.IBI)) {
-                                hearRateText.setText(Math.round(60 / sensorMessage.getValue()[0]) + " ppm");
+
+                            switch (sensorMessage.getDeviceType()) {
+                                case DeviceType.MOBILE:
+                                case DeviceType.WEAROS:
+                                    switch (sensorMessage.getSensorType()) {
+                                        case Sensor.TYPE_STEP_COUNTER:
+                                            stepCounterText.setText(Math.round(sensorMessage.getValue()[0]) + " pasos");
+                                            break;
+
+                                        case Sensor.TYPE_HEART_RATE:
+                                            heartRateText.setText(Math.round(sensorMessage.getValue()[0]) + " ppm");
+                                            break;
+
+                                    }
+
+                                    break;
+
+
+                                case DeviceType.EMPATICA:
+                                    break;
+
+
+                            }
+
+                            if ((sensorMessage.getDeviceType() == DeviceType.EMPATICA && sensorMessage.getSensorType() == EmpaticaSensorType.IBI)) {
+                                heartRateText.setText(Math.round(60 / sensorMessage.getValue()[0]) + " ppm");
                             }
 
                         });
@@ -221,7 +241,6 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
     }
 
     private void initializeAdlDetectionService() {
-        sensorDataBuffer = new ArrayList<>();
 
         startService(new Intent(this, AdlDetectionService.class));
 
@@ -267,7 +286,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         useStateProgressBar = findViewById(R.id.userStateProgressBar);
         userStateMessage = findViewById(R.id.text);
 
-        hearRateText = findViewById(R.id.hearRateText);
+        heartRateText = findViewById(R.id.hearRateText);
         stepCounterText = findViewById(R.id.stepCounterText);
 
         moreSensorsButton = findViewById(R.id.moreSensorsButton);
@@ -313,7 +332,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         sensorsProvider.subscribeToSensor(Sensor.TYPE_HEART_RATE, new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent sensorEvent) {
-                hearRateText.setText((int) sensorEvent.values[0] + " ppm");
+                heartRateText.setText((int) sensorEvent.values[0] + " ppm");
             }
 
             @Override

@@ -15,6 +15,7 @@ import com.commons.devicesDetection.BluetoothDevicesProvider;
 import com.sensorable.R;
 import com.sensorable.utils.BluetoothDeviceInfo;
 import com.sensorable.utils.BluetoothDeviceInfoAdapter;
+import com.sensorable.utils.MobileDatabase;
 import com.sensorable.utils.MobileDatabaseBuilder;
 
 import java.util.ArrayList;
@@ -42,8 +43,9 @@ public class BluetoothOptionsActivity extends AppCompatActivity {
     }
 
     private void initializeDatabase() {
-        bluetoothDeviceDao = MobileDatabaseBuilder.getDatabase(this).bluetoothDeviceDao();
-        bluetoothDeviceRegistryDao = MobileDatabaseBuilder.getDatabase(this).bluetoothDeviceRegistryDao();
+        MobileDatabase database = MobileDatabaseBuilder.getDatabase(this);
+        bluetoothDeviceDao = database.bluetoothDeviceDao();
+        bluetoothDeviceRegistryDao = database.bluetoothDeviceRegistryDao();
         executor = MobileDatabaseBuilder.getExecutor();
     }
 

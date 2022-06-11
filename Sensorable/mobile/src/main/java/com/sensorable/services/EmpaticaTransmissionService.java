@@ -4,6 +4,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
@@ -31,14 +32,17 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
     public int onStartCommand(Intent intent, int flags, int startId) {
         sendInfoMessage("EMPATICE SERVICE");
 
+        try {
+            // Create a new EmpaDeviceManager. MainActivity is both its data and status delegate.
+            deviceManager = new EmpaDeviceManager(this, this, this);
 
-        // Create a new EmpaDeviceManager. MainActivity is both its data and status delegate.
-        deviceManager = new EmpaDeviceManager(getApplicationContext(), this, this);
+            // Initialize the Device Manager using your API key. You need to have Internet access at this point.
+            deviceManager.authenticateWithAPIKey(EMPATICA_API_KEY);
 
-        // Initialize the Device Manager using your API key. You need to have Internet access at this point.
-        deviceManager.authenticateWithAPIKey(EMPATICA_API_KEY);
-
-        // Initialize array buffer to send a bunch of messages insted of doing a single sending per sensor read
+        } catch (Exception e) {
+            Log.e("EMPATICA_TRANSMISSION_SERVICE", "error linking the empatica api");
+        }
+        // Initialize array buffer to send a bunch of messages instead of doing a single sending per sensor read
         sensorMessagesBuffer = new ArrayList<>();
 
 

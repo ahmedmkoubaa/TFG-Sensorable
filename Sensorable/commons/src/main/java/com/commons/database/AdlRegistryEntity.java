@@ -6,13 +6,17 @@ import androidx.room.Entity;
 import androidx.room.ForeignKey;
 
 @Entity(
-        primaryKeys = {"id_adl", "start"},
-        foreignKeys = {
-                @ForeignKey(entity = AdlEntity.class,
-                        parentColumns = "id",
-                        childColumns = "id_adl",
-                        onDelete = ForeignKey.CASCADE)
-        })
+        primaryKeys = {"id_adl", "start"}
+//        TODO: define a better scheme to handle the database foreign keys
+//        the referred foreign key is going to change so many times so we need
+//        it to stay always the same or to be only replaced and not deleted at all
+//        foreignKeys = {
+//                @ForeignKey(entity = AdlEntity.class,
+//                        parentColumns = "id",
+//                        childColumns = "id_adl",
+//                        onDelete = ForeignKey.RESTRICT)
+//        }
+        )
 public class AdlRegistryEntity {
     @NonNull
     @ColumnInfo(name = "id_adl")

@@ -18,6 +18,7 @@ import com.commons.database.BluetoothDeviceEntity;
 import com.commons.database.BluetoothDeviceRegistryDao;
 import com.commons.database.BluetoothDeviceRegistryEntity;
 import com.commons.devicesDetection.BluetoothDevicesProvider;
+import com.sensorable.utils.MobileDatabase;
 import com.sensorable.utils.MobileDatabaseBuilder;
 
 import java.util.Date;
@@ -42,8 +43,10 @@ public class BluetoothDetectionService extends Service {
     }
 
     private void initializeMobileDatabase() {
-        bluetoothDeviceDao = MobileDatabaseBuilder.getDatabase(this).bluetoothDeviceDao();
-        bluetoothDeviceRegistryDao = MobileDatabaseBuilder.getDatabase(this).bluetoothDeviceRegistryDao();
+        MobileDatabase database = MobileDatabaseBuilder.getDatabase(this);
+
+        bluetoothDeviceDao = database.bluetoothDeviceDao();
+        bluetoothDeviceRegistryDao = database.bluetoothDeviceRegistryDao();
         executor = MobileDatabaseBuilder.getExecutor();
     }
 
@@ -72,7 +75,7 @@ public class BluetoothDetectionService extends Service {
 
         // Discovery has found a device. Get the BluetoothDevice object and its info from the Intent.
         BluetoothDevice foundDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-        
+
         // update the registry of detected devices
         updateRegistry(foundDevice);
     }

@@ -8,6 +8,7 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
@@ -79,59 +80,77 @@ public class AdlDetectionService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+
         initializeMobileReceiver();
         initializeMobileDatabase();
         initializeMqttClient();
 
         Log.i("ADL_DETECTION_SERVICE", "initialized adl detection service");
 
+
         return super.onStartCommand(intent, flags, startId);
     }
 
-    private void initializeMqttClient() {
-        final Consumer<Mqtt5Publish> handleAdlsScheme = mqtt5Publish -> {
+    private HashMap<Integer, HashMap<Integer, ArrayList<Pair<Integer, Boolean>>>> deepDatabaseAdlsCopy() {
+        HashMap<Integer, HashMap<Integer, ArrayList<Pair<Integer, Boolean>>>> copiedAdls = new HashMap<>();
 
-            String payload = new String(mqtt5Publish.getPayloadAsBytes());
-            String[] tables = payload.split(SensorableConstants.JSON_TABLES_SEPARATOR);
+        try {
+            databaseAdls.forEach((idAdl, eventsWithVersion) -> {
+                HashMap<Integer, ArrayList<Pair<Integer, Boolean>>> copiedAdl = new HashMap<>();
 
-            Log.i("MQTT_RECEIVE_ADLS", "new content " + payload);
+                eventsWithVersion.forEach((version, events) -> {
+                    copiedAdl.put(version, new ArrayList<>(events));
+                });
 
-            String stringAdls = tables[0].substring(1, tables[0].length() - 1);
-            String stringEvents = tables[1].substring(1, tables[1].length() - 1);
-            String stringEventsForAdls = tables[2].substring(1, tables[2].length() - 1);
-
-
-            try {
-                updateFromDatabase(
-                        composeTableAdls(stringAdls),
-                        composeTableEvents(stringEvents),
-                        composeTableEventsForAdls(stringEventsForAdls)
-                );
-            } catch (ConcurrentModificationException e) {
-                Log.e("ADL_DETECION_SERVICE", "Error executing more than once the updatefromdataase function");
-            }
-
-        };
-
-        Log.i("MQTT_RECEIVE_ADLS", "before connection");
-        MqttHelper.connect();
-
-        // ask for new adls scheme
-        String session = null;
-        if (session != null) {
-            String responseTopic = SensorableConstants.MQQTT_INFORM_CUSTOM_ADLS + "/" + session;
-
-            MqttHelper.subscribe(responseTopic, handleAdlsScheme);
-            MqttHelper.publish(
-                    SensorableConstants.MQTT_REQUEST_CUSTOM_ADLS,
-                    session.getBytes(),
-                    responseTopic
-            );
-        } else {
-            MqttHelper.subscribe(SensorableConstants.MQTT_INFORM_GENERIC_ADLS, handleAdlsScheme);
-            MqttHelper.publish(SensorableConstants.MQTT_REQUEST_GENERIC_ADLS);
+                copiedAdls.put(idAdl, copiedAdl);
+            });
+        } catch (ConcurrentModificationException e) {
+            Log.e("ADL_DETECTION_SERVICE", "Error, concurrent modification error in deep database copy");
         }
 
+        return copiedAdls;
+    }
+
+
+    private void initializeMqttClient() {
+        Log.i("MQTT_RECEIVE_ADLS", "before connection");
+
+        if (MqttHelper.connect()) {
+            final Consumer<Mqtt5Publish> handleAdlsScheme = mqtt5Publish -> {
+
+                String payload = new String(mqtt5Publish.getPayloadAsBytes());
+                String[] tables = payload.split(SensorableConstants.JSON_TABLES_SEPARATOR);
+
+
+                updateFromDatabase(
+                        composeTableAdls(removeFirstAndLastChar(tables[0])),
+                        composeTableEvents(removeFirstAndLastChar(tables[1])),
+                        composeTableEventsForAdls(removeFirstAndLastChar(tables[2]))
+                );
+
+                Log.i("MQTT_RECEIVE_ADLS", "new content " + payload);
+            };
+
+            // ask for new adls scheme
+            String session = null;
+            if (session != null) {
+                String responseTopic = SensorableConstants.MQQTT_INFORM_CUSTOM_ADLS + "/" + session;
+
+//                MqttHelper.unsubscribe(responseTopic);
+                MqttHelper.subscribe(responseTopic, handleAdlsScheme);
+                MqttHelper.publish(
+                        SensorableConstants.MQTT_REQUEST_CUSTOM_ADLS,
+                        session.getBytes(),
+                        responseTopic
+                );
+            } else {
+//                MqttHelper.unsubscribe(SensorableConstants.MQTT_INFORM_GENERIC_ADLS);
+                MqttHelper.subscribe(SensorableConstants.MQTT_INFORM_GENERIC_ADLS, handleAdlsScheme);
+                MqttHelper.publish(SensorableConstants.MQTT_REQUEST_GENERIC_ADLS);
+            }
+        } else {
+            executor.execute((() -> loadAdlsScheme()));
+        }
     }
 
     private String removeFirstAndLastChar(String someString) {
@@ -213,6 +232,7 @@ public class AdlDetectionService extends Service {
     // initialize data structures from the database
     private void initializeMobileDatabase() {
         MobileDatabase database = MobileDatabaseBuilder.getDatabase(this);
+
         eventDao = database.eventDao();
         eventForAdlDao = database.eventForAdlDao();
         adlDao = database.adlDao();
@@ -221,49 +241,42 @@ public class AdlDetectionService extends Service {
         adlRegistryDao = database.adlRegistryDao();
 
         executor = MobileDatabaseBuilder.getExecutor();
-
-        loadAdlsScheme();
     }
 
     // it does a query to local database and extract from it the data storing it in memory
     // data structures to manage it faster and more efficiently
     private void loadAdlsScheme() {
-        if (executor != null) {
-            executor.execute(() -> {
-                events.clear();
-                adls.clear();
-                eventsForAdls.clear();
 
-                events.addAll(eventDao.getAll());
-                adls.addAll(adlDao.getAll());
-                eventsForAdls.addAll(eventForAdlDao.getAll());
+        events.clear();
+        adls.clear();
+        eventsForAdls.clear();
 
-                // generation of data structure to evaluate adls
-                adls.forEach(adlEntity -> {
-                    HashMap<Integer, ArrayList<Pair<Integer, Boolean>>> adlVersions = new HashMap<>();
+        events.addAll(eventDao.getAll());
+        adls.addAll(adlDao.getAll());
+        eventsForAdls.addAll(eventForAdlDao.getAll());
 
-                    eventsForAdls.forEach(eventForAdlEntity -> {
-                        if (eventForAdlEntity.idAdl == adlEntity.id) {
+        // generation of data structure to evaluate adls
+        adls.forEach(adlEntity -> {
+            HashMap<Integer, ArrayList<Pair<Integer, Boolean>>> adlVersions = new HashMap<>();
 
-                            int version = eventForAdlEntity.version;
-                            if (!adlVersions.containsKey(version)) {
-                                adlVersions.put(version, new ArrayList<>());
-                            }
+            eventsForAdls.forEach(eventForAdlEntity -> {
+                if (eventForAdlEntity.idAdl == adlEntity.id) {
 
-                            adlVersions
-                                    .get(version)
-                                    .add(new Pair<>(eventForAdlEntity.idEvent, false));
-                        }
-                    });
+                    int version = eventForAdlEntity.version;
+                    if (!adlVersions.containsKey(version)) {
+                        adlVersions.put(version, new ArrayList<>());
+                    }
 
-                    databaseAdls.put(adlEntity.id, adlVersions);
-                });
-
-                knownLocations.addAll(knownLocationDao.getAll());
+                    adlVersions
+                            .get(version)
+                            .add(new Pair<>(eventForAdlEntity.idEvent, false));
+                }
             });
-        } else {
-            Log.i("ADL_DETECION_SERIVCE", "Executor is null, not able to get data from database at initialization");
-        }
+
+            databaseAdls.put(adlEntity.id, adlVersions);
+        });
+
+        knownLocations.addAll(knownLocationDao.getAll());
     }
 
     private void sendMessageToActivity(String msg) {
@@ -404,9 +417,11 @@ public class AdlDetectionService extends Service {
     }
 
     private void evaluateAdls(HashMap<Integer, Boolean> evaluatedEvents) {
+        HashMap<Integer, HashMap<Integer, ArrayList<Pair<Integer, Boolean>>>> databaseDeepCopy = deepDatabaseAdlsCopy();
+
         // let's take from database adls the events registry owned by each adl
-        for (int idCurrentAdl : databaseAdls.keySet()) {
-            databaseAdls.get(idCurrentAdl).forEach((version, eventsOfCurrentAdl) -> {
+        for (int idCurrentAdl : databaseDeepCopy.keySet()) {
+            databaseDeepCopy.get(idCurrentAdl).forEach((version, eventsOfCurrentAdl) -> {
                 boolean evaluation = true;
                 int size = eventsOfCurrentAdl.size();
 

@@ -58,21 +58,7 @@ public class DetailedSensorsListActivity extends AppCompatActivity {
     }
 
     private void initializeSensors() {
-        sensorsProvider.subscribeToSensor(Sensor.TYPE_ACCELEROMETER, new SensorEventListener() {
-            @Override
-            public void onSensorChanged(SensorEvent sensorEvent) {
-                accelerometerTextView.setText("(" +
-                        sensorEvent.values[0] + ", " +
-                        sensorEvent.values[1] + ", " +
-                        sensorEvent.values[2] +
-                        ")"
-                );
-            }
 
-            @Override
-            public void onAccuracyChanged(Sensor sensor, int i) {
-            }
-        }, SensorManager.SENSOR_DELAY_NORMAL);
 
         sensorsProvider.subscribeToSensor(Sensor.TYPE_AMBIENT_TEMPERATURE, new SensorEventListener() {
             @Override

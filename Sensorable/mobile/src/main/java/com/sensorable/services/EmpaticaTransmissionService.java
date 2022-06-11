@@ -2,6 +2,7 @@ package com.sensorable.services;
 
 import android.app.Service;
 import android.content.Intent;
+import android.hardware.Sensor;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
@@ -131,7 +132,7 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
     @Override
     public void didReceiveGSR(float gsr, double timestamp) {
         float[] values = {gsr};
-        sendMessageToActivity(EmpaticaSensorType.GSR, values);
+        sendMessageToActivity(Sensor.TYPE_RELATIVE_HUMIDITY, values);
     }
 
     @Override
@@ -142,20 +143,20 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
 
     @Override
     public void didReceiveIBI(float ibi, double timestamp) {
-        float[] values = {ibi};
-        sendMessageToActivity(EmpaticaSensorType.IBI, values);
+        float[] values = {60 / ibi};
+        sendMessageToActivity(Sensor.TYPE_HEART_RATE, values);
     }
 
     @Override
     public void didReceiveTemperature(float t, double timestamp) {
         float[] values = {t};
-        sendMessageToActivity(EmpaticaSensorType.TEMPERATURE, values);
+        sendMessageToActivity(Sensor.TYPE_AMBIENT_TEMPERATURE, values);
     }
 
     @Override
     public void didReceiveAcceleration(int x, int y, int z, double timestamp) {
         float[] values = {x, y, z};
-        sendMessageToActivity(EmpaticaSensorType.ACCELEROMETER, values);
+        sendMessageToActivity(Sensor.TYPE_LINEAR_ACCELERATION, values);
     }
 
     @Override

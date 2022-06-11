@@ -18,7 +18,7 @@ import java.util.ArrayList;
 
 
 public class WearTransmissionService extends WearableListenerService {
-    private ArrayList<SensorTransmissionCoder.SensorMessage> sensorMessagesBuffer = new ArrayList<>();;
+    private final ArrayList<SensorTransmissionCoder.SensorMessage> sensorMessagesBuffer = new ArrayList<>();
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -30,8 +30,11 @@ public class WearTransmissionService extends WearableListenerService {
     @Override
     public void onMessageReceived(@NonNull MessageEvent messageEvent) {
         super.onMessageReceived(messageEvent);
-        SensorTransmissionCoder.SensorMessage message = SensorTransmissionCoder.decodeMessage(messageEvent.getData());
-        sendMessageToActivity(message);
+        sendMessageToActivity(
+                SensorTransmissionCoder.decodeMessage(
+                        messageEvent.getData()
+                )
+        );
     }
 
     private void sendMessageToActivity(SensorTransmissionCoder.SensorMessage msg) {

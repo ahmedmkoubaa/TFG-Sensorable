@@ -40,7 +40,7 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
             // Initialize the Device Manager using your API key. You need to have Internet access at this point.
             deviceManager.authenticateWithAPIKey(EMPATICA_API_KEY);
 
-        } catch (Exception e) {
+        } catch (UnsatisfiedLinkError e) {
             Log.e("EMPATICA_TRANSMISSION_SERVICE", "error linking the empatica api");
         }
         // Initialize array buffer to send a bunch of messages instead of doing a single sending per sensor read

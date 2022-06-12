@@ -23,7 +23,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.commons.DeviceType;
-import com.commons.EmpaticaSensorType;
 import com.commons.SensorTransmissionCoder;
 import com.commons.SensorableConstants;
 import com.commons.SensorablePermissions;
@@ -130,10 +129,10 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 
                         arrayMessage.forEach(sensorMessage -> {
 
-
                             switch (sensorMessage.getDeviceType()) {
                                 case DeviceType.MOBILE:
                                 case DeviceType.WEAROS:
+                                case DeviceType.EMPATICA:
                                     switch (sensorMessage.getSensorType()) {
                                         case Sensor.TYPE_STEP_COUNTER:
                                             stepCounterText.setText(Math.round(sensorMessage.getValue()[0]) + " pasos");
@@ -142,31 +141,10 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
                                         case Sensor.TYPE_HEART_RATE:
                                             heartRateText.setText(Math.round(sensorMessage.getValue()[0]) + " ppm");
                                             break;
-
-                                        case Sensor.TYPE_LINEAR_ACCELERATION:
-
-//                                            ((TextView) (findViewById(R.id.acceleromterText))).setText(
-//                                                    sensorMessage.getValue()[0] + ", " +
-//                                                            sensorMessage.getValue()[1] + ", " +
-//                                                            sensorMessage.getValue()[2]
-//                                            );
-
-                                            break;
                                     }
 
                                     break;
-
-
-                                case DeviceType.EMPATICA:
-                                    break;
-
-
                             }
-
-                            if ((sensorMessage.getDeviceType() == DeviceType.EMPATICA && sensorMessage.getSensorType() == EmpaticaSensorType.IBI)) {
-                                heartRateText.setText(Math.round(60 / sensorMessage.getValue()[0]) + " ppm");
-                            }
-
                         });
                     }
                 };

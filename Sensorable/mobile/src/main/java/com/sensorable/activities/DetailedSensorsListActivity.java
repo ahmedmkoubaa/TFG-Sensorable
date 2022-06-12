@@ -62,72 +62,72 @@ public class DetailedSensorsListActivity extends AppCompatActivity {
     }
 
     private void initializeSensors() {
-        
-        LocalBroadcastManager.getInstance(this)
-                .registerReceiver(
-                        new BroadcastReceiver() {
-                            @Override
-                            public void onReceive(Context context, Intent intent) {
-                                Bundle b = intent.getBundleExtra(SensorableConstants.EXTRA_MESSAGE);
-                                ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage = b.getParcelableArrayList(SensorableConstants.BROADCAST_MESSAGE);
 
-                                arrayMessage.forEach(sensorMessage -> {
-                                    switch (sensorMessage.getDeviceType()) {
-                                        case DeviceType.MOBILE:
-                                        case DeviceType.WEAROS:
-                                        case DeviceType.EMPATICA:
+        BroadcastReceiver sensorReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Bundle b = intent.getBundleExtra(SensorableConstants.EXTRA_MESSAGE);
+                ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage = b.getParcelableArrayList(SensorableConstants.BROADCAST_MESSAGE);
 
-                                            switch (sensorMessage.getSensorType()) {
+                arrayMessage.forEach(sensorMessage -> {
+                    switch (sensorMessage.getDeviceType()) {
+                        case DeviceType.MOBILE:
+                        case DeviceType.WEAROS:
+                        case DeviceType.EMPATICA:
 
-                                                case Sensor.TYPE_PROXIMITY:
-                                                    proximityTextView.setText(
-                                                            sensorMessage.getValue()[0] == 0 ? "Cercanía detectada" : "Lejos del teléfono"
-                                                    );
+                            switch (sensorMessage.getSensorType()) {
 
-                                                    break;
-                                                case Sensor.TYPE_LIGHT:
-                                                    lightTextView.setText(sensorMessage.getValue()[0] + " lm");
+                                case Sensor.TYPE_AMBIENT_TEMPERATURE:
+                                        temperatureTextView.setText(sensorMessage.getValue()[0] + " ºC");
+                                    break;
 
-                                                    break;
+                                case Sensor.TYPE_PROXIMITY:
+                                    proximityTextView.setText(
+                                            sensorMessage.getValue()[0] == 0 ? "Cercanía detectada" : "Lejos del teléfono"
+                                    );
 
-                                                case Sensor.TYPE_LINEAR_ACCELERATION:
-                                                    accelerometerTextView.setText(
-                                                            sensorMessage.getValue()[0] + ", " +
-                                                                    sensorMessage.getValue()[1] + ", " +
-                                                                    sensorMessage.getValue()[2]
-                                                    );
+                                    break;
+                                case Sensor.TYPE_LIGHT:
+                                    lightTextView.setText(sensorMessage.getValue()[0] + " lm");
 
-                                                    break;
+                                    break;
 
-                                                case Sensor.TYPE_RELATIVE_HUMIDITY:
-                                                    humidityTextView.setText(String.valueOf(sensorMessage.getValue()[0]));
-                                                    break;
-                                            }
+                                case Sensor.TYPE_LINEAR_ACCELERATION:
+                                    accelerometerTextView.setText(
+                                            sensorMessage.getValue()[0] + ", " + sensorMessage.getValue()[1] + ", " + sensorMessage.getValue()[2]
+                                    );
 
-                                            break;
+                                    break;
 
-
-                                    }
-                                });
+                                case Sensor.TYPE_RELATIVE_HUMIDITY:
+                                    humidityTextView.setText(String.valueOf(sensorMessage.getValue()[0]));
+                                    break;
                             }
-                        },
-                        new IntentFilter(SensorableConstants.SENSORS_PROVIDER_SENDS_SENSORS));
 
+                            break;
+                    }
+                });
+            }
+        };
 
-    }
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                sensorReceiver,
+                new IntentFilter(SensorableConstants.SENSORS_PROVIDER_SENDS_SENSORS)
+        );
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-    }
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                sensorReceiver,
+                new IntentFilter(SensorableConstants.WEAR_SENDS_SENSOR_DATA)
+        );
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-    }
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                sensorReceiver,
+                new IntentFilter(SensorableConstants.SENSORS_PROVIDER_SENDS_LOCATION)
+        );
 
-    @Override
-    protected void onRestart() {
-        super.onRestart();
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                sensorReceiver,
+                new IntentFilter(SensorableConstants.EMPATICA_SENDS_SENSOR_DATA)
+        );
     }
 }

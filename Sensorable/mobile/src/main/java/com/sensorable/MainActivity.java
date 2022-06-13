@@ -12,6 +12,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -33,7 +34,12 @@ import com.commons.devicesDetection.BluetoothDevicesProvider;
 import com.example.commons.devicesDetection.WifiDirectDevicesProvider;
 import com.google.android.gms.wearable.MessageClient;
 import com.google.android.gms.wearable.MessageEvent;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationBarView;
+import com.sensorable.activities.AdlSummaryActivity;
+import com.sensorable.activities.BluetoothOptionsActivity;
 import com.sensorable.activities.DetailedSensorsListActivity;
+import com.sensorable.activities.LocationOptionsActivity;
 import com.sensorable.services.AdlDetectionService;
 import com.sensorable.services.BackUpService;
 import com.sensorable.services.BluetoothDetectionService;
@@ -57,7 +63,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
     private TextView userStateMessage;
     private TextView heartRateText, stepCounterText;
     private SensorsProvider sensorsProvider;
-    private Button moreSensorsButton;
+
 
     private WifiDirectDevicesProvider wifiDirectProvider;
 
@@ -112,6 +118,40 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         userStateMessage.setText(
                 "Te encuentras bien, sigue así. Recuerda hacer ejercicio y tomarte la medicación cuando toque"
         );
+
+
+        BottomNavigationView bottomNavigation = (BottomNavigationView) findViewById(R.id.bottom_navigation);
+        bottomNavigation.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                int id = item.getItemId();
+                switch (id) {
+                    case R.id.page_1:
+                        startActivity
+                                (new Intent(MainActivity.this, BluetoothOptionsActivity.class)
+                                );
+
+                        return true;
+
+                    case R.id.page_2:
+                        startActivity(
+                                new Intent(MainActivity.this, AdlSummaryActivity.class)
+                        );
+
+                        return true;
+
+                    case R.id.page_3:
+                        startActivity(
+                                new Intent(MainActivity.this, LocationOptionsActivity.class)
+                        );
+                        return true;
+
+                }
+
+                return false;
+            }
+        });
+
 
         // Summary, progressBar and message will be set using a system valoration
         // this system valoration will be developed in the near future
@@ -191,7 +231,8 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         }
     }
 
-    private void collectReceivedSensorData(ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage) {
+    private void collectReceivedSensorData
+            (ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage) {
         // local database storing
         executor.execute(() -> {
             ArrayList<SensorMessageEntity> sensorMessageEntities = new ArrayList<>();
@@ -293,14 +334,6 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 
         heartRateText = findViewById(R.id.hearRateText);
         stepCounterText = findViewById(R.id.stepCounterText);
-
-        moreSensorsButton = findViewById(R.id.moreSensorsButton);
-        moreSensorsButton.setOnClickListener(v -> {
-            Intent intent = new Intent(
-                    this,
-                    DetailedSensorsListActivity.class);
-            startActivity(intent);
-        });
     }
 
     private void initializeInfoReceiver() {

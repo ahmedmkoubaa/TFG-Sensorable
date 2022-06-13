@@ -1,6 +1,7 @@
 package com.sensorable;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -21,6 +22,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import com.commons.DeviceType;
 import com.commons.SensorTransmissionCoder;
 import com.commons.SensorableConstants;
 import com.commons.SensorablePermissions;
@@ -38,6 +40,7 @@ import com.sensorable.services.BluetoothDetectionService;
 import com.sensorable.services.EmpaticaTransmissionService;
 import com.sensorable.services.SensorsProviderService;
 import com.sensorable.services.WearTransmissionService;
+import com.sensorable.utils.MobileDatabase;
 import com.sensorable.utils.MobileDatabaseBuilder;
 import com.sensorable.utils.MqttHelper;
 
@@ -48,11 +51,11 @@ import java.util.concurrent.ExecutorService;
 
 public class MainActivity extends AppCompatActivity implements MessageClient.OnMessageReceivedListener {
 
-    private ArrayList<SensorTransmissionCoder.SensorMessage> sensorDataBuffer;
+    private final ArrayList<SensorTransmissionCoder.SensorMessage> sensorDataBuffer = new ArrayList<>();
     private Button userStateSummary;
     private ProgressBar useStateProgressBar;
     private TextView userStateMessage;
-    private TextView hearRateText, stepCounterText;
+    private TextView heartRateText, stepCounterText;
     private SensorsProvider sensorsProvider;
     private Button moreSensorsButton;
 
@@ -65,7 +68,6 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -78,37 +80,21 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 
         initializeMobileDatabase();
         initializeSensorDataReceiver();
-        initializeAdlDetectionService();
-
-//        initializeWearOsTranmissionService();
-//        initializeEmpaticaTransmissionService();
-
-        initializeBackUpService();
-        initializeBluetoothDetectionService();
-        initializeSensorsProviderService();
         initializeInfoReceiver();
 
-        initializeSensors();
+        initializeWearOsTranmissionService();
+        initializeEmpaticaTransmissionService();
 
+        initializeSensorsProviderService();
+        initializeAdlDetectionService();
+        initializeBackUpService();
+        initializeBluetoothDetectionService();
+
+//        initializeSensors();
 //        initializeWifiDirectDetector();
-//        testMqtt();
 
     }
 
-
-    private void testMqtt() {
-//        MqttHelper.connect();
-//
-//        final int id = 1;
-//        final String topic = "sensorable/database/adls/custom/request";
-//        final String responseTopic = topic +"/"+ id;
-//
-//        MqttHelper.publish(topic, String.valueOf(id).getBytes(), responseTopic);
-//        MqttHelper.subscribe(responseTopic, response -> {
-//            String payload = new String(response.getPayloadAsBytes());
-//            Log.i("TEST_MQTT", payload);
-//        });
-    }
 
     @Override
     protected void onStart() {
@@ -131,11 +117,6 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         // this system valoration will be developed in the near future
     }
 
-    @Override
-    protected void onDestroy() {
-        MqttHelper.disconnect();
-        super.onDestroy();
-    }
 
     private void initializeSensorDataReceiver() {
         sensorDataReceiver =
@@ -145,13 +126,34 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
                         Bundle b = intent.getBundleExtra(SensorableConstants.EXTRA_MESSAGE);
                         ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage = b.getParcelableArrayList(SensorableConstants.BROADCAST_MESSAGE);
                         collectReceivedSensorData(arrayMessage);
+
+                        arrayMessage.forEach(sensorMessage -> {
+
+                            switch (sensorMessage.getDeviceType()) {
+                                case DeviceType.MOBILE:
+                                case DeviceType.WEAROS:
+                                case DeviceType.EMPATICA:
+                                    switch (sensorMessage.getSensorType()) {
+                                        case Sensor.TYPE_STEP_COUNTER:
+                                            stepCounterText.setText(Math.round(sensorMessage.getValue()[0]) + " pasos");
+                                            break;
+
+                                        case Sensor.TYPE_HEART_RATE:
+                                            heartRateText.setText(Math.round(sensorMessage.getValue()[0]) + " ppm");
+                                            break;
+                                    }
+
+                                    break;
+                            }
+                        });
                     }
                 };
     }
 
 
     private void initializeMobileDatabase() {
-        sensorMessageDao = MobileDatabaseBuilder.getDatabase(this).sensorMessageDao();
+        MobileDatabase database = MobileDatabaseBuilder.getDatabase(this);
+        sensorMessageDao = database.sensorMessageDao();
         executor = MobileDatabaseBuilder.getExecutor();
     }
 
@@ -163,7 +165,9 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         if (!BluetoothDevicesProvider.isEnabledBluetooth()) {
             BluetoothDevicesProvider.enableBluetooth(this);
         } else {
-            startService(new Intent(this, BluetoothDetectionService.class));
+            if (!isMyServiceRunning(BluetoothDetectionService.class)) {
+                startService(new Intent(this, BluetoothDetectionService.class));
+            }
         }
     }
 
@@ -173,7 +177,9 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
             case SensorableConstants.REQUEST_ENABLE_BT:
                 Log.i("BLUETOOTH_PROVIDER", "on activity result for turn on bluetooth");
                 if (resultCode == Activity.RESULT_OK) {
-                    startService(new Intent(this, BluetoothDetectionService.class));
+                    if (!isMyServiceRunning(BluetoothDetectionService.class)) {
+                        startService(new Intent(this, BluetoothDetectionService.class));
+                    }
                     Toast.makeText(this, "Bluetooth was turned on", Toast.LENGTH_SHORT).show();
                 }
                 break;
@@ -224,45 +230,60 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         }
     }
 
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void initializeAdlDetectionService() {
-        sensorDataBuffer = new ArrayList<>();
+        if (!isMyServiceRunning(AdlDetectionService.class)) {
+            startService(new Intent(this, AdlDetectionService.class));
 
-        startService(new Intent(this, AdlDetectionService.class));
+            LocalBroadcastManager.getInstance(MainActivity.this).registerReceiver(
+                    new BroadcastReceiver() {
+                        @Override
+                        public void onReceive(Context context, Intent intent) {
+                            Toast.makeText(context, "mobile: received" +
+                                            intent.getBundleExtra(SensorableConstants.EXTRA_MESSAGE)
+                                                    .getString(SensorableConstants.BROADCAST_MESSAGE),
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    }, new IntentFilter(SensorableConstants.ADL_UPDATE));
+        }
 
-        LocalBroadcastManager.getInstance(MainActivity.this).registerReceiver(
-                new BroadcastReceiver() {
-                    @Override
-                    public void onReceive(Context context, Intent intent) {
-                        Toast.makeText(context, "mobile: received" +
-                                        intent.getBundleExtra(SensorableConstants.EXTRA_MESSAGE)
-                                                .getString(SensorableConstants.BROADCAST_MESSAGE),
-                                Toast.LENGTH_SHORT).show();
-                    }
-                }, new IntentFilter(SensorableConstants.ADL_UPDATE));
     }
 
     private void initializeBackUpService() {
-        startService(new Intent(this, BackUpService.class));
-
+        if (!isMyServiceRunning(BackUpService.class)) {
+            startService(new Intent(this, BackUpService.class));
+        }
     }
 
     private void initializeEmpaticaTransmissionService() {
-        startService(new Intent(this, EmpaticaTransmissionService.class));
-
-        // handle messages from our service to this activity
-        LocalBroadcastManager.getInstance(MainActivity.this).registerReceiver(
-                sensorDataReceiver,
-                new IntentFilter(SensorableConstants.EMPATICA_SENDS_SENSOR_DATA));
+        if (!isMyServiceRunning(EmpaticaTransmissionService.class)) {
+            startService(new Intent(this, EmpaticaTransmissionService.class));
+            // handle messages from our service to this activity
+            LocalBroadcastManager.getInstance(MainActivity.this).registerReceiver(
+                    sensorDataReceiver,
+                    new IntentFilter(SensorableConstants.EMPATICA_SENDS_SENSOR_DATA));
+        }
     }
 
     private void initializeWearOsTranmissionService() {
-        // start new data transmission service to collect data from wear os
-        startService(new Intent(this, WearTransmissionService.class));
+        if (!isMyServiceRunning(WearTransmissionService.class)) {
+            // start new data transmission service to collect data from wear os
+            startService(new Intent(this, WearTransmissionService.class));
 
-        // handle messages from our service to this activity
-        LocalBroadcastManager.getInstance(MainActivity.this).registerReceiver(
-                sensorDataReceiver,
-                new IntentFilter(SensorableConstants.WEAR_SENDS_SENSOR_DATA));
+            // handle messages from our service to this activity
+            LocalBroadcastManager.getInstance(MainActivity.this).registerReceiver(
+                    sensorDataReceiver,
+                    new IntentFilter(SensorableConstants.WEAR_SENDS_SENSOR_DATA));
+        }
     }
 
     private void initializeAttributesFromUI() {
@@ -270,7 +291,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         useStateProgressBar = findViewById(R.id.userStateProgressBar);
         userStateMessage = findViewById(R.id.text);
 
-        hearRateText = findViewById(R.id.hearRateText);
+        heartRateText = findViewById(R.id.hearRateText);
         stepCounterText = findViewById(R.id.stepCounterText);
 
         moreSensorsButton = findViewById(R.id.moreSensorsButton);
@@ -288,7 +309,6 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
                 new BroadcastReceiver() {
                     @Override
                     public void onReceive(Context context, Intent intent) {
-
                         String msg = intent.getStringExtra(SensorableConstants.EXTRA_MESSAGE);
                         Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
                     }
@@ -296,18 +316,21 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
     }
 
     private void initializeSensorsProviderService() {
-        // start new data transmission service to collect data from wear os
-        startService(new Intent(this, SensorsProviderService.class));
+        if (!isMyServiceRunning(SensorsProviderService.class)) {
+            // start new data transmission service to collect data from wear os
+            startService(new Intent(this, SensorsProviderService.class));
 
-        // handle sensorMessages from sensors provider service and redirect this messages
-        // to the ADL detection service
-        // TODO: as you can see is redundant, we don't need to have this information if
-        //  the only task we are going to do is redirect it, we can send it directly
-        //  between services. So we need to create broadcast receivers in the sensors
-        //  provider service
-        LocalBroadcastManager.getInstance(MainActivity.this).registerReceiver(
-                sensorDataReceiver,
-                new IntentFilter(SensorableConstants.SENSORS_PROVIDER_SENDS_SENSORS));
+            // handle sensorMessages from sensors provider service and redirect this messages
+            // to the ADL detection service
+            // TODO: as you can see is redundant, we don't need to have this information if
+            //  the only task we are going to do is redirect it, we can send it directly
+            //  between services. So we need to create broadcast receivers in the sensors
+            //  provider service
+            LocalBroadcastManager.getInstance(MainActivity.this).registerReceiver(
+                    sensorDataReceiver,
+                    new IntentFilter(SensorableConstants.SENSORS_PROVIDER_SENDS_SENSORS));
+        }
+
 
     }
 
@@ -317,7 +340,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         sensorsProvider.subscribeToSensor(Sensor.TYPE_HEART_RATE, new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent sensorEvent) {
-                hearRateText.setText((int) sensorEvent.values[0] + " ppm");
+                heartRateText.setText((int) sensorEvent.values[0] + " ppm");
             }
 
             @Override

@@ -1,8 +1,8 @@
-import { useMyMqtt, IPublishPacket } from "../../my-mqtt/src"
+import { useMyMqtt } from "../../my-mqtt/src"
 import { databaseManager } from "../../database-client/src"
 
 import debug from "debug"
-const log = debug("sensors-back-up-service")
+const log = debug("sensors-back-up")
 
 export function startSensorsBackUpService() {
   const manager = databaseManager()
@@ -17,7 +17,7 @@ export function startSensorsBackUpService() {
   })
 
   mqtt.onMessage((topic: string, payload: Buffer) => {
-    log("received message in sensors-back-up-service topic:", topic)
+    log("received message in sensors-back-up topic:", topic)
     manager.doQuery({
       query: "INSERT INTO sensors (device_type, sensor_type, values_x, values_y, values_z, timestamp) VALUES ?",
       data: JSON.parse(payload.toString()),
@@ -25,11 +25,9 @@ export function startSensorsBackUpService() {
         if (!err) {
           log("SensorData was inserted correctly")
         } else {
-          log("Error inserting sensor data in sensors table in sensors-back-up-service")
+          log("Error inserting sensor data in sensors table in sensors-back-up")
         }
       },
     })
   })
 }
-
-startSensorsBackUpService()

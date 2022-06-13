@@ -13,7 +13,7 @@ public interface EventDao {
     @Query("SELECT * FROM EventEntity")
     List<EventEntity> getAll();
 
-    @Insert()
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertAll(ArrayList<EventEntity> events);
 
     @Query("DELETE FROM EventEntity")

@@ -1,7 +1,7 @@
 {
   "name": "inform-generic-adls",
   "version": "1.0.0",
-  "main": "dist/index.js",
+  "main": "dist/inform-generic-adls/src/index.js",
   "repository": "https://github.com/ahmedmkoubaa/TFG-Sensorable",
   "author": "Ahmed El Moukhtari Koubaa",
   "license": "MIT",

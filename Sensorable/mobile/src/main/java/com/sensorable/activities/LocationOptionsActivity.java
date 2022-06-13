@@ -28,6 +28,7 @@ import com.commons.database.KnownLocationEntity;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.sensorable.R;
 import com.sensorable.utils.KnownLocationsAdapter;
+import com.sensorable.utils.MobileDatabase;
 import com.sensorable.utils.MobileDatabaseBuilder;
 
 import org.osmdroid.config.Configuration;
@@ -85,7 +86,8 @@ public class LocationOptionsActivity extends AppCompatActivity {
     }
 
     private void initializeMobileDatabase() {
-        knownLocationDao = MobileDatabaseBuilder.getDatabase(this).knownLocationDao();
+        MobileDatabase database = MobileDatabaseBuilder.getDatabase(this);
+        knownLocationDao = database.knownLocationDao();
         executorService = MobileDatabaseBuilder.getExecutor();
     }
 

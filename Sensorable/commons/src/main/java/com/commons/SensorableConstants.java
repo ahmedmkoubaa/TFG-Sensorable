@@ -30,19 +30,19 @@ public class SensorableConstants {
     public final static int SENSOR_GPS = 2411;
 
     public final static int COLLECTED_SENSOR_DATA_SIZE = 2048;
-    public final static int WEAR_BUFFER_SIZE = 512;
+    public final static int WEAR_BUFFER_SIZE = 128;
     public final static int EMPATICA_BUFFER_SIZE = 512;
     public final static int SENSORS_PROVIDER_SERVICE_BUFFER_SIZE = 512;
 
     // for mobile database
     public final static String MOBILE_DATABASE_NAME = "default-mobile-database";
-    public final static int MOBILE_DATABASE_NUMBER_THREADS = 4;
-    public final static int MOBILE_DATABASE_VERSION = 37;
+    public final static int MOBILE_DATABASE_NUMBER_THREADS = 1;
+    public final static int MOBILE_DATABASE_VERSION = 43;
 
     // time that uses the adl detection to service to filter data
     // the lower is this value more accurate is the filtering, it means
     // it filter less info and process a bigger amount of data
-    public final static int ADL_FILTER_TIME = 2 *  SECONDS_TO_MILLIS; // in milliseconds
+    public final static int ADL_FILTER_TIME = 2 * SECONDS_TO_MILLIS; // in milliseconds
     public final static long TIME_SINCE_LAST_ADL_DETECTION = 5 * MINUTES_TO_SECONDS * SECONDS_TO_MILLIS;
     public final static long TIME_SINCE_LAST_BLUETOOTH_DETECTION = 30 * MINUTES_TO_SECONDS * SECONDS_TO_MILLIS; // in milliseconds (those are 30 minutes)
     public final static int SCHEDULE_BLUETOOTH_DISCOVERY = 5 * SECONDS_TO_MILLIS; // in milliseconds
@@ -56,9 +56,9 @@ public class SensorableConstants {
     public static final String MQTT_DEFAULT_PASSWORD = "default-password";
     public static final String MQTT_TEST_TOPIC = "sensorable/test";
     public static final String MQTT_CONNECT_URL = "broker.hivemq.com";
+
     public static final String MQTT_REQUEST_CUSTOM_ADLS =  "sensorable/database/adls/custom/request";
     public static final String MQQTT_INFORM_CUSTOM_ADLS =  "sensorable/database/adls/custom/inform";
-
     public static final String MQTT_REQUEST_GENERIC_ADLS =  "sensorable/database/adls/generics/request";
     public static final String MQTT_INFORM_GENERIC_ADLS =  "sensorable/database/adls/generics/inform";
 

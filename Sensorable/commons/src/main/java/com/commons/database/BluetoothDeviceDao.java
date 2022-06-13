@@ -2,6 +2,7 @@ package com.commons.database;
 
 import androidx.room.Dao;
 import androidx.room.Insert;
+import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.Update;
 
@@ -15,10 +16,10 @@ public interface BluetoothDeviceDao {
     @Query("SELECT * FROM BluetoothDeviceEntity")
     List<BluetoothDeviceEntity> getAll();
 
-    @Query("SELECT * FROM BluetoothDeviceEntity WHERE address LIKE :arg0 ")
+    @Query("SELECT * FROM BluetoothDeviceEntity WHERE address = :arg0 ")
     BluetoothDeviceEntity findByAddress(String arg0);
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(BluetoothDeviceEntity device);
 
     @Update()

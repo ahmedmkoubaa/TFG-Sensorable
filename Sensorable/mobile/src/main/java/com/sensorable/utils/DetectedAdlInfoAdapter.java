@@ -41,9 +41,9 @@ public class DetectedAdlInfoAdapter extends ArrayAdapter<DetectedAdlInfo> {
         String title, description, stats, timestamp;
         title = adl.getTitle();
         description = adl.getDescription();
-        stats = "from " +
+        stats = "Desde " +
                 SensorableDates.timestampToDate(adl.getStartTime()) +
-                " to " +
+                " hasta " +
                 SensorableDates.timestampToDate(adl.getEndTime());
 
         timestamp = SensorableDates.timestampToDate(adl.getStartTime());

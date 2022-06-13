@@ -1,5 +1,5 @@
 {
-  "name": "sensors-back-up-service",
+  "name": "sensors-back-up",
   "version": "1.0.0",
   "main": "dist/index.js",
   "repository": "https://github.com/ahmedmkoubaa/TFG-Sensorable",
@@ -8,8 +8,8 @@
   "private": true,
   "scripts": {
     "build": "tsc",
-    "start": "DEBUG='sensors-back-up-service' tsc && node ./dist/sensors-back-up-service/src/index.js",
-    "dev": "DEBUG='sensors-back-up-service' ts-node ./src/index.ts"
+    "start": "DEBUG='sensors-back-up' tsc && node ./dist/sensors-back-up/src/index.js",
+    "dev": "DEBUG='sensors-back-up' ts-node ./src/index.ts"
   },
   "dependencies": {
     "typescript": "^4.6.2"

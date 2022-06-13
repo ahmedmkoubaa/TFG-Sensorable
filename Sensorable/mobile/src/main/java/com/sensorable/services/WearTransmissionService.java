@@ -18,21 +18,24 @@ import java.util.ArrayList;
 
 
 public class WearTransmissionService extends WearableListenerService {
-    private ArrayList<SensorTransmissionCoder.SensorMessage> sensorMessagesBuffer;
+    private final ArrayList<SensorTransmissionCoder.SensorMessage> sensorMessagesBuffer = new ArrayList<>();
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Toast.makeText(this, "WEAR SERVICE", Toast.LENGTH_SHORT).show();
+
+        Toast.makeText(this, "WEAR OS SERVICE", Toast.LENGTH_SHORT).show();
         return super.onStartCommand(intent, flags, startId);
     }
 
     @Override
     public void onMessageReceived(@NonNull MessageEvent messageEvent) {
         super.onMessageReceived(messageEvent);
-        SensorTransmissionCoder.SensorMessage message = SensorTransmissionCoder.decodeMessage(messageEvent.getData());
-        sendMessageToActivity(message);
+        sendMessageToActivity(
+                SensorTransmissionCoder.decodeMessage(
+                        messageEvent.getData()
+                )
+        );
     }
-
 
     private void sendMessageToActivity(SensorTransmissionCoder.SensorMessage msg) {
 
@@ -41,10 +44,10 @@ public class WearTransmissionService extends WearableListenerService {
             Intent intent = new Intent(SensorableConstants.WEAR_SENDS_SENSOR_DATA);
             // You can also include some extra data.
 
-            Bundle empaticaBundle = new Bundle();
-            empaticaBundle.putParcelableArrayList(SensorableConstants.BROADCAST_MESSAGE, new ArrayList<>(sensorMessagesBuffer));
+            Bundle wearBundle = new Bundle();
+            wearBundle.putParcelableArrayList(SensorableConstants.BROADCAST_MESSAGE, new ArrayList<>(sensorMessagesBuffer));
 
-            intent.putExtra(SensorableConstants.EXTRA_MESSAGE, empaticaBundle);
+            intent.putExtra(SensorableConstants.EXTRA_MESSAGE, wearBundle);
             LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
 
             // reset buffer

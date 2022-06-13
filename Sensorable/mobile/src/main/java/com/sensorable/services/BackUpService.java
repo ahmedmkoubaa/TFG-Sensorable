@@ -42,8 +42,6 @@ public class BackUpService extends Service {
                 SensorMessageDao sensorMessageDao = MobileDatabaseBuilder.getDatabase(BackUpService.this).sensorMessageDao();
                 ExecutorService executorService = MobileDatabaseBuilder.getExecutor();
 
-                MqttHelper.connect();
-
                 executorService.execute(() ->
                 {
                     List<SensorMessageEntity> content = sensorMessageDao.getAll();

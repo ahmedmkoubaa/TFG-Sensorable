@@ -9,7 +9,6 @@ import {
 
 import debug from "debug"
 import { MqttClient, connect, IPublishPacket } from "mqtt"
-import { getPackedSettings } from "http2"
 const log = debug("my-mqtt")
 
 export interface MyMqttInterface {

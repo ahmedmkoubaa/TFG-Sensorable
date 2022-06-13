@@ -22,7 +22,7 @@ public class MqttHelper {
                     .buildAsync();
 
     // is necessary to make it blocking for lately requests
-    public static void connect() {
+    public static boolean connect() {
         final MqttClientState status = client.toBlocking().getState();
 
         if (!status.isConnectedOrReconnect()) {
@@ -30,9 +30,13 @@ public class MqttHelper {
                 client.toBlocking().connect();
             } catch (Exception e) {
                 Log.e("MQTT", e.getMessage());
+                return false;
+
             }
             Log.i("MQTT", "client not connected, trying to connect");
         }
+
+        return true;
     }
 
 
@@ -49,6 +53,8 @@ public class MqttHelper {
     }
 
     public static void subscribe(String topic, Consumer<Mqtt5Publish> callback) {
+
+
         client.toAsync()
                 .subscribeWith()
                 .topicFilter(topic)
@@ -61,6 +67,10 @@ public class MqttHelper {
                         Log.i("MQTT", throwable == null ? "success in susbcribe" : throwable.getMessage())
                 )
                 .thenAccept(mqtt5SubAck -> Log.i("MQTT", "subscribed to topic " + topic));
+    }
+
+    public static void unsubscribe(final String topic) {
+        client.toAsync().unsubscribeWith().topicFilter(topic).send();
     }
 
     public static void publish() {

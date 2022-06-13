@@ -26,6 +26,12 @@ import java.util.ArrayList;
 
 public class SensorsProviderService extends Service {
     private final ArrayList<SensorTransmissionCoder.SensorMessage> sensorMessagesBuffer;
+    private final int[] listenedSensors = {
+            Sensor.TYPE_PROXIMITY, Sensor.TYPE_HEART_RATE,
+            Sensor.TYPE_AMBIENT_TEMPERATURE, Sensor.TYPE_RELATIVE_HUMIDITY,
+            Sensor.TYPE_STEP_COUNTER, Sensor.TYPE_LIGHT,
+            Sensor.TYPE_ACCELEROMETER, Sensor.TYPE_LINEAR_ACCELERATION
+    };
     private SensorsProvider sensorsProvider;
 
     public SensorsProviderService() {
@@ -63,14 +69,11 @@ public class SensorsProviderService extends Service {
             }
         };
 
-        sensorsProvider.subscribeToSensor(Sensor.TYPE_PROXIMITY, transmissionListener, SensorManager.SENSOR_DELAY_NORMAL);
-        sensorsProvider.subscribeToSensor(Sensor.TYPE_HEART_RATE, transmissionListener, SensorManager.SENSOR_DELAY_NORMAL);
-        sensorsProvider.subscribeToSensor(Sensor.TYPE_AMBIENT_TEMPERATURE, transmissionListener, SensorManager.SENSOR_DELAY_NORMAL);
-        sensorsProvider.subscribeToSensor(Sensor.TYPE_RELATIVE_HUMIDITY, transmissionListener, SensorManager.SENSOR_DELAY_NORMAL);
-        sensorsProvider.subscribeToSensor(Sensor.TYPE_STEP_COUNTER, transmissionListener, SensorManager.SENSOR_DELAY_NORMAL);
-        sensorsProvider.subscribeToSensor(Sensor.TYPE_LIGHT, transmissionListener, SensorManager.SENSOR_DELAY_NORMAL);
-        sensorsProvider.subscribeToSensor(Sensor.TYPE_ACCELEROMETER, transmissionListener, SensorManager.SENSOR_DELAY_NORMAL);
-        sensorsProvider.subscribeToSensor(Sensor.TYPE_LINEAR_ACCELERATION, transmissionListener, SensorManager.SENSOR_DELAY_NORMAL);
+
+        for (int sensorCode : listenedSensors) {
+            sensorsProvider.subscribeToSensor(sensorCode, transmissionListener, SensorManager.SENSOR_DELAY_NORMAL);
+        }
+
 
         sensorsProvider.subscribeToGps(new LocationListener() {
             @Override

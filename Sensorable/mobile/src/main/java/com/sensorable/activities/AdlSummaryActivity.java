@@ -13,6 +13,7 @@ import com.commons.database.AdlRegistryEntity;
 import com.sensorable.R;
 import com.sensorable.utils.DetectedAdlInfo;
 import com.sensorable.utils.DetectedAdlInfoAdapter;
+import com.sensorable.utils.MobileDatabase;
 import com.sensorable.utils.MobileDatabaseBuilder;
 
 import java.util.ArrayList;
@@ -36,8 +37,9 @@ public class AdlSummaryActivity extends AppCompatActivity {
     }
 
     private void initializeMobileDatabase() {
-        adlRegistryDao = MobileDatabaseBuilder.getDatabase(this).adlRegistryDao();
-        adlDao = MobileDatabaseBuilder.getDatabase(this).adlDao();
+        MobileDatabase database = MobileDatabaseBuilder.getDatabase(this);
+        adlRegistryDao = database.adlRegistryDao();
+        adlDao = database.adlDao();
         executor = MobileDatabaseBuilder.getExecutor();
 
         Log.i("DETECTED_ADL", "initialized mobile database");

@@ -56,7 +56,6 @@ import java.util.concurrent.ExecutorService;
 
 
 public class MainActivity extends AppCompatActivity implements MessageClient.OnMessageReceivedListener {
-
     private final ArrayList<SensorTransmissionCoder.SensorMessage> sensorDataBuffer = new ArrayList<>();
     private Button userStateSummary;
     private ProgressBar useStateProgressBar;
@@ -121,34 +120,45 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 
 
         BottomNavigationView bottomNavigation = (BottomNavigationView) findViewById(R.id.bottom_navigation);
+        bottomNavigation.setSelectedItemId(R.id.tab_home);
         bottomNavigation.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 int id = item.getItemId();
                 switch (id) {
-                    case R.id.page_1:
-                        startActivity
-                                (new Intent(MainActivity.this, BluetoothOptionsActivity.class)
-                                );
+                    case R.id.tab_bluetooth:
+                        startActivity(
+                                new Intent(MainActivity.this, BluetoothOptionsActivity.class)
+                        );
+                        overridePendingTransition(0, 0);
 
                         return true;
 
-                    case R.id.page_2:
+                    case R.id.tab_adls:
                         startActivity(
                                 new Intent(MainActivity.this, AdlSummaryActivity.class)
                         );
+                        overridePendingTransition(0, 0);
 
                         return true;
 
-                    case R.id.page_3:
+                    case R.id.tab_locations:
                         startActivity(
                                 new Intent(MainActivity.this, LocationOptionsActivity.class)
                         );
+                        overridePendingTransition(0, 0);
                         return true;
 
+                    case R.id.tab_charts:
+
+                        startActivity(
+                                new Intent(MainActivity.this, DetailedSensorsListActivity.class)
+                        );
+                        overridePendingTransition(0, 0);
+                        return true;
                 }
 
-                return false;
+                return true;
             }
         });
 
@@ -168,7 +178,6 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
                         collectReceivedSensorData(arrayMessage);
 
                         arrayMessage.forEach(sensorMessage -> {
-
                             switch (sensorMessage.getDeviceType()) {
                                 case DeviceType.MOBILE:
                                 case DeviceType.WEAROS:

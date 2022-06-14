@@ -9,6 +9,7 @@ import android.location.LocationListener;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
@@ -25,7 +26,10 @@ import com.commons.SensorablePermissions;
 import com.commons.SensorsProvider;
 import com.commons.database.KnownLocationDao;
 import com.commons.database.KnownLocationEntity;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.navigation.NavigationBarView;
+import com.sensorable.MainActivity;
 import com.sensorable.R;
 import com.sensorable.utils.KnownLocationsAdapter;
 import com.sensorable.utils.MobileDatabase;
@@ -72,6 +76,8 @@ public class LocationOptionsActivity extends AppCompatActivity {
         //inflate and create the map
         setContentView(R.layout.activity_location_options);
 
+        initializeAttributesFromUI();
+
         initializeMobileDatabase();
 
         initializeMap();
@@ -83,6 +89,51 @@ public class LocationOptionsActivity extends AppCompatActivity {
         initializeAddLocationButton();
 
         initializeActivityLauncher();
+    }
+
+    private void initializeAttributesFromUI() {
+        BottomNavigationView bottomNavigation = (BottomNavigationView) findViewById(R.id.bottom_navigation);
+        bottomNavigation.setSelectedItemId(R.id.tab_locations);
+        bottomNavigation.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                int id = item.getItemId();
+                switch (id) {
+                    case R.id.tab_bluetooth:
+                        startActivity(
+                                new Intent(LocationOptionsActivity.this, BluetoothOptionsActivity.class)
+                        );
+                        overridePendingTransition(0,0);
+
+                        return true;
+
+                    case R.id.tab_adls:
+                        startActivity(
+                                new Intent(LocationOptionsActivity.this, AdlSummaryActivity.class)
+                        );
+                        overridePendingTransition(0,0);
+
+                        return true;
+
+                    case R.id.tab_home:
+                        startActivity(
+                                new Intent(LocationOptionsActivity.this, MainActivity.class)
+                        );
+                        overridePendingTransition(0,0);
+                        return true;
+
+                    case R.id.tab_charts:
+
+                        startActivity(
+                                new Intent(LocationOptionsActivity.this, DetailedSensorsListActivity.class)
+                        );
+                        overridePendingTransition(0,0);
+                        return true;
+                }
+
+                return true;
+            }
+        });
     }
 
     private void initializeMobileDatabase() {

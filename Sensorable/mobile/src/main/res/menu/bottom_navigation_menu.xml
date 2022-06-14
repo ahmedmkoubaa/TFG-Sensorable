@@ -1,19 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item
-        android:id="@+id/page_1"
-        android:enabled="true"
-        android:icon="@drawable/bluetooth_icon"
-        android:title="@string/app_name"/>
-    <item
-        android:id="@+id/page_2"
-        android:enabled="true"
-        android:icon="@drawable/person"
-        android:title="@string/app_name"/>
+
 
     <item
-        android:id="@+id/page_3"
+        android:id="@+id/tab_bluetooth"
         android:enabled="true"
-        android:icon="@drawable/location_icon"
-        android:title="@string/app_name"/>
+        android:icon="@drawable/outlined_bluetooth_icon"
+        android:title="@string/title_tab_bluetooth"/>
+    <item
+        android:id="@+id/tab_adls"
+        android:enabled="true"
+        android:icon="@drawable/muscular_man"
+        android:title="@string/title_tab_adls"/>
+    <item
+        android:id="@+id/tab_home"
+        android:enabled="true"
+        android:icon="@drawable/home"
+        android:title="@string/title_tab_home"/>
+
+    <item
+        android:id="@+id/tab_charts"
+        android:enabled="true"
+        android:icon="@drawable/chart_icon"
+        android:title="@string/title_tab_home"/>
+
+    <item
+        android:id="@+id/tab_locations"
+        android:enabled="true"
+        android:icon="@drawable/compass"
+        android:title="@string/title_tab_charts"/>
 </menu>

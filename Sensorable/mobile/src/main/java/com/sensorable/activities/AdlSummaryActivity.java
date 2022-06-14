@@ -1,15 +1,21 @@
 package com.sensorable.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.widget.ListView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.commons.database.AdlDao;
 import com.commons.database.AdlEntity;
 import com.commons.database.AdlRegistryDao;
 import com.commons.database.AdlRegistryEntity;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationBarView;
+import com.sensorable.MainActivity;
 import com.sensorable.R;
 import com.sensorable.utils.DetectedAdlInfo;
 import com.sensorable.utils.DetectedAdlInfoAdapter;
@@ -76,6 +82,51 @@ public class AdlSummaryActivity extends AppCompatActivity {
 
     private void initializeAttributesFromUI() {
         detectedAdlList = findViewById(R.id.detectedAdlsList);
+
+        BottomNavigationView bottomNavigation = (BottomNavigationView) findViewById(R.id.bottom_navigation);
+        bottomNavigation.setSelectedItemId(R.id.tab_adls);
+        bottomNavigation.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                int id = item.getItemId();
+                switch (id) {
+                    case R.id.tab_bluetooth:
+                        startActivity(
+                                new Intent(AdlSummaryActivity.this, BluetoothOptionsActivity.class)
+                        );
+                        overridePendingTransition(0, 0);
+
+                        return true;
+
+                    case R.id.tab_locations:
+                        startActivity(
+                                new Intent(AdlSummaryActivity.this, LocationOptionsActivity.class)
+                        );
+                        overridePendingTransition(0, 0);
+                        return true;
+
+                    case R.id.tab_home:
+                        startActivity(
+                                new Intent(AdlSummaryActivity.this, MainActivity.class)
+                        );
+                        overridePendingTransition(0, 0);
+
+                        return true;
+
+                    case R.id.tab_charts:
+
+                        startActivity(
+                                new Intent(AdlSummaryActivity.this, DetailedSensorsListActivity.class)
+                        );
+                        overridePendingTransition(0, 0);
+                        return true;
+
+                }
+
+                return true;
+            }
+        });
+
         detectedAdlList.setDivider(null);
         adlArray = new ArrayList<>();
 

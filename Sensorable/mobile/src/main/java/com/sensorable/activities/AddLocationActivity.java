@@ -74,7 +74,6 @@ public class AddLocationActivity extends AppCompatActivity {
         saveButton = (Button) findViewById(R.id.saveButton);
         saveButton.setOnClickListener(v -> {
             if (mapMarker.getPosition() != null) {
-
                 executor.execute(() -> {
                     KnownLocationEntity newLocation = new KnownLocationEntity(
                             locationTitle.getText().toString(),

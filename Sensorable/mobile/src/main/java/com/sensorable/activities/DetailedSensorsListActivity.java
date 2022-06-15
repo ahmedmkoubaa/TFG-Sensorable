@@ -33,7 +33,6 @@ public class DetailedSensorsListActivity extends AppCompatActivity {
     private TextView humidityTextView;
     private TextView proximityTextView;
     private TextView lightTextView;
-    private Button advancedMenuButton;
 
     private SensorsProvider sensorsProvider;
 
@@ -52,13 +51,7 @@ public class DetailedSensorsListActivity extends AppCompatActivity {
         humidityTextView = findViewById(R.id.humidityText);
         proximityTextView = findViewById(R.id.proximityText);
         lightTextView = findViewById(R.id.lightText);
-        advancedMenuButton = findViewById(R.id.advancedMenuButton);
-        advancedMenuButton.setOnClickListener(v -> {
-            startActivity(new Intent(
-                    this,
-                    AdvancedMenuActivity.class)
-            );
-        });
+
 
         BottomNavigationView bottomNavigation = (BottomNavigationView) findViewById(R.id.bottom_navigation);
         bottomNavigation.setSelectedItemId(R.id.tab_charts);

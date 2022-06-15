@@ -51,7 +51,7 @@
             android:enabled="true"
             android:exported="true" />
 
-        <activity android:name=".activities.LocationOptionsActivity" android:noHistory="true"/>
+        <activity android:name=".activities.LocationOptionsActivity" android:noHistory="false"/>
         <activity android:name=".activities.AdlSummaryActivity" android:noHistory="true" />
         <activity android:name=".activities.AddLocationActivity"  android:noHistory="true" />
         <activity android:name=".activities.BluetoothOptionsActivity"  android:noHistory="true" /> <!-- Activities that the application is composed by -->

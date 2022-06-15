@@ -7,9 +7,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
@@ -51,19 +48,18 @@ import com.sensorable.utils.MobileDatabaseBuilder;
 import com.sensorable.utils.MqttHelper;
 
 import java.util.ArrayList;
-import java.util.Random;
 import java.util.concurrent.ExecutorService;
 
 
 public class MainActivity extends AppCompatActivity implements MessageClient.OnMessageReceivedListener {
     private final ArrayList<SensorTransmissionCoder.SensorMessage> sensorDataBuffer = new ArrayList<>();
+    private final int stepTarget = 5000;
     private Button userStateSummary;
     private ProgressBar useStateProgressBar;
     private TextView userStateMessage;
     private TextView heartRateText, stepCounterText;
+
     private SensorsProvider sensorsProvider;
-
-
     private WifiDirectDevicesProvider wifiDirectProvider;
 
     private SensorMessageDao sensorMessageDao;
@@ -107,16 +103,12 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 
         // TODO remove this progress bar statements
         userStateSummary.setClickable(false);
-        userStateSummary.setText("EN BUEN ESTADO");
+
+
+        userStateSummary.setText("\n" + String.valueOf(stepTarget));
 
         useStateProgressBar.setMin(0);
-        useStateProgressBar.setMax(100);
-        useStateProgressBar.setProgress((new Random()).nextInt(100));
-
-
-        userStateMessage.setText(
-                "Te encuentras bien, sigue así. Recuerda hacer ejercicio y tomarte la medicación cuando toque"
-        );
+        useStateProgressBar.setMax(stepTarget);
 
 
         BottomNavigationView bottomNavigation = (BottomNavigationView) findViewById(R.id.bottom_navigation);
@@ -184,11 +176,25 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
                                 case DeviceType.EMPATICA:
                                     switch (sensorMessage.getSensorType()) {
                                         case Sensor.TYPE_STEP_COUNTER:
-                                            stepCounterText.setText(Math.round(sensorMessage.getValue()[0]) + " pasos");
+                                            int steps = Math.round(sensorMessage.getValue()[0]);
+                                            double stepsToKm = Math.round((steps * 0.65) / 10) / 100.0;
+
+                                            stepCounterText.setText(stepsToKm + " km");
+                                            useStateProgressBar.setProgress(steps);
+                                            userStateMessage.setText(getMessageBySteps(steps));
+                                            userStateSummary.setText(steps + "\n\n" + stepTarget);
                                             break;
 
                                         case Sensor.TYPE_HEART_RATE:
-                                            heartRateText.setText(Math.round(sensorMessage.getValue()[0]) + " ppm");
+                                            int heartRate = Math.round(sensorMessage.getValue()[0]);
+                                            String msg = "";
+
+                                            if (heartRate == 0) {
+                                                msg = "-";
+                                            } else {
+                                                msg += heartRate;
+                                            }
+                                            heartRateText.setText(heartRate == 0 ? "-" : heartRate + " ppm");
                                             break;
                                     }
 
@@ -196,7 +202,25 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
                             }
                         });
                     }
+
+
                 };
+    }
+
+    private String getMessageBySteps(int steps) {
+        String msg = null;
+        if (steps < 1000) {
+            msg = "Aún te quedan bastantes pasos por hacer, ¡Ánimo!";
+        } else if (steps >= 1000 && 3000 < steps) {
+            msg = "Has avanzado, sigue caminando y conseguirás tu objetivo rápidamente.";
+        } else if (steps >= 3000) {
+            msg = "Ya llevas más de la mitad, te queda muy poco. ¡¡Ánimo!!";
+        } else {
+            msg = "Camina para poder conseguir tu objetivo de pasos, ánimo!";
+        }
+
+        return msg;
+
     }
 
 
@@ -294,17 +318,19 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         if (!isMyServiceRunning(AdlDetectionService.class)) {
             startService(new Intent(this, AdlDetectionService.class));
 
-            LocalBroadcastManager.getInstance(MainActivity.this).registerReceiver(
-                    new BroadcastReceiver() {
-                        @Override
-                        public void onReceive(Context context, Intent intent) {
-                            Toast.makeText(context, "mobile: received" +
-                                            intent.getBundleExtra(SensorableConstants.EXTRA_MESSAGE)
-                                                    .getString(SensorableConstants.BROADCAST_MESSAGE),
-                                    Toast.LENGTH_SHORT).show();
-                        }
-                    }, new IntentFilter(SensorableConstants.ADL_UPDATE));
+
         }
+
+        LocalBroadcastManager.getInstance(MainActivity.this).registerReceiver(
+                new BroadcastReceiver() {
+                    @Override
+                    public void onReceive(Context context, Intent intent) {
+                        Toast.makeText(context, "mobile: received" +
+                                        intent.getBundleExtra(SensorableConstants.EXTRA_MESSAGE)
+                                                .getString(SensorableConstants.BROADCAST_MESSAGE),
+                                Toast.LENGTH_SHORT).show();
+                    }
+                }, new IntentFilter(SensorableConstants.ADL_UPDATE));
 
     }
 
@@ -318,22 +344,23 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         if (!isMyServiceRunning(EmpaticaTransmissionService.class)) {
             startService(new Intent(this, EmpaticaTransmissionService.class));
             // handle messages from our service to this activity
-            LocalBroadcastManager.getInstance(MainActivity.this).registerReceiver(
-                    sensorDataReceiver,
-                    new IntentFilter(SensorableConstants.EMPATICA_SENDS_SENSOR_DATA));
         }
+
+        LocalBroadcastManager.getInstance(MainActivity.this).registerReceiver(
+                sensorDataReceiver,
+                new IntentFilter(SensorableConstants.EMPATICA_SENDS_SENSOR_DATA));
     }
 
     private void initializeWearOsTranmissionService() {
         if (!isMyServiceRunning(WearTransmissionService.class)) {
             // start new data transmission service to collect data from wear os
             startService(new Intent(this, WearTransmissionService.class));
-
-            // handle messages from our service to this activity
-            LocalBroadcastManager.getInstance(MainActivity.this).registerReceiver(
-                    sensorDataReceiver,
-                    new IntentFilter(SensorableConstants.WEAR_SENDS_SENSOR_DATA));
         }
+
+        // handle messages from our service to this activity
+        LocalBroadcastManager.getInstance(MainActivity.this).registerReceiver(
+                sensorDataReceiver,
+                new IntentFilter(SensorableConstants.WEAR_SENDS_SENSOR_DATA));
     }
 
     private void initializeAttributesFromUI() {
@@ -361,47 +388,19 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         if (!isMyServiceRunning(SensorsProviderService.class)) {
             // start new data transmission service to collect data from wear os
             startService(new Intent(this, SensorsProviderService.class));
-
-            // handle sensorMessages from sensors provider service and redirect this messages
-            // to the ADL detection service
-            // TODO: as you can see is redundant, we don't need to have this information if
-            //  the only task we are going to do is redirect it, we can send it directly
-            //  between services. So we need to create broadcast receivers in the sensors
-            //  provider service
-            LocalBroadcastManager.getInstance(MainActivity.this).registerReceiver(
-                    sensorDataReceiver,
-                    new IntentFilter(SensorableConstants.SENSORS_PROVIDER_SENDS_SENSORS));
         }
 
-
+        // handle sensorMessages from sensors provider service and redirect this messages
+        // to the ADL detection service
+        // TODO: as you can see is redundant, we don't need to have this information if
+        //  the only task we are going to do is redirect it, we can send it directly
+        //  between services. So we need to create broadcast receivers in the sensors
+        //  provider service
+        LocalBroadcastManager.getInstance(MainActivity.this).registerReceiver(
+                sensorDataReceiver,
+                new IntentFilter(SensorableConstants.SENSORS_PROVIDER_SENDS_SENSORS));
     }
 
-    private void initializeSensors() {
-        sensorsProvider = new SensorsProvider(this);
-
-        sensorsProvider.subscribeToSensor(Sensor.TYPE_HEART_RATE, new SensorEventListener() {
-            @Override
-            public void onSensorChanged(SensorEvent sensorEvent) {
-                heartRateText.setText((int) sensorEvent.values[0] + " ppm");
-            }
-
-            @Override
-            public void onAccuracyChanged(Sensor sensor, int i) {
-            }
-
-        }, SensorManager.SENSOR_DELAY_NORMAL);
-
-        sensorsProvider.subscribeToSensor(Sensor.TYPE_STEP_COUNTER, new SensorEventListener() {
-            @Override
-            public void onSensorChanged(SensorEvent sensorEvent) {
-                stepCounterText.setText((int) sensorEvent.values[0] + " pasos");
-            }
-
-            @Override
-            public void onAccuracyChanged(Sensor sensor, int i) {
-            }
-        }, SensorManager.SENSOR_DELAY_NORMAL);
-    }
 
     // TODO test me and find my utility if I have any
     @Override

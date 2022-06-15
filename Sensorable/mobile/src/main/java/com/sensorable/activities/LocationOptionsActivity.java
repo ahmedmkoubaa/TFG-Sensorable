@@ -103,7 +103,8 @@ public class LocationOptionsActivity extends AppCompatActivity {
                         startActivity(
                                 new Intent(LocationOptionsActivity.this, BluetoothOptionsActivity.class)
                         );
-                        overridePendingTransition(0,0);
+                        overridePendingTransition(0, 0);
+                        finish();
 
                         return true;
 
@@ -111,7 +112,8 @@ public class LocationOptionsActivity extends AppCompatActivity {
                         startActivity(
                                 new Intent(LocationOptionsActivity.this, AdlSummaryActivity.class)
                         );
-                        overridePendingTransition(0,0);
+                        overridePendingTransition(0, 0);
+                        finish();
 
                         return true;
 
@@ -119,7 +121,8 @@ public class LocationOptionsActivity extends AppCompatActivity {
                         startActivity(
                                 new Intent(LocationOptionsActivity.this, MainActivity.class)
                         );
-                        overridePendingTransition(0,0);
+                        overridePendingTransition(0, 0);
+                        finish();
                         return true;
 
                     case R.id.tab_charts:
@@ -127,7 +130,8 @@ public class LocationOptionsActivity extends AppCompatActivity {
                         startActivity(
                                 new Intent(LocationOptionsActivity.this, DetailedSensorsListActivity.class)
                         );
-                        overridePendingTransition(0,0);
+                        overridePendingTransition(0, 0);
+                        finish();
                         return true;
                 }
 
@@ -200,8 +204,9 @@ public class LocationOptionsActivity extends AppCompatActivity {
 
             Log.i("KNOWN_LOCATION_ENTITY", "Query has been made succesfully, no errors");
 
+
             for (KnownLocationEntity k : locArray) {
-                setMarker(new GeoPoint(k.longitude, k.latitude));
+                setMarker(new GeoPoint( k.latitude,  k.longitude,  k.altitude), k.title, k.address);
             }
         });
 
@@ -265,10 +270,16 @@ public class LocationOptionsActivity extends AppCompatActivity {
     }
 
     private void setMarker(GeoPoint point) {
+        setMarker(point, "", "");
+    }
+    private void setMarker(GeoPoint point, String title, String description) {
         // this is how to display a position
         Marker marker = new Marker(map);
         marker.setPosition(point);
         marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+        marker.setTitle(title);
+        marker.setSubDescription(description);
         map.getOverlays().add(marker);
+
     }
 }

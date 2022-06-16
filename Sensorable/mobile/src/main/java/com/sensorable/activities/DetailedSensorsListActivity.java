@@ -4,11 +4,11 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.hardware.Sensor;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
-import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -23,16 +23,29 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
 import com.sensorable.MainActivity;
 import com.sensorable.R;
+import com.sensorable.utils.SensorableDates;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+
+import im.dacer.androidcharts.BarView;
+import im.dacer.androidcharts.LineView;
 
 public class DetailedSensorsListActivity extends AppCompatActivity {
+    private final ArrayList<String> heartChartColumns = new ArrayList<>();
+    private final ArrayList<Integer> heartchartData = new ArrayList<>();
+    private final ArrayList<Integer> barViewData = new ArrayList<>(Arrays.asList(6201, 2510, 4204, 1248, 2589, 0));
 
+    private long lastHeartChartUpdate = 0;
     private TextView accelerometerTextView;
     private TextView temperatureTextView;
     private TextView humidityTextView;
     private TextView proximityTextView;
     private TextView lightTextView;
+
+    private LineView lineView;
+    private BarView barView;
 
     private SensorsProvider sensorsProvider;
 
@@ -52,8 +65,23 @@ public class DetailedSensorsListActivity extends AppCompatActivity {
         proximityTextView = findViewById(R.id.proximityText);
         lightTextView = findViewById(R.id.lightText);
 
+        barView = findViewById(R.id.bar_view);
 
-        BottomNavigationView bottomNavigation = (BottomNavigationView) findViewById(R.id.bottom_navigation);
+        barView.setBottomTextList(
+                new ArrayList<>(Arrays.asList("09/06", "11/06", "15/06", "16/06", "17/06", "18/06"))
+        );
+
+
+        barView.setDataList(barViewData, 5000);
+
+        lineView = findViewById(R.id.line_view);
+        lineView.setDrawDotLine(false); //optional
+        lineView.setShowPopup(LineView.SHOW_POPUPS_MAXMIN_ONLY); //optional
+        lineView.setColorArray(new int[]{Color.RED});
+        lineView.setBottomTextList(heartChartColumns);
+
+
+        BottomNavigationView bottomNavigation = findViewById(R.id.bottom_navigation);
         bottomNavigation.setSelectedItemId(R.id.tab_charts);
         bottomNavigation.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
             @Override
@@ -116,6 +144,41 @@ public class DetailedSensorsListActivity extends AppCompatActivity {
 
                                 switch (sensorMessage.getSensorType()) {
 
+                                    case Sensor.TYPE_HEART_RATE:
+                                        long current = new Date().getTime();
+                                        boolean needsUpdate = ((current - lastHeartChartUpdate)) > SensorableConstants.TIME_SINCE_LAST_HEART_CHART_UPDATE;
+
+                                        if (sensorMessage.getValue()[0] > 30 && needsUpdate) {
+                                            heartchartData.add(Math.round(sensorMessage.getValue()[0]));
+                                            heartChartColumns.add(SensorableDates.timestampToTimeSeconds(sensorMessage.getTimestamp()));
+
+                                            if (heartchartData.size() > 0 && heartChartColumns.size() > 0) {
+                                                if (heartChartColumns.size() > 8 || heartChartColumns.size() > 8) {
+                                                    heartChartColumns.remove(0);
+                                                    heartchartData.remove(0);
+                                                }
+
+                                                runOnUiThread(() -> {
+                                                    lineView.setBottomTextList(heartChartColumns);
+                                                    lineView.setDataList(new ArrayList<>(Arrays.asList(heartchartData)));
+                                                });
+
+                                                lastHeartChartUpdate = current;
+                                            }
+                                        }
+
+
+                                        break;
+
+                                    case Sensor.TYPE_STEP_COUNTER:
+                                        barViewData.remove(barViewData.size() - 1);
+                                        barViewData.add(Math.round(sensorMessage.getValue()[0]));
+
+                                        runOnUiThread(() -> {
+                                            barView.setDataList(barViewData, 5000);
+                                        });
+                                        break;
+
                                     case Sensor.TYPE_AMBIENT_TEMPERATURE:
                                         temperatureTextView.setText(sensorMessage.getValue()[0] + " ºC");
                                         break;
@@ -133,13 +196,13 @@ public class DetailedSensorsListActivity extends AppCompatActivity {
 
                                     case Sensor.TYPE_LINEAR_ACCELERATION:
                                         accelerometerTextView.setText(
-                                                sensorMessage.getValue()[0] + ", " + sensorMessage.getValue()[1] + ", " + sensorMessage.getValue()[2]
+                                                Math.round(sensorMessage.getValue()[0]) + ", " + Math.round(sensorMessage.getValue()[1]) + ", " + Math.round(sensorMessage.getValue()[2])
                                         );
 
                                         break;
 
                                     case Sensor.TYPE_RELATIVE_HUMIDITY:
-                                        humidityTextView.setText(String.valueOf(sensorMessage.getValue()[0]));
+                                        humidityTextView.setText(Math.round((sensorMessage.getValue()[0]) * 100) / 100 + "%");
                                         break;
                                 }
 
@@ -168,3 +231,4 @@ public class DetailedSensorsListActivity extends AppCompatActivity {
         );
     }
 }
+

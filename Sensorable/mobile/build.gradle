@@ -53,6 +53,9 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
     implementation 'com.squareup.okhttp:okhttp:2.5.0'
 
+    // charts implementation
+    implementation 'im.dacer:AndroidCharts:1.0.4'
+
     // for empatica api
     implementation 'com.empatica.empalink:e4link:1.0.0@aar'
 

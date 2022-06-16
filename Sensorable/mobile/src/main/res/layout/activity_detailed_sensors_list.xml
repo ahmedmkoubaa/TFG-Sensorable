@@ -29,7 +29,7 @@
                 android:paddingStart="10dp"
                 android:paddingLeft="10dp"
                 android:text="Tus datos detallados"
-                android:textSize="32sp"
+                android:textSize="20sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -60,13 +60,28 @@
                     android:layout_height="wrap_content"
                     app:srcCompat="@drawable/radar_icon" />
 
-                <TextView
-                    android:id="@+id/proximityText"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:text="proximity"
-                    android:textSize="32sp" />
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/proximityTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:text="Proximidad"
+                        android:textSize="33sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/proximityText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:textSize="20sp" />
+
+                </LinearLayout>
             </LinearLayout>
 
 
@@ -88,13 +103,29 @@
                     android:layout_height="wrap_content"
                     app:srcCompat="@drawable/light_icon" />
 
-                <TextView
-                    android:id="@+id/lightText"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:text="light"
-                    android:textSize="32sp" />
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/lightTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:text="Luz"
+                        android:textSize="33sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/lightText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:textSize="20sp" />
+
+                </LinearLayout>
+
             </LinearLayout>
 
             <LinearLayout
@@ -115,13 +146,28 @@
                     android:layout_weight="0"
                     app:srcCompat="@drawable/gravity" />
 
-                <TextView
-                    android:id="@+id/acceleromterText"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:text="accelerometer"
-                    android:textSize="22sp" />
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/acceleromterTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:text="Acelerómetro"
+                        android:textSize="33sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/acceleromterText"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:textSize="22sp" />
+                </LinearLayout>
+
 
             </LinearLayout>
 
@@ -144,14 +190,27 @@
                     android:layout_weight="0"
                     app:srcCompat="@drawable/temperature_icon" />
 
-                <TextView
-                    android:id="@+id/temperatureText"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:text="temperature"
-                    android:textSize="32sp" />
+                    android:orientation="vertical">
 
+                    <TextView
+                        android:id="@+id/temperatureTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:text="Temperatura"
+                        android:textSize="33sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/temperatureText"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:textSize="20sp" />
+                </LinearLayout>
             </LinearLayout>
 
 
@@ -173,16 +232,79 @@
                     android:layout_weight="0"
                     app:srcCompat="@drawable/humidity_icon" />
 
-                <TextView
-                    android:id="@+id/humidityText"
-                    android:layout_width="wrap_content"
+
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:text="humidity"
-                    android:textSize="32sp" />
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/humidityTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:text="Sudoración"
+                        android:textSize="33sp"
+                        android:textStyle="bold" />
+
+
+                    <TextView
+                        android:id="@+id/humidityText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_marginBottom="5dp"
+                        android:layout_weight="1"
+                        android:text="humidity"
+                        android:textSize="20sp" />
+                </LinearLayout>
+
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="5dp"
+                android:padding="5dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Pulsaciones"
+                    android:textSize="32sp"
+                    android:textStyle="bold" />
+
+                <view
+                    android:id="@+id/line_view"
+                    class="im.dacer.androidcharts.LineView"
+                    android:layout_width="match_parent"
+                    android:layout_height="300dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="5dp"
+                android:padding="5dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Pasos por días"
+                    android:textSize="32sp"
+                    android:textStyle="bold" />
+
+                <view
+                    android:id="@+id/bar_view"
+                    class="im.dacer.androidcharts.BarView"
+                    android:layout_width="match_parent"
+                    android:layout_height="300dp" />
             </LinearLayout>
         </LinearLayout>
     </ScrollView>
+
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"

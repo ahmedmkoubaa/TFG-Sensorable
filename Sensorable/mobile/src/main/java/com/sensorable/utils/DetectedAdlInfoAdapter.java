@@ -12,20 +12,18 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.commons.database.DetectedAdlEntity;
 import com.sensorable.R;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 
 
-public class DetectedAdlsAdapter extends ArrayAdapter<DetectedAdlEntity> {
+public class DetectedAdlInfoAdapter extends ArrayAdapter<DetectedAdlInfo> {
     private final int resource;
     private final Context context;
 
     private final boolean[] buttonStates;
 
-    public DetectedAdlsAdapter(@NonNull Context context, int resource, @NonNull ArrayList<DetectedAdlEntity> objects) {
+    public DetectedAdlInfoAdapter(@NonNull Context context, int resource, @NonNull ArrayList<DetectedAdlInfo> objects) {
         super(context, resource, objects);
         this.context = context;
         this.resource = resource;
@@ -39,14 +37,16 @@ public class DetectedAdlsAdapter extends ArrayAdapter<DetectedAdlEntity> {
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        DetectedAdlEntity adl = this.getItem(position);
-
+        DetectedAdlInfo adl = this.getItem(position);
         String title, description, stats, timestamp;
-        title = adl.title;
-        description = adl.description;
-        stats = adl.stats;
+        title = adl.getTitle();
+        description = adl.getDescription();
+        stats = "Desde " +
+                SensorableDates.timestampToDate(adl.getStartTime()) +
+                " hasta " +
+                SensorableDates.timestampToDate(adl.getEndTime());
 
-        timestamp = SensorableDates.timestampToDate(adl.firstTimestamp);
+        timestamp = SensorableDates.timestampToDate(adl.getStartTime());
 
         LayoutInflater inflater = LayoutInflater.from(context);
         convertView = inflater.inflate(this.resource, parent, false);
@@ -73,7 +73,7 @@ public class DetectedAdlsAdapter extends ArrayAdapter<DetectedAdlEntity> {
         adlDescription.setText(description);
         adlStats.setText(stats);
         adlTimestamp.setText(timestamp);
-        accompanied.setChecked(adl.accompanied);
+        accompanied.setChecked(adl.getAccompanied());
 
         return convertView;
     }

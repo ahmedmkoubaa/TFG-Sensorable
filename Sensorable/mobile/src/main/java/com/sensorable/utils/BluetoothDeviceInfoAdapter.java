@@ -10,21 +10,21 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.room.Room;
 
-import com.commons.SensorableConstants;
-import com.commons.database.BluetoothDeviceEntity;
 import com.commons.database.BluetoothDeviceDao;
+import com.commons.database.BluetoothDeviceEntity;
 import com.sensorable.R;
 
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
 
-public class BluetoothDeviceAdapter extends ArrayAdapter<BluetoothDeviceEntity> {
+public class BluetoothDeviceInfoAdapter extends ArrayAdapter<BluetoothDeviceInfo> {
     private final int resource;
-    private BluetoothDeviceDao bluetoothDeviceDao;
     private final Context context;
+    private BluetoothDeviceDao bluetoothDeviceDao;
+    private ExecutorService executor;
 
-    public BluetoothDeviceAdapter(@NonNull Context context, int resource, @NonNull ArrayList<BluetoothDeviceEntity> objects) {
+    public BluetoothDeviceInfoAdapter(@NonNull Context context, int resource, @NonNull ArrayList<BluetoothDeviceInfo> objects) {
         super(context, resource, objects);
         this.context = context;
         this.resource = resource;
@@ -33,24 +33,20 @@ public class BluetoothDeviceAdapter extends ArrayAdapter<BluetoothDeviceEntity> 
     }
 
     private void initializeDatabase() {
-        MobileDatabase database = Room.databaseBuilder(
-                context,
-                MobileDatabase.class,
-                SensorableConstants.MOBILE_DATABASE_NAME)
-                .allowMainThreadQueries()
-                .build();
-
-        bluetoothDeviceDao = database.bluetoothDeviceDao();
+        bluetoothDeviceDao = MobileDatabaseBuilder.getDatabase(context).bluetoothDeviceDao();
+        executor = MobileDatabaseBuilder.getExecutor();
     }
 
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
 
-        BluetoothDeviceEntity item = this.getItem(position);
-        String name = item.deviceName;
-        String mac = item.address;
-        boolean trusted = item.trusted;
+        BluetoothDeviceInfo item = this.getItem(position);
+        String name = item.getDeviceName();
+        String mac = item.getAddress();
+        String firstTiemstamp = SensorableDates.timestampToDate(item.getStart());
+        String endTimestamp = SensorableDates.timestampToDate(item.getEnd());
+        boolean trusted = item.isTrusted();
 
         LayoutInflater inflater = LayoutInflater.from(context);
         convertView = inflater.inflate(this.resource, parent, false);
@@ -62,15 +58,21 @@ public class BluetoothDeviceAdapter extends ArrayAdapter<BluetoothDeviceEntity> 
         TextView last = convertView.findViewById(R.id.lastTime);
 
         deviceTrusted.setOnCheckedChangeListener((compoundButton, checked) -> {
-            item.trusted = checked;
-            bluetoothDeviceDao.updateDevice(item);
+            BluetoothDeviceEntity device = new BluetoothDeviceEntity(item.getAddress(), item.getDeviceName(), item.getBondState(), item.getBluetoothDeviceType(), item.isTrusted());
+            device.trusted = checked;
+            executor.execute(() -> {
+                bluetoothDeviceDao.updateDevice(device);
+            });
+
+            notifyDataSetChanged();
         });
 
         deviceName.setText(name);
         deviceMAC.setText(mac);
         deviceTrusted.setChecked(trusted);
-        first.setText(Long.toString(item.firstTimestamp));
-        last.setText(Long.toString(item.lastTimestamp));
+
+        first.setText(firstTiemstamp);
+        last.setText(endTimestamp);
 
         return convertView;
     }

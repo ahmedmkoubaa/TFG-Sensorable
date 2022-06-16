@@ -8,7 +8,7 @@ import {
 } from "../../sensorable-constants/src"
 
 import debug from "debug"
-import { MqttClient, connect } from "mqtt"
+import { MqttClient, connect, IPublishPacket } from "mqtt"
 const log = debug("my-mqtt")
 
 export interface MyMqttInterface {
@@ -16,6 +16,8 @@ export interface MyMqttInterface {
   publish(topic: string, payload: string): void
   onMessage(callback: (topic: string, payload: Buffer) => void): void
 }
+
+export type { IPublishPacket } from "mqtt"
 
 export function useMyMqtt() {
   // initialize the client connecting to default url
@@ -26,6 +28,7 @@ export function useMyMqtt() {
     username: MQTT_DEFAULT_PASSWORD,
     password: MQTT_DEFAULT_USERNAME,
     reconnectPeriod: MQTT_RECONNECT_PERIOD,
+    protocolVersion: 5,
   })
 
   // export subscribe function
@@ -47,6 +50,7 @@ export function useMyMqtt() {
       client.publish(
         topic,
         payload,
+
         {
           qos: 0,
           retain: false,
@@ -68,7 +72,7 @@ export function useMyMqtt() {
   }
 
   // export received message function
-  function onMessage(callback: (topic: string, payload: Buffer) => void) {
+  function onMessage(callback: (topic: string, payload: Buffer, packet: IPublishPacket) => void) {
     const onMessageWhenConnected = () => {
       client.on("message", callback)
     }

@@ -10,8 +10,8 @@ import com.commons.database.AdlRegistryDao;
 import com.commons.database.AdlRegistryEntity;
 import com.commons.database.BluetoothDeviceDao;
 import com.commons.database.BluetoothDeviceEntity;
-import com.commons.database.DetectedAdlDao;
-import com.commons.database.DetectedAdlEntity;
+import com.commons.database.BluetoothDeviceRegistryDao;
+import com.commons.database.BluetoothDeviceRegistryEntity;
 import com.commons.database.EventDao;
 import com.commons.database.EventEntity;
 import com.commons.database.EventForAdlDao;
@@ -25,11 +25,11 @@ import com.commons.database.SensorMessageEntity;
         BluetoothDeviceEntity.class,
         SensorMessageEntity.class,
         KnownLocationEntity.class,
-        DetectedAdlEntity.class,
         AdlEntity.class,
         EventEntity.class,
         EventForAdlEntity.class,
-        AdlRegistryEntity.class
+        AdlRegistryEntity.class,
+        BluetoothDeviceRegistryEntity.class
 }, version = SensorableConstants.MOBILE_DATABASE_VERSION)
 
 public abstract class MobileDatabase extends RoomDatabase {
@@ -39,8 +39,6 @@ public abstract class MobileDatabase extends RoomDatabase {
 
     public abstract KnownLocationDao knownLocationDao();
 
-    public abstract DetectedAdlDao detectedAdlDao();
-
     public abstract AdlDao adlDao();
 
     public abstract EventDao eventDao();
@@ -48,6 +46,8 @@ public abstract class MobileDatabase extends RoomDatabase {
     public abstract EventForAdlDao eventForAdlDao();
 
     public abstract AdlRegistryDao adlRegistryDao();
+
+    public abstract BluetoothDeviceRegistryDao bluetoothDeviceRegistryDao();
 }
 
 

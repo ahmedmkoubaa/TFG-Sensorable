@@ -2,14 +2,14 @@
   "name": "@sensorable/platform",
   "version": "1.0.0",
   "description": "this project contains all the server side services related to Sensorable-TFG project",
-  "main": "dist/index.js",
+  "main": "dist/src/index.js",
   "repository": "https://github.com/ahmedmkoubaa/TFG-Sensorable",
   "author": "Ahmed El Moukhtari Koubaa",
   "license": "MIT",
   "private": true,
   "scripts": {
     "build": "tsc",
-    "start": "tsc && node ./dist/src/index.js",
+    "start": "tsc && DEBUG='inform-generic-adls' node ./dist/src/index.js",
     "dev": "ts-node ./src/index.ts"
   },
   "dependencies": {

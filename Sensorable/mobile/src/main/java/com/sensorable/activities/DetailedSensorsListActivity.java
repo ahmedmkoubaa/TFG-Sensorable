@@ -1,20 +1,24 @@
 package com.sensorable.activities;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import com.commons.DeviceType;
+import com.commons.SensorTransmissionCoder;
+import com.commons.SensorableConstants;
 import com.commons.SensorsProvider;
 import com.sensorable.R;
+
+import java.util.ArrayList;
 
 public class DetailedSensorsListActivity extends AppCompatActivity {
 
@@ -58,88 +62,72 @@ public class DetailedSensorsListActivity extends AppCompatActivity {
     }
 
     private void initializeSensors() {
-        sensorsProvider.subscribeToSensor(Sensor.TYPE_ACCELEROMETER, new SensorEventListener() {
+
+        BroadcastReceiver sensorReceiver = new BroadcastReceiver() {
             @Override
-            public void onSensorChanged(SensorEvent sensorEvent) {
-                accelerometerTextView.setText("(" +
-                        sensorEvent.values[0] + ", " +
-                        sensorEvent.values[1] + ", " +
-                        sensorEvent.values[2] +
-                        ")"
-                );
+            public void onReceive(Context context, Intent intent) {
+                Bundle b = intent.getBundleExtra(SensorableConstants.EXTRA_MESSAGE);
+                ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage = b.getParcelableArrayList(SensorableConstants.BROADCAST_MESSAGE);
+
+                arrayMessage.forEach(sensorMessage -> {
+                    switch (sensorMessage.getDeviceType()) {
+                        case DeviceType.MOBILE:
+                        case DeviceType.WEAROS:
+                        case DeviceType.EMPATICA:
+
+                            switch (sensorMessage.getSensorType()) {
+
+                                case Sensor.TYPE_AMBIENT_TEMPERATURE:
+                                        temperatureTextView.setText(sensorMessage.getValue()[0] + " ºC");
+                                    break;
+
+                                case Sensor.TYPE_PROXIMITY:
+                                    proximityTextView.setText(
+                                            sensorMessage.getValue()[0] == 0 ? "Cercanía detectada" : "Lejos del teléfono"
+                                    );
+
+                                    break;
+                                case Sensor.TYPE_LIGHT:
+                                    lightTextView.setText(sensorMessage.getValue()[0] + " lm");
+
+                                    break;
+
+                                case Sensor.TYPE_LINEAR_ACCELERATION:
+                                    accelerometerTextView.setText(
+                                            sensorMessage.getValue()[0] + ", " + sensorMessage.getValue()[1] + ", " + sensorMessage.getValue()[2]
+                                    );
+
+                                    break;
+
+                                case Sensor.TYPE_RELATIVE_HUMIDITY:
+                                    humidityTextView.setText(String.valueOf(sensorMessage.getValue()[0]));
+                                    break;
+                            }
+
+                            break;
+                    }
+                });
             }
+        };
 
-            @Override
-            public void onAccuracyChanged(Sensor sensor, int i) {
-            }
-        }, SensorManager.SENSOR_DELAY_NORMAL);
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                sensorReceiver,
+                new IntentFilter(SensorableConstants.SENSORS_PROVIDER_SENDS_SENSORS)
+        );
 
-        sensorsProvider.subscribeToSensor(Sensor.TYPE_AMBIENT_TEMPERATURE, new SensorEventListener() {
-            @Override
-            public void onSensorChanged(SensorEvent sensorEvent) {
-                temperatureTextView.setText(sensorEvent.values[0] + " ºC");
-            }
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                sensorReceiver,
+                new IntentFilter(SensorableConstants.WEAR_SENDS_SENSOR_DATA)
+        );
 
-            @Override
-            public void onAccuracyChanged(Sensor sensor, int i) {
-            }
-        }, SensorManager.SENSOR_DELAY_NORMAL);
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                sensorReceiver,
+                new IntentFilter(SensorableConstants.SENSORS_PROVIDER_SENDS_LOCATION)
+        );
 
-        sensorsProvider.subscribeToSensor(Sensor.TYPE_RELATIVE_HUMIDITY, new SensorEventListener() {
-            @Override
-            public void onSensorChanged(SensorEvent sensorEvent) {
-                String values = sensorEvent.values[0] + " %";
-                humidityTextView.setText(values);
-            }
-
-            @Override
-            public void onAccuracyChanged(Sensor sensor, int i) {
-
-            }
-        }, SensorManager.SENSOR_DELAY_NORMAL);
-
-        sensorsProvider.subscribeToSensor(Sensor.TYPE_PROXIMITY, new SensorEventListener() {
-            @Override
-            public void onSensorChanged(SensorEvent sensorEvent) {
-                String values = sensorEvent.values[0] + " cm";
-                proximityTextView.setText(values);
-            }
-
-            @Override
-            public void onAccuracyChanged(Sensor sensor, int i) {
-
-            }
-        }, SensorManager.SENSOR_DELAY_NORMAL);
-
-        sensorsProvider.subscribeToSensor(Sensor.TYPE_LIGHT, new SensorEventListener() {
-            @Override
-            public void onSensorChanged(SensorEvent sensorEvent) {
-                String values = sensorEvent.values[0] + " lm";
-                lightTextView.setText(values);
-                Log.i("SENSORS", "LIGHT CHANGED " + sensorEvent.values[0]);
-            }
-
-            @Override
-            public void onAccuracyChanged(Sensor sensor, int i) {
-
-            }
-        }, SensorManager.SENSOR_DELAY_NORMAL);
-
-        Toast.makeText(this, "Sensor inicializados correctamente", Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-    }
-
-    @Override
-    protected void onRestart() {
-        super.onRestart();
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                sensorReceiver,
+                new IntentFilter(SensorableConstants.EMPATICA_SENDS_SENSOR_DATA)
+        );
     }
 }

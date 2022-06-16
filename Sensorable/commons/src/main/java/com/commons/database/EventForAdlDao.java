@@ -15,4 +15,7 @@ public interface EventForAdlDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertAll(ArrayList<EventForAdlEntity> eventsforAdls);
+
+    @Query("DELETE FROM EventForAdlEntity")
+    void deleteAll();
 }

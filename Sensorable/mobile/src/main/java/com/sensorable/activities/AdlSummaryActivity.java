@@ -10,19 +10,19 @@ import com.commons.database.AdlDao;
 import com.commons.database.AdlEntity;
 import com.commons.database.AdlRegistryDao;
 import com.commons.database.AdlRegistryEntity;
-import com.commons.database.DetectedAdlEntity;
 import com.sensorable.R;
-import com.sensorable.utils.DetectedAdlsAdapter;
+import com.sensorable.utils.DetectedAdlInfo;
+import com.sensorable.utils.DetectedAdlInfoAdapter;
+import com.sensorable.utils.MobileDatabase;
 import com.sensorable.utils.MobileDatabaseBuilder;
-import com.sensorable.utils.SensorableDates;
 
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 
 public class AdlSummaryActivity extends AppCompatActivity {
     private ListView detectedAdlList;
-    private ArrayList<DetectedAdlEntity> adlArray;
-    private DetectedAdlsAdapter detectedAdlsAdapter;
+    private ArrayList<DetectedAdlInfo> adlArray;
+    private DetectedAdlInfoAdapter detectedAdlInfoAdapter;
     private ExecutorService executor;
     private AdlRegistryDao adlRegistryDao;
     private AdlDao adlDao;
@@ -37,8 +37,9 @@ public class AdlSummaryActivity extends AppCompatActivity {
     }
 
     private void initializeMobileDatabase() {
-        adlRegistryDao = MobileDatabaseBuilder.getDatabase(this).adlRegistryDao();
-        adlDao = MobileDatabaseBuilder.getDatabase(this).adlDao();
+        MobileDatabase database = MobileDatabaseBuilder.getDatabase(this);
+        adlRegistryDao = database.adlRegistryDao();
+        adlDao = database.adlDao();
         executor = MobileDatabaseBuilder.getExecutor();
 
         Log.i("DETECTED_ADL", "initialized mobile database");
@@ -46,27 +47,31 @@ public class AdlSummaryActivity extends AppCompatActivity {
 
     private void updateDetectedAdlsFromDatabase() {
         executor.execute(() -> {
-            adlArray.clear();
+            ArrayList<DetectedAdlInfo> adlArrayCopy = new ArrayList<>();
+
             for (AdlRegistryEntity adlRegistry : adlRegistryDao.getAll()) {
                 AdlEntity newAdl = adlDao.getAdlById(adlRegistry.idAdl);
-                adlArray.add(
-                        new DetectedAdlEntity(
+                adlArrayCopy.add(
+                        new DetectedAdlInfo(
+                                adlRegistry.idAdl,
                                 newAdl.title,
                                 newAdl.description,
-                                "from " + SensorableDates.timestampToDate(adlRegistry.startTime) + " to " + SensorableDates.timestampToDate(adlRegistry.endTime),
                                 adlRegistry.startTime,
                                 adlRegistry.endTime,
                                 false
                         ));
-
             }
 
-
-            detectedAdlsAdapter.notifyDataSetChanged();
-
-
             Log.i("DETECTED_ADL", "updated from database");
+
+            runOnUiThread(() -> {
+                adlArray.clear();
+                adlArray.addAll(adlArrayCopy);
+                detectedAdlInfoAdapter.notifyDataSetChanged();
+            });
         });
+
+
     }
 
     private void initializeAttributesFromUI() {
@@ -74,9 +79,9 @@ public class AdlSummaryActivity extends AppCompatActivity {
         detectedAdlList.setDivider(null);
         adlArray = new ArrayList<>();
 
-        detectedAdlsAdapter = new DetectedAdlsAdapter(this, R.layout.detected_adl_layout, adlArray);
-        detectedAdlsAdapter.setNotifyOnChange(true);
-        detectedAdlList.setAdapter(detectedAdlsAdapter);
+        detectedAdlInfoAdapter = new DetectedAdlInfoAdapter(this, R.layout.detected_adl_layout, adlArray);
+        detectedAdlInfoAdapter.setNotifyOnChange(true);
+        detectedAdlList.setAdapter(detectedAdlInfoAdapter);
 
         updateDetectedAdlsFromDatabase();
     }

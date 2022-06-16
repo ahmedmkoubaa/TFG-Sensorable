@@ -8,6 +8,7 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
@@ -26,21 +27,25 @@ import com.commons.database.EventForAdlDao;
 import com.commons.database.EventForAdlEntity;
 import com.commons.database.KnownLocationDao;
 import com.commons.database.KnownLocationEntity;
+import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
 import com.sensorable.utils.MobileDatabase;
 import com.sensorable.utils.MobileDatabaseBuilder;
+import com.sensorable.utils.MqttHelper;
 import com.sensorable.utils.SensorAction;
 
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Consumer;
 
 public class AdlDetectionService extends Service {
     private final ArrayList<EventEntity> events = new ArrayList<>();
     private final ArrayList<EventForAdlEntity> eventsForAdls = new ArrayList<>();
     private final ArrayList<AdlEntity> adls = new ArrayList<>();
     private final ArrayList<KnownLocationEntity> knownLocations = new ArrayList<>();
-    private final HashMap<Integer, ArrayList<Pair<Integer, Boolean>>> databaseAdls = new HashMap<>();
+    private final HashMap<Integer, HashMap<Integer, ArrayList<Pair<Integer, Boolean>>>> databaseAdls = new HashMap<>();
 
     private EventDao eventDao;
     private AdlDao adlDao;
@@ -48,8 +53,6 @@ public class AdlDetectionService extends Service {
     private KnownLocationDao knownLocationDao;
     private AdlRegistryDao adlRegistryDao;
     private ExecutorService executor;
-
-    private boolean CLOSE_PROXIMITY = false;
 
     private static boolean equal(float leftOperand, float rightOperand) {
         return leftOperand == rightOperand;
@@ -77,17 +80,159 @@ public class AdlDetectionService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+
         initializeMobileReceiver();
         initializeMobileDatabase();
+        initializeMqttClient();
 
         Log.i("ADL_DETECTION_SERVICE", "initialized adl detection service");
 
+
         return super.onStartCommand(intent, flags, startId);
+    }
+
+    private HashMap<Integer, HashMap<Integer, ArrayList<Pair<Integer, Boolean>>>> deepDatabaseAdlsCopy() {
+        HashMap<Integer, HashMap<Integer, ArrayList<Pair<Integer, Boolean>>>> copiedAdls = new HashMap<>();
+
+        try {
+            databaseAdls.forEach((idAdl, eventsWithVersion) -> {
+                HashMap<Integer, ArrayList<Pair<Integer, Boolean>>> copiedAdl = new HashMap<>();
+
+                eventsWithVersion.forEach((version, events) -> {
+                    copiedAdl.put(version, new ArrayList<>(events));
+                });
+
+                copiedAdls.put(idAdl, copiedAdl);
+            });
+        } catch (ConcurrentModificationException e) {
+            Log.e("ADL_DETECTION_SERVICE", "Error, concurrent modification error in deep database copy");
+        }
+
+        return copiedAdls;
+    }
+
+
+    private void initializeMqttClient() {
+        Log.i("MQTT_RECEIVE_ADLS", "before connection");
+
+        if (MqttHelper.connect()) {
+            final Consumer<Mqtt5Publish> handleAdlsScheme = mqtt5Publish -> {
+
+                String payload = new String(mqtt5Publish.getPayloadAsBytes());
+                String[] tables = payload.split(SensorableConstants.JSON_TABLES_SEPARATOR);
+
+
+                updateFromDatabase(
+                        composeTableAdls(removeFirstAndLastChar(tables[0])),
+                        composeTableEvents(removeFirstAndLastChar(tables[1])),
+                        composeTableEventsForAdls(removeFirstAndLastChar(tables[2]))
+                );
+
+                Log.i("MQTT_RECEIVE_ADLS", "new content " + payload);
+            };
+
+            // ask for new adls scheme
+            String session = null;
+            if (session != null) {
+                String responseTopic = SensorableConstants.MQQTT_INFORM_CUSTOM_ADLS + "/" + session;
+
+//                MqttHelper.unsubscribe(responseTopic);
+                MqttHelper.subscribe(responseTopic, handleAdlsScheme);
+                MqttHelper.publish(
+                        SensorableConstants.MQTT_REQUEST_CUSTOM_ADLS,
+                        session.getBytes(),
+                        responseTopic
+                );
+            } else {
+//                MqttHelper.unsubscribe(SensorableConstants.MQTT_INFORM_GENERIC_ADLS);
+                MqttHelper.subscribe(SensorableConstants.MQTT_INFORM_GENERIC_ADLS, handleAdlsScheme);
+                MqttHelper.publish(SensorableConstants.MQTT_REQUEST_GENERIC_ADLS);
+            }
+        } else {
+            executor.execute((() -> loadAdlsScheme()));
+        }
+    }
+
+    private String removeFirstAndLastChar(String someString) {
+        return someString.substring(1, someString.length() - 1);
+    }
+
+    private void updateFromDatabase(final ArrayList<AdlEntity> adlEntities, final ArrayList<EventEntity> eventEntities, final ArrayList<EventForAdlEntity> eventsForAdlsEntities) {
+        executor.execute(() -> {
+            adlDao.deleteAll();
+            eventDao.deleteAll();
+            eventForAdlDao.deleteAll();
+
+            adlDao.insertAll(adlEntities);
+            eventDao.insertAll(eventEntities);
+            eventForAdlDao.insertAll(eventsForAdlsEntities);
+
+            loadAdlsScheme();
+        });
+    }
+
+    private ArrayList<AdlEntity> composeTableAdls(final String stringAdls) {
+        ArrayList<AdlEntity> adlEntities = new ArrayList<>();
+        String[] fields;
+
+        for (String r : stringAdls.split(SensorableConstants.JSON_ROWS_SEPARATOR)) {
+            fields = r.split(SensorableConstants.JSON_FIELDS_SEPARATOR);
+            adlEntities.add(new AdlEntity(Integer.parseInt(fields[0]), fields[1], fields[2]));
+            Log.i("MQTT_RECEIVE_ADLS", "new row is" + r);
+        }
+
+        return adlEntities;
+    }
+
+    private ArrayList<EventEntity> composeTableEvents(final String stringEvents) {
+        ArrayList<EventEntity> eventEntities = new ArrayList<>();
+        String[] fields;
+
+        for (String r : stringEvents.split(SensorableConstants.JSON_ROWS_SEPARATOR)) {
+            fields = r.split(SensorableConstants.JSON_FIELDS_SEPARATOR);
+            eventEntities.add(
+                    new EventEntity(
+                            Integer.parseInt(fields[0]),
+                            Integer.parseInt(fields[1]),
+                            Integer.parseInt(fields[2]),
+                            Integer.parseInt(fields[3]),
+                            OperatorType.valueOf(fields[4]),
+                            Float.parseFloat(fields[5]),
+                            fields[6]
+                    )
+            );
+
+            Log.i("MQTT_RECEIVE_ADLS", "new row is" + r);
+        }
+
+        return eventEntities;
+    }
+
+    private ArrayList<EventForAdlEntity> composeTableEventsForAdls(final String stringEventsForAdls) {
+        ArrayList<EventForAdlEntity> eventsForAdlsEntities = new ArrayList<>();
+        String[] fields;
+
+        for (String r : stringEventsForAdls.split(SensorableConstants.JSON_ROWS_SEPARATOR)) {
+            fields = r.split(SensorableConstants.JSON_FIELDS_SEPARATOR);
+            eventsForAdlsEntities.add(
+                    new EventForAdlEntity(
+                            Integer.parseInt(fields[0]),
+                            Integer.parseInt(fields[1]),
+                            Integer.parseInt(fields[2]),
+                            Integer.parseInt(fields[3])
+                    )
+            );
+
+            Log.i("MQTT_RECEIVE_ADLS", "new row is" + r);
+        }
+
+        return eventsForAdlsEntities;
     }
 
     // initialize data structures from the database
     private void initializeMobileDatabase() {
         MobileDatabase database = MobileDatabaseBuilder.getDatabase(this);
+
         eventDao = database.eventDao();
         eventForAdlDao = database.eventForAdlDao();
         adlDao = database.adlDao();
@@ -96,37 +241,42 @@ public class AdlDetectionService extends Service {
         adlRegistryDao = database.adlRegistryDao();
 
         executor = MobileDatabaseBuilder.getExecutor();
-
-        initializeMemoryData();
-
     }
 
     // it does a query to local database and extract from it the data storing it in memory
     // data structures to manage it faster and more efficiently
-    private void initializeMemoryData() {
-        if (executor != null) {
-            executor.execute(() -> {
-                events.addAll(eventDao.getAll());
-                adls.addAll(adlDao.getAll());
-                eventsForAdls.addAll(eventForAdlDao.getAll());
+    private void loadAdlsScheme() {
 
-                // generation of data structure to evaluate adls
-                adls.forEach(adlEntity -> {
-                    ArrayList<Pair<Integer, Boolean>> eventsOfCurrentAdl = new ArrayList<>();
-                    eventsForAdls.forEach(eventForAdlEntity -> {
-                        if (eventForAdlEntity.idAdl == adlEntity.id) {
-                            eventsOfCurrentAdl.add(new Pair<>(eventForAdlEntity.idEvent, false));
-                        }
-                    });
+        events.clear();
+        adls.clear();
+        eventsForAdls.clear();
 
-                    databaseAdls.put(adlEntity.id, eventsOfCurrentAdl);
-                });
+        events.addAll(eventDao.getAll());
+        adls.addAll(adlDao.getAll());
+        eventsForAdls.addAll(eventForAdlDao.getAll());
 
-                knownLocations.addAll(knownLocationDao.getAll());
+        // generation of data structure to evaluate adls
+        adls.forEach(adlEntity -> {
+            HashMap<Integer, ArrayList<Pair<Integer, Boolean>>> adlVersions = new HashMap<>();
+
+            eventsForAdls.forEach(eventForAdlEntity -> {
+                if (eventForAdlEntity.idAdl == adlEntity.id) {
+
+                    int version = eventForAdlEntity.version;
+                    if (!adlVersions.containsKey(version)) {
+                        adlVersions.put(version, new ArrayList<>());
+                    }
+
+                    adlVersions
+                            .get(version)
+                            .add(new Pair<>(eventForAdlEntity.idEvent, false));
+                }
             });
-        } else {
-            Log.i("ADL_DETECION_SERIVCE", "Executor is null, not able to get data from database at initialization");
-        }
+
+            databaseAdls.put(adlEntity.id, adlVersions);
+        });
+
+        knownLocations.addAll(knownLocationDao.getAll());
     }
 
     private void sendMessageToActivity(String msg) {
@@ -267,64 +417,64 @@ public class AdlDetectionService extends Service {
     }
 
     private void evaluateAdls(HashMap<Integer, Boolean> evaluatedEvents) {
+        HashMap<Integer, HashMap<Integer, ArrayList<Pair<Integer, Boolean>>>> databaseDeepCopy = deepDatabaseAdlsCopy();
+
         // let's take from database adls the events registry owned by each adl
-        for (int idCurrentAdl : databaseAdls.keySet()) {
-            ArrayList<Pair<Integer, Boolean>> eventsOfCurrentAdl = databaseAdls.get(idCurrentAdl);
-            int size = eventsOfCurrentAdl.size();
+        for (int idCurrentAdl : databaseDeepCopy.keySet()) {
+            databaseDeepCopy.get(idCurrentAdl).forEach((version, eventsOfCurrentAdl) -> {
+                boolean evaluation = true;
+                int size = eventsOfCurrentAdl.size();
 
-            for (int i = 0; i < size; i++) {
-                // check if previous adl in the sorted events array occured, if happened
-                // then we check the next event, the current and update if necessary
-                Pair<Integer, Boolean> event = eventsOfCurrentAdl.get(i);
-                if (!event.second) {
-
-                    // here we want to detect an adl based on the evaluation of the events. An adl
-                    // will be true if all of its events are. The events have to be completed in the
-                    // exact order, so we only check if an event is true if the previous event was.
-                    // If the event is the first or the unique in the array, we supose then that we
-                    // have the previous too. The rest is just to look for the event in the evaluated events
-                    // array and use its last value.
-                    if ((i == 0 || (i > 0 && eventsOfCurrentAdl.get(i - 1).second) || size == 1) &&
-                            evaluatedEvents.containsKey(event.first) && evaluatedEvents.get(event.first)) {
-
-                        eventsOfCurrentAdl.set(i, new Pair<>(event.first, true));
-
-                    } else {
-                        // If the value of the current event is not true
-                        // then we don't need to check the next values because
-                        // they have to be true in the specified order.
-                        break;
-                    }
-                }
-            }
-
-            boolean evaluation = true;
-            for (Pair<Integer, Boolean> event : eventsOfCurrentAdl) {
-                evaluation &= event.second;
-                if (!evaluation) {
-                    break;
-                }
-            }
-
-            if (evaluation) {
-                Log.i("ADL_DETECTION_SERVICE", "recognized a new adl");
-                updateDetectedAdlsRegistries(idCurrentAdl);
-
-                // check if the adl stills being evaluated (all its events)
-                boolean previousFalse = false;
                 for (int i = 0; i < size; i++) {
                     // check if previous adl in the sorted events array occured, if happened
                     // then we check the next event, the current and update if necessary
                     Pair<Integer, Boolean> event = eventsOfCurrentAdl.get(i);
+                    if (!event.second) {
+                        /*
+                         * Here we want to detect an adl based on the evaluation of the events. An adl
+                         * will be true if all of its events are. The events have to be completed in the
+                         * exact order they were associated to the adl, so we only check if an event is
+                         * true if the previous event was.
+                         * If the event is the first or the unique in the array, we supose then that we
+                         * have the previous too (becase there isn't any previous). After this just look for
+                         * the event in the evaluated events array and use its last value.
+                         */
 
-                    if (previousFalse || (event.second && evaluatedEvents.containsKey(event.first) && !evaluatedEvents.get(event.first))) {
-                        eventsOfCurrentAdl.set(i, new Pair<>(event.first, false));
-                        previousFalse = true;
+                        if ((i == 0 || (i > 0 && eventsOfCurrentAdl.get(i - 1).second) || size == 1) &&
+                                evaluatedEvents.containsKey(event.first) && evaluatedEvents.get(event.first)) {
+                            eventsOfCurrentAdl.set(i, new Pair<>(event.first, true));
+
+                        } else {
+                            // If the value of the current event is not true
+                            // then we don't need to check the next values because
+                            // they have to be true in the specified order.
+                            evaluation = false;
+                            break;
+                        }
                     }
                 }
-            } else {
-                Log.i("ADL_DETECTION_SERVICE", "no longer recognized an old adl");
-            }
+
+                if (size > 0 && evaluation) {
+                    Log.i("ADL_DETECTION_SERVICE", "recognized a new adl");
+                    updateDetectedAdlsRegistries(idCurrentAdl);
+
+                    // check if the adl stills being evaluated (all its events)
+                    boolean previousFalse = false;
+                    for (int i = 0; i < size; i++) {
+                        // check if previous adl in the sorted events array occured, if happened
+                        // then we check the next event, the current and update if necessary
+                        Pair<Integer, Boolean> event = eventsOfCurrentAdl.get(i);
+
+                        if (previousFalse || (event.second && evaluatedEvents.containsKey(event.first) && !evaluatedEvents.get(event.first))) {
+                            eventsOfCurrentAdl.set(i, new Pair<>(event.first, false));
+                            previousFalse = true;
+                        }
+                    }
+                } else {
+                    Log.i("ADL_DETECTION_SERVICE", "no longer recognized an old adl");
+                }
+            });
+
         }
     }
 
@@ -401,13 +551,6 @@ public class AdlDetectionService extends Service {
             }
         }
 
-/*      TODO remove this comment once we are confident about its usage
-        for (long key : categorization.keySet()) {
-            for (SensorTransmissionCoder.SensorMessage s : categorization.get(key)) {
-                Log.i("ADL_DETECTION_SERVICE", " filtered data -> " + s.toString());
-            }
-        }*/
-
         return categorization;
     }
 
@@ -421,6 +564,4 @@ public class AdlDetectionService extends Service {
     private interface SensorOperation {
         boolean operate(float leftOperand, float rightOperand);
     }
-
-
 }

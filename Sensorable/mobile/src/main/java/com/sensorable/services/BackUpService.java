@@ -32,7 +32,6 @@ public class BackUpService extends Service {
 
 
     private void initializeReminders() {
-
         final Handler handler = new Handler();
         Runnable runnable = new Runnable() {
             @Override
@@ -42,8 +41,6 @@ public class BackUpService extends Service {
 
                 SensorMessageDao sensorMessageDao = MobileDatabaseBuilder.getDatabase(BackUpService.this).sensorMessageDao();
                 ExecutorService executorService = MobileDatabaseBuilder.getExecutor();
-
-                MqttHelper.connect();
 
                 executorService.execute(() ->
                 {
@@ -81,8 +78,6 @@ public class BackUpService extends Service {
             }
         };
         handler.post(runnable);
-
-
     }
 
     @Nullable

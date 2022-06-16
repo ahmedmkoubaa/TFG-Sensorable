@@ -14,8 +14,7 @@
     "noUnusedParameters": false,
     "preserveWatchOutput": true,
     "skipLibCheck": true,
-    "strict": true,
-    "jsx": "react"
+    "strict": true
   },
   "exclude": ["node_modules", "packages", "dist", "build"]
 }

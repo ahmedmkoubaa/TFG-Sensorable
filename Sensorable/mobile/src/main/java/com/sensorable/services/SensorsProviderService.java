@@ -96,6 +96,7 @@ public class SensorsProviderService extends Service {
         });
     }
 
+
     private void broadcastGPSLocation(Location location) {
         Intent intent = new Intent(SensorableConstants.SENSORS_PROVIDER_SENDS_LOCATION);
 

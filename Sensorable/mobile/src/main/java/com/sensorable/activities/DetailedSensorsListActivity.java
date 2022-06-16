@@ -6,9 +6,12 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.hardware.Sensor;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
@@ -16,6 +19,9 @@ import com.commons.DeviceType;
 import com.commons.SensorTransmissionCoder;
 import com.commons.SensorableConstants;
 import com.commons.SensorsProvider;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationBarView;
+import com.sensorable.MainActivity;
 import com.sensorable.R;
 
 import java.util.ArrayList;
@@ -27,7 +33,6 @@ public class DetailedSensorsListActivity extends AppCompatActivity {
     private TextView humidityTextView;
     private TextView proximityTextView;
     private TextView lightTextView;
-    private Button advancedMenuButton;
 
     private SensorsProvider sensorsProvider;
 
@@ -37,7 +42,7 @@ public class DetailedSensorsListActivity extends AppCompatActivity {
         setContentView(R.layout.activity_detailed_sensors_list);
 
         initializeAttributtesFromUI();
-        sensorsProvider = new SensorsProvider(this);
+        initializeSensors();
     }
 
     private void initializeAttributtesFromUI() {
@@ -46,22 +51,55 @@ public class DetailedSensorsListActivity extends AppCompatActivity {
         humidityTextView = findViewById(R.id.humidityText);
         proximityTextView = findViewById(R.id.proximityText);
         lightTextView = findViewById(R.id.lightText);
-        advancedMenuButton = findViewById(R.id.advancedMenuButton);
-        advancedMenuButton.setOnClickListener(v -> {
-            startActivity(new Intent(
-                    this,
-                    AdvancedMenuActivity.class)
-            );
+
+
+        BottomNavigationView bottomNavigation = (BottomNavigationView) findViewById(R.id.bottom_navigation);
+        bottomNavigation.setSelectedItemId(R.id.tab_charts);
+        bottomNavigation.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                int id = item.getItemId();
+                switch (id) {
+                    case R.id.tab_bluetooth:
+                        startActivity(
+                                new Intent(DetailedSensorsListActivity.this, BluetoothOptionsActivity.class)
+                        );
+                        overridePendingTransition(0, 0);
+
+                        return true;
+
+                    case R.id.tab_adls:
+                        startActivity(
+                                new Intent(DetailedSensorsListActivity.this, AdlSummaryActivity.class)
+                        );
+                        overridePendingTransition(0, 0);
+
+                        return true;
+
+                    case R.id.tab_locations:
+                        startActivity(
+                                new Intent(DetailedSensorsListActivity.this, LocationOptionsActivity.class)
+                        );
+                        overridePendingTransition(0, 0);
+                        return true;
+
+                    case R.id.tab_home:
+
+                        startActivity(
+                                new Intent(DetailedSensorsListActivity.this, MainActivity.class)
+                        );
+                        overridePendingTransition(0, 0);
+                        return true;
+                }
+
+                return true;
+            }
         });
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        initializeSensors();
-    }
 
     private void initializeSensors() {
+        sensorsProvider = new SensorsProvider(this);
 
         BroadcastReceiver sensorReceiver = new BroadcastReceiver() {
             @Override
@@ -69,44 +107,48 @@ public class DetailedSensorsListActivity extends AppCompatActivity {
                 Bundle b = intent.getBundleExtra(SensorableConstants.EXTRA_MESSAGE);
                 ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage = b.getParcelableArrayList(SensorableConstants.BROADCAST_MESSAGE);
 
-                arrayMessage.forEach(sensorMessage -> {
-                    switch (sensorMessage.getDeviceType()) {
-                        case DeviceType.MOBILE:
-                        case DeviceType.WEAROS:
-                        case DeviceType.EMPATICA:
+                try {
+                    arrayMessage.forEach(sensorMessage -> {
+                        switch (sensorMessage.getDeviceType()) {
+                            case DeviceType.MOBILE:
+                            case DeviceType.WEAROS:
+                            case DeviceType.EMPATICA:
 
-                            switch (sensorMessage.getSensorType()) {
+                                switch (sensorMessage.getSensorType()) {
 
-                                case Sensor.TYPE_AMBIENT_TEMPERATURE:
+                                    case Sensor.TYPE_AMBIENT_TEMPERATURE:
                                         temperatureTextView.setText(sensorMessage.getValue()[0] + " ºC");
-                                    break;
+                                        break;
 
-                                case Sensor.TYPE_PROXIMITY:
-                                    proximityTextView.setText(
-                                            sensorMessage.getValue()[0] == 0 ? "Cercanía detectada" : "Lejos del teléfono"
-                                    );
+                                    case Sensor.TYPE_PROXIMITY:
+                                        proximityTextView.setText(
+                                                sensorMessage.getValue()[0] == 0 ? "Cercanía detectada" : "Lejos del teléfono"
+                                        );
 
-                                    break;
-                                case Sensor.TYPE_LIGHT:
-                                    lightTextView.setText(sensorMessage.getValue()[0] + " lm");
+                                        break;
+                                    case Sensor.TYPE_LIGHT:
+                                        lightTextView.setText(sensorMessage.getValue()[0] + " lm");
 
-                                    break;
+                                        break;
 
-                                case Sensor.TYPE_LINEAR_ACCELERATION:
-                                    accelerometerTextView.setText(
-                                            sensorMessage.getValue()[0] + ", " + sensorMessage.getValue()[1] + ", " + sensorMessage.getValue()[2]
-                                    );
+                                    case Sensor.TYPE_LINEAR_ACCELERATION:
+                                        accelerometerTextView.setText(
+                                                sensorMessage.getValue()[0] + ", " + sensorMessage.getValue()[1] + ", " + sensorMessage.getValue()[2]
+                                        );
 
-                                    break;
+                                        break;
 
-                                case Sensor.TYPE_RELATIVE_HUMIDITY:
-                                    humidityTextView.setText(String.valueOf(sensorMessage.getValue()[0]));
-                                    break;
-                            }
+                                    case Sensor.TYPE_RELATIVE_HUMIDITY:
+                                        humidityTextView.setText(String.valueOf(sensorMessage.getValue()[0]));
+                                        break;
+                                }
 
-                            break;
-                    }
-                });
+                                break;
+                        }
+                    });
+                } catch (NullPointerException e) {
+                    Log.e("DETAILED_SENSOR_LIST", "error receiving null sensor array");
+                }
             }
         };
 
@@ -118,11 +160,6 @@ public class DetailedSensorsListActivity extends AppCompatActivity {
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 sensorReceiver,
                 new IntentFilter(SensorableConstants.WEAR_SENDS_SENSOR_DATA)
-        );
-
-        LocalBroadcastManager.getInstance(this).registerReceiver(
-                sensorReceiver,
-                new IntentFilter(SensorableConstants.SENSORS_PROVIDER_SENDS_LOCATION)
         );
 
         LocalBroadcastManager.getInstance(this).registerReceiver(

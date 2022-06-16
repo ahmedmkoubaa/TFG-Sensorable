@@ -2,9 +2,12 @@ package com.sensorable.activities;
 
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.widget.ListView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.commons.database.BluetoothDeviceDao;
@@ -12,6 +15,9 @@ import com.commons.database.BluetoothDeviceEntity;
 import com.commons.database.BluetoothDeviceRegistryDao;
 import com.commons.database.BluetoothDeviceRegistryEntity;
 import com.commons.devicesDetection.BluetoothDevicesProvider;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationBarView;
+import com.sensorable.MainActivity;
 import com.sensorable.R;
 import com.sensorable.utils.BluetoothDeviceInfo;
 import com.sensorable.utils.BluetoothDeviceInfoAdapter;
@@ -91,6 +97,49 @@ public class BluetoothOptionsActivity extends AppCompatActivity {
 
     private void initializeAttributesFromUI() {
         bluetoothFoundDevices = findViewById(R.id.foundDevices);
+        BottomNavigationView bottomNavigation = (BottomNavigationView) findViewById(R.id.bottom_navigation);
+        bottomNavigation.setSelectedItemId(R.id.tab_bluetooth);
+        bottomNavigation.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                int id = item.getItemId();
+                switch (id) {
+                    case R.id.tab_home:
+                        startActivity(
+                                new Intent(BluetoothOptionsActivity.this, MainActivity.class)
+                        );
+                        overridePendingTransition(0, 0);
+
+                        return true;
+
+                    case R.id.tab_adls:
+                        startActivity(
+                                new Intent(BluetoothOptionsActivity.this, AdlSummaryActivity.class)
+                        );
+                        overridePendingTransition(0, 0);
+
+                        return true;
+
+                    case R.id.tab_locations:
+                        startActivity(
+                                new Intent(BluetoothOptionsActivity.this, LocationOptionsActivity.class)
+                        );
+                        overridePendingTransition(0, 0);
+                        return true;
+
+                    case R.id.tab_charts:
+
+                        startActivity(
+                                new Intent(BluetoothOptionsActivity.this, DetailedSensorsListActivity.class)
+                        );
+                        overridePendingTransition(0, 0);
+                        return true;
+                }
+
+                return true;
+            }
+        });
+
         bleArray = new ArrayList<>();
 
         bluetoothDeviceInfoAdapter = new BluetoothDeviceInfoAdapter(

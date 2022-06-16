@@ -105,13 +105,13 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         userStateSummary.setClickable(false);
 
 
-        userStateSummary.setText("\n" + String.valueOf(stepTarget));
+        userStateSummary.setText("\n" + stepTarget);
 
         useStateProgressBar.setMin(0);
         useStateProgressBar.setMax(stepTarget);
 
 
-        BottomNavigationView bottomNavigation = (BottomNavigationView) findViewById(R.id.bottom_navigation);
+        BottomNavigationView bottomNavigation = findViewById(R.id.bottom_navigation);
         bottomNavigation.setSelectedItemId(R.id.tab_home);
         bottomNavigation.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
             @Override
@@ -187,14 +187,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 
                                         case Sensor.TYPE_HEART_RATE:
                                             int heartRate = Math.round(sensorMessage.getValue()[0]);
-                                            String msg = "";
-
-                                            if (heartRate == 0) {
-                                                msg = "-";
-                                            } else {
-                                                msg += heartRate;
-                                            }
-                                            heartRateText.setText(heartRate == 0 ? "-" : heartRate + " ppm");
+                                            heartRateText.setText((heartRate == 0 ? "-" : heartRate) + " ppm");
                                             break;
                                     }
 

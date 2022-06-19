@@ -25,8 +25,8 @@ public class WearSensorDataSender {
     private static final String WEAR_DATA_RECEPTION = "wear_data_reception";
     private static final String WEAR_DATA_RECEPTION_MESSAGE_PATH = "/wear_data_reception";
     private final Activity context;
-    private CapabilityInfo capabilityInfo;
     private final ExecutorService executorService = Executors.newFixedThreadPool(1);
+    private CapabilityInfo capabilityInfo;
 
     public WearSensorDataSender(Activity context) {
         this.context = context;
@@ -34,6 +34,7 @@ public class WearSensorDataSender {
 
     public void sendMessage(int sensorType, float[] value) {
         sendMessage(new SensorTransmissionCoder.SensorMessage(DeviceType.WEAROS, sensorType, value));
+
     }
 
     public void sendMessage(final SensorTransmissionCoder.SensorMessage message) {
@@ -66,7 +67,7 @@ public class WearSensorDataSender {
                             new OnSuccessListener() {
                                 @Override
                                 public void onSuccess(Object o) {
-//                                    Toast.makeText(context, "SUCCESS SEND MESSAGE", Toast.LENGTH_LONG).show();
+                                    SensorableLogger.log("Successfully sent sensors to android");
                                 }
                             });
 
@@ -74,12 +75,12 @@ public class WearSensorDataSender {
                     sendTask.addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
-                            Toast.makeText(context, "FAILURE SEND MESSAGE", Toast.LENGTH_LONG).show();
+                            SensorableLogger.log("Failed to sent sensors");
                         }
                     });
                 } else {
                     // Unable to retrieve node with transcription capability
-                    Toast.makeText(context, "NO NEARBY NODE", Toast.LENGTH_SHORT).show();
+                    SensorableLogger.log("NO NEARBY NODE");
                 }
             }
         });

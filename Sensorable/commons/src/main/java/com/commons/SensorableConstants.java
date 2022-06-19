@@ -47,6 +47,7 @@ public class SensorableConstants {
     public final static long TIME_SINCE_LAST_BLUETOOTH_DETECTION = 30 * MINUTES_TO_SECONDS * SECONDS_TO_MILLIS; // in milliseconds (those are 30 minutes)
     public final static int SCHEDULE_BLUETOOTH_DISCOVERY = 5 * SECONDS_TO_MILLIS; // in milliseconds
     public final static int SCHEDULE_DATABASE_BACKUP = 5 * MINUTES_TO_SECONDS * SECONDS_TO_MILLIS; // in milliseconds
+    public static final int SCHEDULE_LOGGER_REFRESH = 10 * SECONDS_TO_MILLIS;
     public final static int TIME_SINCE_LAST_HEART_CHART_UPDATE = 5 * SECONDS_TO_MILLIS;
 
 

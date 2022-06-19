@@ -63,7 +63,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".activities.DetailedSensorsListActivity"  android:noHistory="true" />
-        <activity android:name=".activities.AdvancedMenuActivity"  android:noHistory="true" /> <!-- Services deployed by the applicaton -->
+        <!-- Services deployed by the applicaton -->
         <service
             android:name=".services.AdlDetectionService"
             android:enabled="true"

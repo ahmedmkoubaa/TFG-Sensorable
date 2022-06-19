@@ -7,4 +7,15 @@
     -->
     <string name="hello_world">Hello Square World!</string>
     <string name="title_activity_location_options">Map</string>
+
+    <string name="title_tab_bluetooth">Dispositivos</string>
+    <string name="title_tab_home">Inicio</string>
+    <string name="title_tab_adls">Adls</string>
+    <string name="title_tab_locations">Ubicaciones</string>
+    <string name="title_tab_charts">Gráficas</string>
+
+
+
+
+
 </resources>

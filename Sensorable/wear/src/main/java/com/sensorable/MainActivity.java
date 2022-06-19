@@ -5,12 +5,11 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.wearable.activity.WearableActivity;
-import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.ListView;
 
+import com.commons.SensorableConstants;
 import com.commons.SensorablePermissions;
 import com.commons.SensorsProvider;
 
@@ -24,15 +23,12 @@ public class MainActivity extends WearableActivity {
             Sensor.TYPE_LINEAR_ACCELERATION
     };
 
-    private TextView heartText;
-    private TextView lightText;
-    private SensorsProvider sensorsProvider;
-    private Button send, sendStepCounter;
-    private WearSensorDataSender sensorSender;
-    private float[] lastHeartRateValue;
+    private LoggerAdapter loggerAdapter;
 
-    private SensorEventListener heartRateListener;
-    private SensorEventListener stepCounterListener;
+    private SensorsProvider sensorsProvider;
+    private WearSensorDataSender sensorSender;
+
+    private ListView loggerList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,34 +38,13 @@ public class MainActivity extends WearableActivity {
         // request all necessary permissions
         SensorablePermissions.requestAll(this);
 
-        heartText = findViewById(R.id.heartRateText);
-        lightText = findViewById(R.id.temperatureText);
-        send = findViewById(R.id.buttonSendHeartRate);
-        sendStepCounter = findViewById(R.id.buttonSendStepCounter);
-
-        send.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                sensorSender.sendMessage(Sensor.TYPE_HEART_RATE, lastHeartRateValue);
-            }
-        });
-
-        sendStepCounter.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                float[] value = new float[1];
-                value[0] = 12312;
-                Toast.makeText(MainActivity.this, "enviando step counter", Toast.LENGTH_LONG).show();
-                sensorSender.sendMessage(Sensor.TYPE_STEP_COUNTER, value);
-            }
-        });
-
 
         sensorsProvider = new SensorsProvider(this);
         sensorSender = new WearSensorDataSender(this);
 
         initializeListenersForUI();
         initializeSensorsDataSendingListeners();
+        initializeReminders();
 
     }
 
@@ -91,33 +66,25 @@ public class MainActivity extends WearableActivity {
         }
     }
 
+    private void initializeReminders() {
+        final Handler handler = new Handler();
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                // do something
+                loggerAdapter.notifyDataSetChanged();
+                handler.postDelayed(this, SensorableConstants.SCHEDULE_LOGGER_REFRESH);  // 1 second delay
+            }
+        };
+        handler.post(runnable);
+    }
+
     private void initializeListenersForUI() {
-        heartRateListener = new SensorEventListener() {
-            @Override
-            public void onSensorChanged(SensorEvent sensorEvent) {
-                heartText.setText(Math.round(sensorEvent.values[0]) + " ppm");
-                lastHeartRateValue = sensorEvent.values;
+        loggerAdapter = new LoggerAdapter(getBaseContext(), R.layout.logger_message_layout, SensorableLogger.get());
+        loggerAdapter.setNotifyOnChange(true);
 
-            }
-
-            @Override
-            public void onAccuracyChanged(Sensor sensor, int i) {
-            }
-        };
-
-        stepCounterListener = new SensorEventListener() {
-            @Override
-            public void onSensorChanged(SensorEvent sensorEvent) {
-                lightText.setText(Math.round(sensorEvent.values[0]) + " pasos");
-            }
-
-            @Override
-            public void onAccuracyChanged(Sensor sensor, int i) {
-            }
-        };
-
-        sensorsProvider.subscribeToSensor(Sensor.TYPE_HEART_RATE, heartRateListener, SensorManager.SENSOR_DELAY_NORMAL);
-        sensorsProvider.subscribeToSensor(Sensor.TYPE_STEP_COUNTER, stepCounterListener, SensorManager.SENSOR_DELAY_NORMAL);
+        loggerList = (ListView) findViewById(R.id.loggerList);
+        loggerList.setAdapter(loggerAdapter);
     }
 
     @Override
@@ -129,8 +96,5 @@ public class MainActivity extends WearableActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
-        sensorsProvider.unsubscribeToSensor(heartRateListener);
-        sensorsProvider.unsubscribeToSensor(stepCounterListener);
     }
 }

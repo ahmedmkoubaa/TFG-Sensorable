@@ -1,4 +1,4 @@
-package com.sensorable.utils;
+package com.commons;
 
 import com.commons.SensorableConstants;
 

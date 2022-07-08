@@ -1,4 +1,4 @@
-package com.example.commons.devicesDetection;
+package com.commons.devicesDetection;
 
 import android.Manifest;
 import android.app.Activity;

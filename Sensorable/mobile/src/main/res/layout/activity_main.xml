@@ -12,11 +12,25 @@
         android:layout_height="171dp"
         android:layout_marginTop="36dp"
         android:clickable="false"
-        android:text="MUY BIEN!"
+        android:text=""
+        android:textSize="35dp"
         app:cornerRadius="1000dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
+
+
+    </Button>
+
+    <View
+        android:layout_width="125dp"
+        android:layout_height="5dp"
+        android:background="#ffffff"
+        android:translationZ="5dp"
+        app:layout_constraintBottom_toBottomOf="@+id/userStateSummary"
+        app:layout_constraintEnd_toEndOf="@+id/userStateSummary"
+        app:layout_constraintStart_toStartOf="@+id/userStateSummary"
+        app:layout_constraintTop_toTopOf="@+id/userStateSummary" />
 
     <ProgressBar
         android:id="@+id/userStateProgressBar"
@@ -32,8 +46,9 @@
         android:id="@+id/text"
         android:layout_width="357dp"
         android:layout_height="88dp"
-        android:text="Te encuentras bien, sigue así. Recuerda hacer ejercicio y tomarte la medicación cuando toque"
+
         android:textAlignment="center"
+        android:textSize="20dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.491"
         app:layout_constraintStart_toStartOf="parent"
@@ -62,7 +77,7 @@
             android:foregroundGravity="center_vertical"
             android:gravity="center"
             android:textAlignment="center"
-            android:textSize="32sp" />
+            android:textSize="30sp" />
     </LinearLayout>
 
     <LinearLayout
@@ -88,22 +103,17 @@
             android:foregroundGravity="center_vertical"
             android:gravity="center"
             android:textAlignment="center"
-            android:textSize="32sp" />
+            android:textSize="30sp" />
     </LinearLayout>
 
-    <Button
-        android:id="@+id/moreSensorsButton"
-        android:layout_width="182dp"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center|center_horizontal"
-        android:layout_marginBottom="16dp"
-        android:layout_weight="0"
-        android:gravity="center|center_horizontal|center_vertical"
-        android:text="Más sensores"
-        android:textAlignment="center"
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation"
+        android:layout_width="match_parent"
+        android:layout_height="105px"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:menu="@menu/bottom_navigation_menu" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

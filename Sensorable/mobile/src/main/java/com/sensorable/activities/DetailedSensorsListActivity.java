@@ -4,11 +4,14 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.hardware.Sensor;
 import android.os.Bundle;
-import android.widget.Button;
+import android.util.Log;
+import android.view.MenuItem;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
@@ -16,18 +19,33 @@ import com.commons.DeviceType;
 import com.commons.SensorTransmissionCoder;
 import com.commons.SensorableConstants;
 import com.commons.SensorsProvider;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationBarView;
+import com.sensorable.MainActivity;
 import com.sensorable.R;
+import com.commons.SensorableDates;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+
+import im.dacer.androidcharts.BarView;
+import im.dacer.androidcharts.LineView;
 
 public class DetailedSensorsListActivity extends AppCompatActivity {
+    private final ArrayList<String> heartChartColumns = new ArrayList<>();
+    private final ArrayList<Integer> heartchartData = new ArrayList<>();
+    private final ArrayList<Integer> barViewData = new ArrayList<>(Arrays.asList(6201, 2510, 4204, 1248, 2589, 0));
 
+    private long lastHeartChartUpdate = 0;
     private TextView accelerometerTextView;
     private TextView temperatureTextView;
     private TextView humidityTextView;
     private TextView proximityTextView;
     private TextView lightTextView;
-    private Button advancedMenuButton;
+
+    private LineView lineView;
+    private BarView barView;
 
     private SensorsProvider sensorsProvider;
 
@@ -37,7 +55,7 @@ public class DetailedSensorsListActivity extends AppCompatActivity {
         setContentView(R.layout.activity_detailed_sensors_list);
 
         initializeAttributtesFromUI();
-        sensorsProvider = new SensorsProvider(this);
+        initializeSensors();
     }
 
     private void initializeAttributtesFromUI() {
@@ -46,22 +64,70 @@ public class DetailedSensorsListActivity extends AppCompatActivity {
         humidityTextView = findViewById(R.id.humidityText);
         proximityTextView = findViewById(R.id.proximityText);
         lightTextView = findViewById(R.id.lightText);
-        advancedMenuButton = findViewById(R.id.advancedMenuButton);
-        advancedMenuButton.setOnClickListener(v -> {
-            startActivity(new Intent(
-                    this,
-                    AdvancedMenuActivity.class)
-            );
+
+        barView = findViewById(R.id.bar_view);
+
+        barView.setBottomTextList(
+                new ArrayList<>(Arrays.asList("09/06", "11/06", "15/06", "16/06", "17/06", "18/06"))
+        );
+
+
+        barView.setDataList(barViewData, 5000);
+
+        lineView = findViewById(R.id.line_view);
+        lineView.setDrawDotLine(false); //optional
+        lineView.setShowPopup(LineView.SHOW_POPUPS_MAXMIN_ONLY); //optional
+        lineView.setColorArray(new int[]{Color.RED});
+        lineView.setBottomTextList(heartChartColumns);
+
+
+        BottomNavigationView bottomNavigation = findViewById(R.id.bottom_navigation);
+        bottomNavigation.setSelectedItemId(R.id.tab_charts);
+        bottomNavigation.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                int id = item.getItemId();
+                switch (id) {
+                    case R.id.tab_bluetooth:
+                        startActivity(
+                                new Intent(DetailedSensorsListActivity.this, BluetoothOptionsActivity.class)
+                        );
+                        overridePendingTransition(0, 0);
+
+                        return true;
+
+                    case R.id.tab_adls:
+                        startActivity(
+                                new Intent(DetailedSensorsListActivity.this, AdlSummaryActivity.class)
+                        );
+                        overridePendingTransition(0, 0);
+
+                        return true;
+
+                    case R.id.tab_locations:
+                        startActivity(
+                                new Intent(DetailedSensorsListActivity.this, LocationOptionsActivity.class)
+                        );
+                        overridePendingTransition(0, 0);
+                        return true;
+
+                    case R.id.tab_home:
+
+                        startActivity(
+                                new Intent(DetailedSensorsListActivity.this, MainActivity.class)
+                        );
+                        overridePendingTransition(0, 0);
+                        return true;
+                }
+
+                return true;
+            }
         });
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        initializeSensors();
-    }
 
     private void initializeSensors() {
+        sensorsProvider = new SensorsProvider(this);
 
         BroadcastReceiver sensorReceiver = new BroadcastReceiver() {
             @Override
@@ -69,44 +135,83 @@ public class DetailedSensorsListActivity extends AppCompatActivity {
                 Bundle b = intent.getBundleExtra(SensorableConstants.EXTRA_MESSAGE);
                 ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage = b.getParcelableArrayList(SensorableConstants.BROADCAST_MESSAGE);
 
-                arrayMessage.forEach(sensorMessage -> {
-                    switch (sensorMessage.getDeviceType()) {
-                        case DeviceType.MOBILE:
-                        case DeviceType.WEAROS:
-                        case DeviceType.EMPATICA:
+                try {
+                    arrayMessage.forEach(sensorMessage -> {
+                        switch (sensorMessage.getDeviceType()) {
+                            case DeviceType.MOBILE:
+                            case DeviceType.WEAROS:
+                            case DeviceType.EMPATICA:
 
-                            switch (sensorMessage.getSensorType()) {
+                                switch (sensorMessage.getSensorType()) {
 
-                                case Sensor.TYPE_AMBIENT_TEMPERATURE:
+                                    case Sensor.TYPE_HEART_RATE:
+                                        long current = new Date().getTime();
+                                        boolean needsUpdate = ((current - lastHeartChartUpdate)) > SensorableConstants.TIME_SINCE_LAST_HEART_CHART_UPDATE;
+
+                                        if (sensorMessage.getValue()[0] > 30 && needsUpdate) {
+                                            heartchartData.add(Math.round(sensorMessage.getValue()[0]));
+                                            heartChartColumns.add(SensorableDates.timestampToTimeSeconds(sensorMessage.getTimestamp()));
+
+                                            if (heartchartData.size() > 0 && heartChartColumns.size() > 0) {
+                                                if (heartChartColumns.size() > 8 || heartChartColumns.size() > 8) {
+                                                    heartChartColumns.remove(0);
+                                                    heartchartData.remove(0);
+                                                }
+
+                                                runOnUiThread(() -> {
+                                                    lineView.setBottomTextList(heartChartColumns);
+                                                    lineView.setDataList(new ArrayList<>(Arrays.asList(heartchartData)));
+                                                });
+
+                                                lastHeartChartUpdate = current;
+                                            }
+                                        }
+
+
+                                        break;
+
+                                    case Sensor.TYPE_STEP_COUNTER:
+                                        barViewData.remove(barViewData.size() - 1);
+                                        barViewData.add(Math.round(sensorMessage.getValue()[0]));
+
+                                        runOnUiThread(() -> {
+                                            barView.setDataList(barViewData, 5000);
+                                        });
+                                        break;
+
+                                    case Sensor.TYPE_AMBIENT_TEMPERATURE:
                                         temperatureTextView.setText(sensorMessage.getValue()[0] + " ºC");
-                                    break;
+                                        break;
 
-                                case Sensor.TYPE_PROXIMITY:
-                                    proximityTextView.setText(
-                                            sensorMessage.getValue()[0] == 0 ? "Cercanía detectada" : "Lejos del teléfono"
-                                    );
+                                    case Sensor.TYPE_PROXIMITY:
+                                        proximityTextView.setText(
+                                                sensorMessage.getValue()[0] == 0 ? "Cercanía detectada" : "Lejos del teléfono"
+                                        );
 
-                                    break;
-                                case Sensor.TYPE_LIGHT:
-                                    lightTextView.setText(sensorMessage.getValue()[0] + " lm");
+                                        break;
+                                    case Sensor.TYPE_LIGHT:
+                                        lightTextView.setText(sensorMessage.getValue()[0] + " lm");
 
-                                    break;
+                                        break;
 
-                                case Sensor.TYPE_LINEAR_ACCELERATION:
-                                    accelerometerTextView.setText(
-                                            sensorMessage.getValue()[0] + ", " + sensorMessage.getValue()[1] + ", " + sensorMessage.getValue()[2]
-                                    );
+                                    case Sensor.TYPE_LINEAR_ACCELERATION:
+                                        accelerometerTextView.setText(
+                                                Math.round(sensorMessage.getValue()[0]) + ", " + Math.round(sensorMessage.getValue()[1]) + ", " + Math.round(sensorMessage.getValue()[2])
+                                        );
 
-                                    break;
+                                        break;
 
-                                case Sensor.TYPE_RELATIVE_HUMIDITY:
-                                    humidityTextView.setText(String.valueOf(sensorMessage.getValue()[0]));
-                                    break;
-                            }
+                                    case Sensor.TYPE_RELATIVE_HUMIDITY:
+                                        humidityTextView.setText(Math.round((sensorMessage.getValue()[0]) * 100) / 100 + "%");
+                                        break;
+                                }
 
-                            break;
-                    }
-                });
+                                break;
+                        }
+                    });
+                } catch (NullPointerException e) {
+                    Log.e("DETAILED_SENSOR_LIST", "error receiving null sensor array");
+                }
             }
         };
 
@@ -122,12 +227,8 @@ public class DetailedSensorsListActivity extends AppCompatActivity {
 
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 sensorReceiver,
-                new IntentFilter(SensorableConstants.SENSORS_PROVIDER_SENDS_LOCATION)
-        );
-
-        LocalBroadcastManager.getInstance(this).registerReceiver(
-                sensorReceiver,
                 new IntentFilter(SensorableConstants.EMPATICA_SENDS_SENSOR_DATA)
         );
     }
 }
+

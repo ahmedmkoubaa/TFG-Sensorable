@@ -9,11 +9,11 @@ import java.util.List;
 
 @Dao
 public interface AdlRegistryDao {
-    @Query("SELECT * FROM AdlRegistryEntity")
+    @Query("SELECT * FROM AdlRegistryEntity ORDER BY `end` DESC")
     List<AdlRegistryEntity> getAll();
 
-    @Query("SELECT * FROM AdlRegistryEntity WHERE `end` > :arg0 ORDER BY `end` DESC LIMIT 1")
-    AdlRegistryEntity getAdlRegistryAfter(long arg0);
+    @Query("SELECT * FROM AdlRegistryEntity WHERE id_adl = :arg0 AND `end` > :arg1 ORDER BY `end` DESC LIMIT 1")
+    AdlRegistryEntity getAdlRegistryAfter(int arg0, long arg1);
 
     @Insert
     void insert(AdlRegistryEntity adlRegistryEntity);

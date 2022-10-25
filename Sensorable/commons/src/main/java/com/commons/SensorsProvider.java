@@ -16,7 +16,7 @@ import java.util.List;
 public class SensorsProvider {
     private final Context context;
 
-    // this gives us the location
+    // This gives us the location
     private LocationManager locationManager;
 
     // Attributes to use sensors from sensor manager

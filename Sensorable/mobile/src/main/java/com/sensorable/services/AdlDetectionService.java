@@ -8,7 +8,6 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
@@ -326,7 +325,8 @@ public class AdlDetectionService extends Service {
                 for (SensorTransmissionCoder.SensorMessage s : filteredData.get(timestamp)) {
 
                     // evaluate the events
-                    if (s.getDeviceType() == e.deviceType && s.getSensorType() == e.sensorType) {
+                    // TODO remember to check the device type
+                    if (s.getSensorType() == e.sensorType) {
                         operation = switchOperation(e.operator);
 
                         if (operation != null) {
@@ -420,8 +420,8 @@ public class AdlDetectionService extends Service {
         HashMap<Integer, HashMap<Integer, ArrayList<Pair<Integer, Boolean>>>> databaseDeepCopy = deepDatabaseAdlsCopy();
 
         // let's take from database adls the events registry owned by each adl
-        for (int idCurrentAdl : databaseDeepCopy.keySet()) {
-            databaseDeepCopy.get(idCurrentAdl).forEach((version, eventsOfCurrentAdl) -> {
+        for (int idCurrentAdl : databaseAdls.keySet()) {
+            databaseAdls.get(idCurrentAdl).forEach((version, eventsOfCurrentAdl) -> {
                 boolean evaluation = true;
                 int size = eventsOfCurrentAdl.size();
 
@@ -436,7 +436,7 @@ public class AdlDetectionService extends Service {
                          * exact order they were associated to the adl, so we only check if an event is
                          * true if the previous event was.
                          * If the event is the first or the unique in the array, we supose then that we
-                         * have the previous too (becase there isn't any previous). After this just look for
+                         * have the previous too (because there isn't any previous). After this just look for
                          * the event in the evaluated events array and use its last value.
                          */
 
@@ -487,7 +487,7 @@ public class AdlDetectionService extends Service {
 
             // interval is the current time less 5 minutes, counts made on millis
             long sinceTime = currentTime - SensorableConstants.TIME_SINCE_LAST_ADL_DETECTION;
-            AdlRegistryEntity res = adlRegistryDao.getAdlRegistryAfter(sinceTime);
+            AdlRegistryEntity res = adlRegistryDao.getAdlRegistryAfter(idCurrentAdl, sinceTime);
 
             if (res != null) {
                 res.endTime = currentTime;

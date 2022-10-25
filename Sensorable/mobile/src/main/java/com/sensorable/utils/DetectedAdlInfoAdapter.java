@@ -52,7 +52,7 @@ public class DetectedAdlInfoAdapter extends ArrayAdapter<DetectedAdlInfo> {
         LayoutInflater inflater = LayoutInflater.from(context);
         convertView = inflater.inflate(this.resource, parent, false);
 
-        TextView adlTitle = convertView.findViewById(R.id.adlTitle);
+        TextView adlTitle = convertView.findViewById(R.id.adlRecordTitle);
         TextView adlDescription = convertView.findViewById(R.id.adlDescription);
         TextView adlStats = convertView.findViewById(R.id.adlStats);
         TextView adlTimestamp = convertView.findViewById(R.id.adlTimestamp);

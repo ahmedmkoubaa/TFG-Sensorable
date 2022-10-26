@@ -21,7 +21,9 @@ public class SensorableConstants {
     public final static String EMPATICA_SENDS_SENSOR_DATA = "EmpaticaDataUpdates";
     public final static String SENSORS_PROVIDER_SENDS_SENSORS = "SensorProviderSendsSensors";
     public final static String SENSORS_PROVIDER_SENDS_LOCATION = "SensorsProviderSendsLocation";
+    public final static String ACTIVITY_ID = "activity_id";
 
+    //for syntaax separators
     public final static String JSON_TABLES_SEPARATOR = "#";
     public final static String JSON_FIELDS_SEPARATOR = "\\|";
     public final static String JSON_ROWS_SEPARATOR = "\\}\\{";

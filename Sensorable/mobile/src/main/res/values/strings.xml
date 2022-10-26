@@ -14,6 +14,7 @@
     <string name="title_tab_locations">Ubicaciones</string>
     <string name="title_tab_charts">Gráficas</string>
     <string name="title_tab_activities_recorder">Registrar actividad</string>
+    <string name="step_record_text">Record a step</string>
 
 
 </resources>

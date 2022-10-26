@@ -20,8 +20,8 @@
 
         <TextView
             android:id="@+id/activityRecordTitle"
-            android:layout_width="382dp"
-            android:layout_height="53dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_margin="3dp"
             android:text="Title"
             android:textSize="28sp" />
@@ -29,7 +29,7 @@
         <TextView
             android:id="@+id/activityRecordDescription"
             android:layout_width="match_parent"
-            android:layout_height="76dp"
+            android:layout_height="wrap_content"
             android:layout_margin="3dp"
             android:ems="10"
             android:gravity="start|top"

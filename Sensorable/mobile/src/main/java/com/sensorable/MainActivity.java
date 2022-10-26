@@ -364,7 +364,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
     }
 
     private void initializeAttributesFromUI() {
-        userStateSummary = findViewById(R.id.userStateSummary);
+        userStateSummary = (Button)findViewById(R.id.userStateSummary);
         useStateProgressBar = findViewById(R.id.userStateProgressBar);
         userStateMessage = findViewById(R.id.text);
 

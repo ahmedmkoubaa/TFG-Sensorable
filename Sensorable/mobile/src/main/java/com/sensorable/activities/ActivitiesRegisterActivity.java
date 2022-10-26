@@ -7,6 +7,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.commons.SensorableConstants;
 import com.sensorable.R;
 import com.sensorable.utils.ActivitiesRecord;
 import com.sensorable.utils.ActivitiesRecordAdapter;
@@ -17,6 +18,7 @@ public class ActivitiesRegisterActivity extends AppCompatActivity {
     private ListView activitiesToRecord;
     private ArrayList<ActivitiesRecord> activitiesArray;
     private ActivitiesRecordAdapter activitiesRecordAdapter;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,7 +39,11 @@ public class ActivitiesRegisterActivity extends AppCompatActivity {
         activitiesToRecord.setAdapter(activitiesRecordAdapter);
 
         activitiesToRecord.setOnItemClickListener((adapterView, view, i, id) -> {
-                    Toast.makeText(ActivitiesRegisterActivity.this, "my position " + i + "id " + id, Toast.LENGTH_LONG).show();
+                    Toast.makeText(ActivitiesRegisterActivity.this, "my position " + i + " id " + id, Toast.LENGTH_LONG).show();
+                    startActivity(
+                            new Intent(this, ActivitiesStepsRecorder.class)
+                                    .putExtra(SensorableConstants.ACTIVITY_ID, id)
+                    );
                 }
         );
     }

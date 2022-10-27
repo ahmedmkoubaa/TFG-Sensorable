@@ -15,10 +15,10 @@ import com.sensorable.utils.ActivitiesRecordAdapter;
 import java.util.ArrayList;
 
 public class ActivitiesRegisterActivity extends AppCompatActivity {
+
     private ListView activitiesToRecord;
     private ArrayList<ActivitiesRecord> activitiesArray;
     private ActivitiesRecordAdapter activitiesRecordAdapter;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,7 +33,6 @@ public class ActivitiesRegisterActivity extends AppCompatActivity {
         activitiesArray.add(new ActivitiesRecord(1, "Ponerse los zapatos", "Ponerse zapatos con cordones, atarlos y demás."));
         activitiesArray.add(new ActivitiesRecord(2, "Vestir bata", "Vestir una bata ancha y cómoda con solo 2 botones"));
 
-
         activitiesRecordAdapter = new ActivitiesRecordAdapter(this, R.layout.activities_record_layout, activitiesArray);
         activitiesRecordAdapter.setNotifyOnChange(true);
         activitiesToRecord.setAdapter(activitiesRecordAdapter);
@@ -41,10 +40,13 @@ public class ActivitiesRegisterActivity extends AppCompatActivity {
         activitiesToRecord.setOnItemClickListener((adapterView, view, i, id) -> {
                     Toast.makeText(ActivitiesRegisterActivity.this, "my position " + i + " id " + id, Toast.LENGTH_LONG).show();
                     startActivity(
-                            new Intent(this, ActivitiesStepsRecorder.class)
+                            new Intent(this, ActivitiesStepsRecorderActivity.class)
                                     .putExtra(SensorableConstants.ACTIVITY_ID, id)
                     );
                 }
         );
+
+
+
     }
 }

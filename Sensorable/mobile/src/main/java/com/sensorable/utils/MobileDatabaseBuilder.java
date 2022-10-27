@@ -10,9 +10,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class MobileDatabaseBuilder {
-    private static final ExecutorService executorService = Executors.newFixedThreadPool(SensorableConstants.MOBILE_DATABASE_NUMBER_THREADS);
-    private static MobileDatabase database;
-
     public static MobileDatabase getDatabase(Context context) {
         return Room.databaseBuilder(
                 context,

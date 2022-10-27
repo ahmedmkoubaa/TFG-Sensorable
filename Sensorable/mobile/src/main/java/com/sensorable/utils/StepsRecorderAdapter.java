@@ -6,7 +6,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -15,17 +14,29 @@ import com.sensorable.R;
 
 import java.util.ArrayList;
 
+import static com.sensorable.utils.StepsTimerRecorder.saveTag;
 
 public class StepsRecorderAdapter extends ArrayAdapter<StepsRecord> {
     private final int resource;
     private final Context context;
+    private boolean stepsEnabled;
 
-    public StepsRecorderAdapter(@NonNull Context context, int resource, @NonNull ArrayList<StepsRecord> objects) {
+    public StepsRecorderAdapter(@NonNull Context context, int resource, @NonNull ArrayList<StepsRecord> objects, boolean stepsEnabled) {
         super(context, resource, objects);
         this.context = context;
         this.resource = resource;
+        this.stepsEnabled = stepsEnabled;
     }
 
+
+    @Override
+    public boolean areAllItemsEnabled() {
+        return stepsEnabled ? super.areAllItemsEnabled() : false;
+    }
+
+    public void setStepsEnabled(boolean enabled) {
+        this.stepsEnabled = enabled;
+    }
 
     @NonNull
     @Override
@@ -39,9 +50,9 @@ public class StepsRecorderAdapter extends ArrayAdapter<StepsRecord> {
 
         Button tagStep = convertView.findViewById(R.id.tagStepButton);
         tagStep.setText(title);
-        tagStep.setOnClickListener(
-                view -> Toast.makeText(context, "Option " + title + " id" + id, Toast.LENGTH_SHORT).show()
-        );
+        tagStep.setOnClickListener(view -> saveTag(id));
+
+        tagStep.setEnabled(areAllItemsEnabled());
 
         return convertView;
     }

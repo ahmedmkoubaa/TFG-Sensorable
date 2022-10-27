@@ -1,6 +1,5 @@
 package com.sensorable.activities;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -16,29 +15,24 @@ import com.sensorable.utils.StepsRecorderAdapter;
 
 import java.util.ArrayList;
 
-public class ActivitiesStepsRecorder extends AppCompatActivity {
-    private GridView steps;
+import static com.sensorable.utils.StepsTimerRecorder.startRecordinSteps;
+import static com.sensorable.utils.StepsTimerRecorder.stopRecordingSteps;
+
+public class ActivitiesStepsRecorderActivity extends AppCompatActivity {
+    private GridView stepsGrid;
     private Button startButton;
     private Button stopButton;
+    private boolean activityStarted = false;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_activities_steps_recorder);
 
-        steps = findViewById(R.id.stepsGrid);
+        stepsGrid = findViewById(R.id.stepsGrid);
         startButton = findViewById(R.id.startActivity);
         stopButton = findViewById(R.id.stopActivity);
-
-        startButton.setOnClickListener(view -> {
-            startButton.setVisibility(View.GONE);
-            stopButton.setVisibility(View.VISIBLE);
-        });
-
-        stopButton.setOnClickListener(view -> {
-            stopButton.setVisibility(View.GONE);
-            startButton.setVisibility(View.VISIBLE);
-        });
 
         ArrayList<StepsRecord> activitiesArray = new ArrayList<>();
 
@@ -53,10 +47,35 @@ public class ActivitiesStepsRecorder extends AppCompatActivity {
         activitiesArray.add(new StepsRecord(2, "abrochar primer botón"));
         activitiesArray.add(new StepsRecord(3, "abrochar segundo botón"));
 
-
-        StepsRecorderAdapter activitiesRecordAdapter = new StepsRecorderAdapter(this, R.layout.step_record_layout, activitiesArray);
+        StepsRecorderAdapter activitiesRecordAdapter = new StepsRecorderAdapter(this, R.layout.step_record_layout, activitiesArray, activityStarted);
         activitiesRecordAdapter.setNotifyOnChange(true);
-        steps.setAdapter(activitiesRecordAdapter);
+        stepsGrid.setAdapter(activitiesRecordAdapter);
 
+        startButton.setOnClickListener(view -> {
+            startButton.setVisibility(View.GONE);
+            stopButton.setVisibility(View.VISIBLE);
+
+
+            activitiesRecordAdapter.setStepsEnabled(activityStarted = true);
+            activitiesRecordAdapter.notifyDataSetChanged();
+            startRecordinSteps();
+
+        });
+
+        stopButton.setOnClickListener(view -> {
+            stopRecordingSteps();
+            finish();
+        });
+
+
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (!activityStarted) {
+            super.onBackPressed();
+        } else {
+            Toast.makeText(this, "Finaliza la actividad para salir", Toast.LENGTH_SHORT).show();
+        }
     }
 }

@@ -36,7 +36,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MyApplication"
         tools:replace="android:theme">
-        <activity android:name=".activities.ActivitiesStepsRecorder"></activity>
+        <activity android:name=".activities.ActivitiesStepsRecorderActivity"></activity>
         <activity android:name=".activities.ActivitiesRegisterActivity" />
 
         <service

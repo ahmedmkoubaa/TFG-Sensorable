@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.sensorable"
     android:allowBackup="false">
+
     <!--
          The ACCESS_COARSE/FINE_LOCATION permissions are not required to use
          Google Maps Android API v2, but you must specify either coarse or fine
@@ -36,7 +37,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MyApplication"
         tools:replace="android:theme">
-        <activity android:name=".activities.ActivitiesStepsRecorderActivity"></activity>
+        <service
+            android:name=".services.RegisterActivitiesService"
+            android:enabled="true"
+            android:exported="true"></service>
+
+        <activity android:name=".activities.ActivitiesStepsRecorderActivity" />
         <activity android:name=".activities.ActivitiesRegisterActivity" />
 
         <service

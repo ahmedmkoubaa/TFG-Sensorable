@@ -9,13 +9,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Dao
-public interface StepForActivityDao {
-    @Query("SELECT * FROM StepForActivityEntity")
-    List<StepForActivityEntity> getAll();
+public interface StepsForActivitiesDao {
+    @Query("SELECT * FROM StepsForActivitiesEntity")
+    List<StepsForActivitiesEntity> getAll();
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void insertAll(ArrayList<StepForActivityEntity> stepsForActivities);
+    void insertAll(ArrayList<StepsForActivitiesEntity> stepsForActivities);
 
-    @Query("DELETE FROM StepForActivityEntity")
+    @Query("DELETE FROM StepsForActivitiesEntity")
     void deleteAll();
 }

@@ -7,13 +7,12 @@ import androidx.room.ForeignKey;
 import androidx.room.PrimaryKey;
 
 @Entity(foreignKeys = {
-        @ForeignKey(entity = StepForActivityEntity.class,
+        @ForeignKey(entity = StepsForActivitiesEntity.class,
                 parentColumns = "id",
                 childColumns = "id_step_for_activity",
                 onDelete = ForeignKey.CASCADE)
 })
-
-public class StepForActivityRegistryEntity {
+public class StepsForActivitiesRegistryEntity {
     @PrimaryKey
     @ColumnInfo(name = "id")
     public int id;
@@ -27,7 +26,7 @@ public class StepForActivityRegistryEntity {
     public long timestamp;
 
 
-    public StepForActivityRegistryEntity(@NonNull int id, @NonNull int idStepForActivity, @NonNull long timestamp) {
+    public StepsForActivitiesRegistryEntity(@NonNull int id, @NonNull int idStepForActivity, @NonNull long timestamp) {
         this.id = id;
         this.idStepForActivity = idStepForActivity;
         this.timestamp = timestamp;

@@ -1,3 +1,4 @@
+
 package com.sensorable.utils;
 
 import android.util.Pair;

@@ -116,12 +116,11 @@ public class AdlDetectionService extends Service {
 
         if (MqttHelper.connect()) {
             final Consumer<Mqtt5Publish> handleAdlsScheme = mqtt5Publish -> {
-
                 String payload = new String(mqtt5Publish.getPayloadAsBytes());
                 String[] tables = payload.split(SensorableConstants.JSON_TABLES_SEPARATOR);
 
 
-                updateFromDatabase(
+                updateDatabase(
                         composeTableAdls(removeFirstAndLastChar(tables[0])),
                         composeTableEvents(removeFirstAndLastChar(tables[1])),
                         composeTableEventsForAdls(removeFirstAndLastChar(tables[2]))
@@ -135,7 +134,6 @@ public class AdlDetectionService extends Service {
             if (session != null) {
                 String responseTopic = SensorableConstants.MQQTT_INFORM_CUSTOM_ADLS + "/" + session;
 
-//                MqttHelper.unsubscribe(responseTopic);
                 MqttHelper.subscribe(responseTopic, handleAdlsScheme);
                 MqttHelper.publish(
                         SensorableConstants.MQTT_REQUEST_CUSTOM_ADLS,
@@ -143,7 +141,6 @@ public class AdlDetectionService extends Service {
                         responseTopic
                 );
             } else {
-//                MqttHelper.unsubscribe(SensorableConstants.MQTT_INFORM_GENERIC_ADLS);
                 MqttHelper.subscribe(SensorableConstants.MQTT_INFORM_GENERIC_ADLS, handleAdlsScheme);
                 MqttHelper.publish(SensorableConstants.MQTT_REQUEST_GENERIC_ADLS);
             }
@@ -156,7 +153,7 @@ public class AdlDetectionService extends Service {
         return someString.substring(1, someString.length() - 1);
     }
 
-    private void updateFromDatabase(final ArrayList<AdlEntity> adlEntities, final ArrayList<EventEntity> eventEntities, final ArrayList<EventForAdlEntity> eventsForAdlsEntities) {
+    private void updateDatabase(final ArrayList<AdlEntity> adlEntities, final ArrayList<EventEntity> eventEntities, final ArrayList<EventForAdlEntity> eventsForAdlsEntities) {
         executor.execute(() -> {
             adlDao.deleteAll();
             eventDao.deleteAll();

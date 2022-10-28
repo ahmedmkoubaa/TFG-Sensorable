@@ -16,8 +16,13 @@ public class ActivityEntity {
     @ColumnInfo(name = "title")
     public String title;
 
-    public ActivityEntity(@NonNull int id, @NonNull String title) {
+    @NonNull
+    @ColumnInfo(name = "description")
+    public String description;
+
+    public ActivityEntity(@NonNull int id, @NonNull String title, @NonNull String description) {
         this.id = id;
         this.title = title;
+        this.description = description;
     }
 }

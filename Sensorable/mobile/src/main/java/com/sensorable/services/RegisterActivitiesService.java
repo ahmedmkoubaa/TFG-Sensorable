@@ -4,6 +4,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
@@ -34,6 +35,7 @@ public class RegisterActivitiesService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         initializeMobileDatabase();
         loadDataViaMqtt();
+        Toast.makeText(this, "ACTIVITIES REGISTER SERVICE", Toast.LENGTH_SHORT).show();
 
         Log.i("ADL_DETECTION_SERVICE", "initialized adl detection service");
 
@@ -49,7 +51,7 @@ public class RegisterActivitiesService extends Service {
                 String payload = new String(mqtt5Publish.getPayloadAsBytes());
                 String[] tables = payload.split(SensorableConstants.JSON_TABLES_SEPARATOR);
 
-                updateFromDatabase(
+                updateDatabase(
                         composeTableActivities(removeFirstAndLastChar(tables[0])),
                         composeTableSteps(removeFirstAndLastChar(tables[1])),
                         composeTableStepsForActivities(removeFirstAndLastChar(tables[2]))
@@ -59,11 +61,13 @@ public class RegisterActivitiesService extends Service {
             };
 
             MqttHelper.subscribe(SensorableConstants.MQTT_INFORM_ACTIVITIES, handleReceivedActivities);
-            MqttHelper.publish(SensorableConstants.MQTT_REQUEST_CUSTOM_ADLS);
+            MqttHelper.publish(SensorableConstants.MQTT_REQUEST_ACTIVITIES);
         }
     }
 
-    private void updateFromDatabase(ArrayList<ActivityEntity> activities, ArrayList<ActivityStepEntity> steps, ArrayList<StepsForActivitiesEntity> stepsForActivities) {
+    private void updateDatabase(ArrayList<ActivityEntity> activities,
+                                ArrayList<ActivityStepEntity> steps,
+                                ArrayList<StepsForActivitiesEntity> stepsForActivities) {
         executor.execute(() -> {
             activityDao.deleteAll();
             activityStepDao.deleteAll();
@@ -73,19 +77,50 @@ public class RegisterActivitiesService extends Service {
             activityStepDao.insertAll(steps);
             stepsForActivitiesDao.insertAll(stepsForActivities);
         });
-
     }
 
     private ArrayList<ActivityEntity> composeTableActivities(final String activities) {
-        return new ArrayList<>();
+        ArrayList<ActivityEntity> activityEntities = new ArrayList<>();
+        String[] fields;
+
+        for (String r : activities.split(SensorableConstants.JSON_ROWS_SEPARATOR)) {
+            fields = r.split(SensorableConstants.JSON_FIELDS_SEPARATOR);
+            activityEntities.add(new ActivityEntity(Integer.parseInt(fields[0]), fields[1], fields[2]));
+
+        }
+
+        return activityEntities;
     }
 
     private ArrayList<ActivityStepEntity> composeTableSteps(final String steps) {
-        return new ArrayList<>();
+        ArrayList<ActivityStepEntity> stepsEntities = new ArrayList<>();
+        String[] fields;
+
+        for (String r : steps.split(SensorableConstants.JSON_ROWS_SEPARATOR)) {
+            fields = r.split(SensorableConstants.JSON_FIELDS_SEPARATOR);
+            stepsEntities.add(new ActivityStepEntity(Integer.parseInt(fields[0]), fields[1]));
+
+        }
+
+        return stepsEntities;
+
     }
 
     private ArrayList<StepsForActivitiesEntity> composeTableStepsForActivities(final String stepsForActivities) {
-        return new ArrayList<>();
+        ArrayList<StepsForActivitiesEntity> stepsForActivitieEntities = new ArrayList<>();
+        String[] fields;
+
+        for (String r : stepsForActivities.split(SensorableConstants.JSON_ROWS_SEPARATOR)) {
+            fields = r.split(SensorableConstants.JSON_FIELDS_SEPARATOR);
+            stepsForActivitieEntities.add(
+                    new StepsForActivitiesEntity(
+                            Integer.parseInt(fields[0]), Integer.parseInt(fields[1]), Integer.parseInt(fields[2])
+                    )
+            );
+
+        }
+
+        return stepsForActivitieEntities;
     }
 
 

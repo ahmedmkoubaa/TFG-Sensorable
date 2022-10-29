@@ -10,18 +10,19 @@ import android.widget.Button;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.commons.database.ActivityStepEntity;
 import com.sensorable.R;
 
 import java.util.ArrayList;
 
 import static com.sensorable.utils.StepsTimerRecorder.saveTag;
 
-public class StepsRecorderAdapter extends ArrayAdapter<StepsRecord> {
+public class StepsRecorderAdapter extends ArrayAdapter<ActivityStepEntity> {
     private final int resource;
     private final Context context;
     private boolean stepsEnabled;
 
-    public StepsRecorderAdapter(@NonNull Context context, int resource, @NonNull ArrayList<StepsRecord> objects, boolean stepsEnabled) {
+    public StepsRecorderAdapter(@NonNull Context context, int resource, @NonNull ArrayList<ActivityStepEntity> objects, boolean stepsEnabled) {
         super(context, resource, objects);
         this.context = context;
         this.resource = resource;
@@ -41,7 +42,7 @@ public class StepsRecorderAdapter extends ArrayAdapter<StepsRecord> {
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        StepsRecord record = this.getItem(position);
+        ActivityStepEntity record = this.getItem(position);
         String title = record.getTitle();
         int id = record.getId();
 

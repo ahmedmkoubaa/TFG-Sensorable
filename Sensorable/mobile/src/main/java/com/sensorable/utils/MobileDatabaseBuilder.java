@@ -10,14 +10,18 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class MobileDatabaseBuilder {
+    private static MobileDatabase database;
     public static MobileDatabase getDatabase(Context context) {
-        return Room.databaseBuilder(
-                context,
-                MobileDatabase.class,
-                SensorableConstants.MOBILE_DATABASE_NAME
-        )
-                .fallbackToDestructiveMigration()
-                .build();
+        if (database == null) {
+            database = Room.databaseBuilder(
+                    context,
+                    MobileDatabase.class,
+                    SensorableConstants.MOBILE_DATABASE_NAME
+            )
+                    .fallbackToDestructiveMigration()
+                    .build();
+        }
+        return database;
     }
 
 

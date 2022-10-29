@@ -155,7 +155,6 @@ public class BluetoothOptionsActivity extends AppCompatActivity {
     }
 
     private void updateFromDatabase() {
-
         executor.execute(() -> {
             ArrayList<BluetoothDeviceInfo> bleArrayCopy = new ArrayList<>();
 

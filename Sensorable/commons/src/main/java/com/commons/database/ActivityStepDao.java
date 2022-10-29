@@ -19,4 +19,13 @@ public interface ActivityStepDao {
 
     @Query("DELETE FROM ActivityStepEntity")
     void deleteAll();
+
+    @Query("SELECT * FROM ActivityStepEntity WHERE id = :arg0")
+    ActivityStepEntity getStepById(int arg0);
+
+    @Query("SELECT * FROM ActivityStepEntity " +
+            "WHERE id IN " +
+            "(SELECT id_step FROM StepsForActivitiesEntity WHERE id_activity = :arg0 )")
+    List<ActivityStepEntity> getStepsOfActivity(long arg0);
+
 }

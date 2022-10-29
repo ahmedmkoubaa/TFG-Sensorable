@@ -42,6 +42,7 @@ import com.sensorable.services.AdlDetectionService;
 import com.sensorable.services.BackUpService;
 import com.sensorable.services.BluetoothDetectionService;
 import com.sensorable.services.EmpaticaTransmissionService;
+import com.sensorable.services.RegisterActivitiesService;
 import com.sensorable.services.SensorsProviderService;
 import com.sensorable.services.WearTransmissionService;
 import com.sensorable.utils.MobileDatabase;
@@ -91,6 +92,8 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         initializeAdlDetectionService();
         initializeBackUpService();
         initializeBluetoothDetectionService();
+
+        initializeRegisterActivitiesService();
 
 //        initializeSensors();
 //        initializeWifiDirectDetector();
@@ -400,6 +403,13 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
                 sensorDataReceiver,
                 new IntentFilter(SensorableConstants.SENSORS_PROVIDER_SENDS_SENSORS));
     }
+
+    private void initializeRegisterActivitiesService() {
+        if (!isMyServiceRunning(RegisterActivitiesService.class)) {
+            startService(new Intent(this, RegisterActivitiesService.class));
+        }
+    }
+
 
 
     // TODO test me and find my utility if I have any

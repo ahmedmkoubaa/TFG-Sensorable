@@ -8,45 +8,64 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.commons.SensorableConstants;
+import com.commons.database.ActivityDao;
+import com.commons.database.ActivityEntity;
 import com.sensorable.R;
-import com.sensorable.utils.ActivitiesRecord;
-import com.sensorable.utils.ActivitiesRecordAdapter;
+import com.sensorable.utils.ActivityEntityAdapter;
+import com.sensorable.utils.MobileDatabase;
+import com.sensorable.utils.MobileDatabaseBuilder;
 
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
 
 public class ActivitiesRegisterActivity extends AppCompatActivity {
 
     private ListView activitiesToRecord;
-    private ArrayList<ActivitiesRecord> activitiesArray;
-    private ActivitiesRecordAdapter activitiesRecordAdapter;
+    private ArrayList<ActivityEntity> activitiesArray;
+    private ActivityEntityAdapter activityEntityAdapter;
+    private ActivityDao activityDao;
+    private ExecutorService executor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_activities_register);
 
+        initializeMobileDatabase();
+        initializeActivitiesToRecord();
+
+
+        executor.execute(() -> {
+            activitiesArray.addAll(activityDao.getAll());
+            runOnUiThread(() -> {
+                activityEntityAdapter.notifyDataSetChanged();
+                activitiesToRecord.setOnItemClickListener((adapterView, view, i, id) -> {
+                            Toast.makeText(ActivitiesRegisterActivity.this, "my position " + i + " id " + id, Toast.LENGTH_LONG).show();
+                            startActivity(
+                                    new Intent(this, ActivitiesStepsRecorderActivity.class)
+                                            .putExtra(SensorableConstants.ACTIVITY_ID, activitiesArray.get(i).id)
+                            );
+                        }
+                );
+            });
+        });
+    }
+
+    private void initializeActivitiesToRecord() {
         activitiesToRecord = findViewById(R.id.activitiesToRecord);
         activitiesToRecord.setDivider(null);
         activitiesArray = new ArrayList<>();
+        activityEntityAdapter = new ActivityEntityAdapter(this, R.layout.activities_record_layout, activitiesArray);
+        activityEntityAdapter.setNotifyOnChange(true);
+        activitiesToRecord.setAdapter(activityEntityAdapter);
 
-        activitiesArray.add(new ActivitiesRecord(0, "Vestir camisa", "Vestir una camisa con 5 más de 2 botones y una chaquetea"));
-        activitiesArray.add(new ActivitiesRecord(1, "Ponerse los zapatos", "Ponerse zapatos con cordones, atarlos y demás."));
-        activitiesArray.add(new ActivitiesRecord(2, "Vestir bata", "Vestir una bata ancha y cómoda con solo 2 botones"));
+    }
 
-        activitiesRecordAdapter = new ActivitiesRecordAdapter(this, R.layout.activities_record_layout, activitiesArray);
-        activitiesRecordAdapter.setNotifyOnChange(true);
-        activitiesToRecord.setAdapter(activitiesRecordAdapter);
+    // initialize data structures from the database
+    private void initializeMobileDatabase() {
+        MobileDatabase database = MobileDatabaseBuilder.getDatabase(this);
 
-        activitiesToRecord.setOnItemClickListener((adapterView, view, i, id) -> {
-                    Toast.makeText(ActivitiesRegisterActivity.this, "my position " + i + " id " + id, Toast.LENGTH_LONG).show();
-                    startActivity(
-                            new Intent(this, ActivitiesStepsRecorderActivity.class)
-                                    .putExtra(SensorableConstants.ACTIVITY_ID, id)
-                    );
-                }
-        );
-
-
-
+        activityDao = database.activityDao();
+        executor = MobileDatabaseBuilder.getExecutor();
     }
 }

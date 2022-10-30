@@ -2,8 +2,9 @@ package com.commons;
 
 public class SensorableConstants {
     // for time operations
-    private final static int MINUTES_TO_SECONDS = 60;
-    private final static int SECONDS_TO_MILLIS = 1000;
+    public final static int MINUTES_TO_SECONDS = 60;
+    public final static int SECONDS_TO_MILLIS = 1000;
+    public static final double BACKUP_PART_SIZE = 4000;
 
     // for requests
     public final static int REQUEST_PERMISSIONS_CODE = 1;
@@ -23,7 +24,7 @@ public class SensorableConstants {
     public final static String SENSORS_PROVIDER_SENDS_LOCATION = "SensorsProviderSendsLocation";
     public final static String ACTIVITY_ID = "activity_id";
 
-    //for syntaax separators
+    //for syntactical separators
     public final static String JSON_TABLES_SEPARATOR = "#";
     public final static String JSON_FIELDS_SEPARATOR = "\\|";
     public final static String JSON_ROWS_SEPARATOR = "\\}\\{";
@@ -61,12 +62,14 @@ public class SensorableConstants {
     public static final String MQTT_TEST_TOPIC = "sensorable/test";
     public static final String MQTT_CONNECT_URL = "broker.hivemq.com";
 
+    public static final String MQTT_SENSORS_INSERT = "sensorable/database/sensors/insert";
     public static final String MQTT_REQUEST_CUSTOM_ADLS =  "sensorable/database/adls/custom/request";
     public static final String MQQTT_INFORM_CUSTOM_ADLS =  "sensorable/database/adls/custom/inform";
     public static final String MQTT_REQUEST_GENERIC_ADLS =  "sensorable/database/adls/generics/request";
     public static final String MQTT_INFORM_GENERIC_ADLS =  "sensorable/database/adls/generics/inform";
     public static final String MQTT_INFORM_ACTIVITIES = "sensorable/database/activities/inform";
     public static final String MQTT_REQUEST_ACTIVITIES = "sensorable/database/activities/request";
+    public static final String MQTT_ACTIVITIES_INSERT = "sensorable/database/activities/insert";
 
 
     public static final String DATE_SEPARATOR = "/";

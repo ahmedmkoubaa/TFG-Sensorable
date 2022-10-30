@@ -12,10 +12,12 @@ import com.commons.SensorableConstants;
 import com.commons.database.ActivityStepDao;
 import com.commons.database.ActivityStepEntity;
 import com.commons.database.StepsForActivitiesDao;
+import com.commons.database.StepsForActivitiesRegistryDao;
 import com.sensorable.R;
 import com.sensorable.utils.ActivityStepEntityAdapter;
 import com.sensorable.utils.MobileDatabase;
 import com.sensorable.utils.MobileDatabaseBuilder;
+import com.sensorable.utils.MqttHelper;
 
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
@@ -33,6 +35,7 @@ public class ActivitiesStepsRecorderActivity extends AppCompatActivity {
     private ActivityStepDao stepsDao;
     private ExecutorService executor;
     private StepsForActivitiesDao stepsForActivitiesDao;
+    private StepsForActivitiesRegistryDao stepsForActivitiesRegistryDao;
 
 
     @Override
@@ -79,6 +82,17 @@ public class ActivitiesStepsRecorderActivity extends AppCompatActivity {
 
         stopButton.setOnClickListener(view -> {
             stopRecordingSteps(activityId);
+            executor.execute(() -> {
+                // generate the json data structure
+                final String[] payload = {"["};
+                stepsForActivitiesRegistryDao.getAll().forEach(registry -> payload[0] += registry.toJson() + ",");
+                payload[0] = payload[0].substring(0, payload[0].length() - 1) + "]";
+
+                // send data via MQTT
+                MqttHelper.publish(SensorableConstants.MQTT_ACTIVITIES_INSERT, payload[0].getBytes())
+                        .thenAccept(accept -> stepsForActivitiesRegistryDao.deleteAll());
+            });
+
             finish();
         });
     }
@@ -89,6 +103,7 @@ public class ActivitiesStepsRecorderActivity extends AppCompatActivity {
 
         stepsDao = database.activityStepDao();
         stepsForActivitiesDao = database.stepsForActivitiesDao();
+        stepsForActivitiesRegistryDao = database.stepsForActivitiesRegistryDao();
         executor = MobileDatabaseBuilder.getExecutor();
 
     }

@@ -12,6 +12,7 @@ import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
 import com.hivemq.client.mqtt.mqtt5.message.subscribe.Mqtt5RetainHandling;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 public class MqttHelper {
@@ -81,9 +82,9 @@ public class MqttHelper {
         publish(topic, "".getBytes());
     }
 
-    public static void publish(final String topic, final byte[] payload) {
+    public static CompletableFuture<Void> publish(final String topic, final byte[] payload) {
         client.connect();
-        client.toAsync()
+        return client.toAsync()
                 .publishWith()
                 .topic(topic)
                 .qos(MqttQos.EXACTLY_ONCE)

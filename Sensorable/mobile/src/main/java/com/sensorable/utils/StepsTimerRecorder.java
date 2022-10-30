@@ -35,9 +35,6 @@ public class StepsTimerRecorder {
                                     activityId, stepId,timestamp
                             )
                     );
-
-                    List<StepsForActivitiesRegistryEntity> res = database.stepsForActivitiesRegistryDao().getAll();
-                    res.clear();
                 }
         );
     }

@@ -40,4 +40,8 @@ public class StepsForActivitiesRegistryEntity {
         this.idStep = idStep;
         this.timestamp = timestamp;
     }
+
+    public String toJson() {
+        return "[" + id + "," + idActivity + "," + idStep + "," + timestamp + " ]";
+    }
 }

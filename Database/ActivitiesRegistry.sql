@@ -20,11 +20,20 @@ CREATE TABLE steps_for_activities (
     UNIQUE KEY(id_activity, id_step)
 );
 
+/*THIS SOULD BE THE REAL VERSION BUT WE HAD SOME PROBLEMS AND NOT ENOUGH TIME TO FIX THEM*/
+/*CREATE TABLE steps_for_activities_registry (
+ id INT AUTO_INCREMENT PRIMARY KEY,
+ id_step_for_activity INT NOT NULL,
+ timestamp BIGINT NOT NULL,
+ FOREIGN KEY (id_step_for_activity) REFERENCES steps_for_activities(id) ON DELETE CASCADE
+ );*/
 CREATE TABLE steps_for_activities_registry (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    id_step_for_activity INT NOT NULL,
-    timestamp BIGINT NOT NULL,
-    FOREIGN KEY (id_step_for_activity) REFERENCES steps_for_activities(id) ON DELETE CASCADE
+    id_activity INT NOT NULL,
+    id_step INT NOT NULL,
+    FOREIGN KEY (id_activity) REFERENCES activities(id) ON DELETE CASCADE,
+    FOREIGN KEY (id_step) REFERENCES activity_steps(id) ON DELETE CASCADE,
+    timestamp BIGINT NOT NULL
 );
 
 /*steps to make easy the registry*/

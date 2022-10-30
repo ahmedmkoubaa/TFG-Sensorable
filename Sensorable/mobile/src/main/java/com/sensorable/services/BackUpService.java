@@ -42,26 +42,22 @@ public class BackUpService extends Service {
                 SensorMessageDao sensorMessageDao = MobileDatabaseBuilder.getDatabase(BackUpService.this).sensorMessageDao();
                 ExecutorService executorService = MobileDatabaseBuilder.getExecutor();
 
-                executorService.execute(() ->
-                {
-                    List<SensorMessageEntity> content = sensorMessageDao.getAll();
-                    if (!content.isEmpty()) {
-
-                        final double BACKUP_PART_SIZE = 4000;
-                        final double parts = Math.ceil(content.size() / BACKUP_PART_SIZE);
+                executorService.execute(() -> {
+                    List<SensorMessageEntity> sensorsData = sensorMessageDao.getAll();
+                    if (!sensorsData.isEmpty()) {
+                        final double parts = Math.ceil(sensorsData.size() / SensorableConstants.BACKUP_PART_SIZE);
 
                         int i = 0;
                         for (int j = 1; j <= parts; j++) {
                             String payload = "[ ";
 
-                            for (i = (int) ((j - 1) * parts); i < content.size() && i < j * BACKUP_PART_SIZE; i++) {
-                                payload += content.get(i).toJson() + ",";
+                            for (i = (int) ((j - 1) * parts); i < sensorsData.size() && i < j * SensorableConstants.BACKUP_PART_SIZE; i++) {
+                                payload += sensorsData.get(i).toJson() + ",";
                             }
 
-                            payload = payload.substring(0, payload.length() - 1);
-                            payload += "]";
+                            payload = payload.substring(0, payload.length() - 1) + "]";
 
-                            MqttHelper.publish("sensorable/database/sensors/insert", payload.getBytes());
+                            MqttHelper.publish(SensorableConstants.MQTT_SENSORS_INSERT, payload.getBytes());
                             Log.i("TEST_MQTT", payload);
                         }
 
@@ -73,10 +69,11 @@ public class BackUpService extends Service {
                 });
 
 
-                Log.i("BACKUP_SERVICE", "ALARMITAAA FIRING AGAIN");
-                handler.postDelayed(this, SensorableConstants.SCHEDULE_DATABASE_BACKUP);  // 1 second delay
+                Log.i("BACKUP_SERVICE", "ALARM FIRING AGAIN");
+                handler.postDelayed(this, SensorableConstants.SCHEDULE_DATABASE_BACKUP);
             }
         };
+
         handler.post(runnable);
     }
 

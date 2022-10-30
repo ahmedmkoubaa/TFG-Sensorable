@@ -51,11 +51,13 @@ public class RegisterActivitiesService extends Service {
                 String payload = new String(mqtt5Publish.getPayloadAsBytes());
                 String[] tables = payload.split(SensorableConstants.JSON_TABLES_SEPARATOR);
 
-                updateDatabase(
-                        composeTableActivities(removeFirstAndLastChar(tables[0])),
-                        composeTableSteps(removeFirstAndLastChar(tables[1])),
-                        composeTableStepsForActivities(removeFirstAndLastChar(tables[2]))
-                );
+                if (tables.length > 2) {
+                    updateDatabase(
+                            composeTableActivities(removeFirstAndLastChar(tables[0])),
+                            composeTableSteps(removeFirstAndLastChar(tables[1])),
+                            composeTableStepsForActivities(removeFirstAndLastChar(tables[2]))
+                    );
+                }
 
                 Log.i("MQTT_RECEIVE_ADLS", "new content " + payload);
             };

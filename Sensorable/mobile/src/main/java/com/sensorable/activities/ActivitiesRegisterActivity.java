@@ -40,7 +40,6 @@ public class ActivitiesRegisterActivity extends AppCompatActivity {
             runOnUiThread(() -> {
                 activityEntityAdapter.notifyDataSetChanged();
                 activitiesToRecord.setOnItemClickListener((adapterView, view, i, id) -> {
-                            Toast.makeText(ActivitiesRegisterActivity.this, "my position " + i + " id " + id, Toast.LENGTH_LONG).show();
                             startActivity(
                                     new Intent(this, ActivitiesStepsRecorderActivity.class)
                                             .putExtra(SensorableConstants.ACTIVITY_ID, activitiesArray.get(i).id)

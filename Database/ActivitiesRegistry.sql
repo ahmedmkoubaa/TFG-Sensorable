@@ -27,6 +27,18 @@ CREATE TABLE steps_for_activities_registry (
     FOREIGN KEY (id_step_for_activity) REFERENCES steps_for_activities(id) ON DELETE CASCADE
 );
 
+/*steps to make easy the registry*/
+INSERT INTO
+    activity_steps (id, title)
+VALUES
+    (-2, "Finalizar actividad");
+
+/* steps to make easy the registry */
+INSERT INTO
+    activity_steps (id, title)
+VALUES
+    (-1, "Comenzar actividad");
+
 INSERT INTO
     activities (id, title, description)
 VALUES

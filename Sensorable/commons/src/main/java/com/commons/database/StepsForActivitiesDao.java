@@ -18,4 +18,7 @@ public interface StepsForActivitiesDao {
 
     @Query("DELETE FROM StepsForActivitiesEntity")
     void deleteAll();
+
+    @Query("SELECT id FROM StepsForActivitiesEntity WHERE id_activity = :arg0 AND id_step = :arg1")
+    int getIdByActivityAndStep(long arg0, int arg1);
 }

@@ -1,33 +1,44 @@
-
 package com.sensorable.utils;
 
 import android.util.Pair;
 
+import com.commons.database.StepsForActivitiesRegistryEntity;
+
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 public class StepsTimerRecorder {
     // These are reserved ids
     private static final int startId = -1;
     private static final int stopId = -2;
+    private static final MobileDatabase database = MobileDatabaseBuilder.getDatabase(null);
+    private static final ExecutorService executor = MobileDatabaseBuilder.getExecutor();
 
-    // sequence of stored steps
-    private static final ArrayList<Pair<Integer, Long>> stepsSequence = new ArrayList<>();
-
-    public static void startRecordinSteps() {
-        saveTag(startId);
+    public static void startRecordingSteps(final long activityId) {
+        saveTag(activityId, startId);
     }
 
-    public static void stopRecordingSteps() {
-        saveTag(stopId);
+    public static void stopRecordingSteps(final long activityId) {
+        saveTag(activityId, stopId);
     }
 
-    public static void saveTag(int stepId) {
-        stepsSequence.add(setTag(stepId));
-    }
+    public static void saveTag(long activityId, int stepId) {
+        long timestamp = new Date().getTime();
 
-    public static Pair<Integer, Long> setTag(int stepId) {
-        return new Pair<>(stepId, new Date().getTime());
-    }
+        // get the id of the relation between activity and step and save it into
+        executor.execute(() ->
+                {
+                    database.stepsForActivitiesRegistryDao().insert(
+                            new StepsForActivitiesRegistryEntity(
+                                    activityId, stepId,timestamp
+                            )
+                    );
 
+                    List<StepsForActivitiesRegistryEntity> res = database.stepsForActivitiesRegistryDao().getAll();
+                    res.clear();
+                }
+        );
+    }
 }

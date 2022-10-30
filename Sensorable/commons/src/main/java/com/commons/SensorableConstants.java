@@ -39,7 +39,7 @@ public class SensorableConstants {
     // for mobile database
     public final static String MOBILE_DATABASE_NAME = "default-mobile-database";
     public final static int MOBILE_DATABASE_NUMBER_THREADS = 1;
-    public final static int MOBILE_DATABASE_VERSION = 50;
+    public final static int MOBILE_DATABASE_VERSION = 52;
 
     // time that uses the adl detection to service to filter data
     // the lower is this value more accurate is the filtering, it means

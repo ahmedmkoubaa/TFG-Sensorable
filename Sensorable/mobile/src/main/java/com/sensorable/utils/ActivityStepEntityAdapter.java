@@ -1,6 +1,7 @@
 package com.sensorable.utils;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,8 +21,8 @@ import static com.sensorable.utils.StepsTimerRecorder.saveTag;
 public class ActivityStepEntityAdapter extends ArrayAdapter<ActivityStepEntity> {
     private final int resource;
     private final Context context;
-    private boolean stepsEnabled;
     private final long idActivity;
+    private boolean stepsEnabled;
 
     public ActivityStepEntityAdapter(@NonNull Context context, int resource, @NonNull ArrayList<ActivityStepEntity> objects, final long idActivity, boolean stepsEnabled) {
         super(context, resource, objects);
@@ -53,7 +54,11 @@ public class ActivityStepEntityAdapter extends ArrayAdapter<ActivityStepEntity> 
 
         Button tagStep = convertView.findViewById(R.id.tagStepButton);
         tagStep.setText(title);
-        tagStep.setOnClickListener(view -> saveTag(idActivity, id));
+        tagStep.setOnClickListener(view -> {
+            saveTag(idActivity, id);
+//            tagStep.setVisibility(View.GONE);
+            tagStep.setBackgroundColor(Color.GRAY);
+        });
 
         tagStep.setEnabled(areAllItemsEnabled());
 

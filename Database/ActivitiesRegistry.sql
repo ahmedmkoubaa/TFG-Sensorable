@@ -1,5 +1,10 @@
 use test;
 
+DROP TABLE IF EXISTS steps_for_activities_registry,
+steps_for_activities,
+activity_steps,
+activities;
+
 CREATE TABLE activities (
     id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(50) NOT NULL,
@@ -60,42 +65,82 @@ VALUES
 INSERT INTO
     activity_steps (title)
 VALUES
-    ("Coger la bata");
+    ("Coge la bata");
 
 INSERT INTO
     activity_steps (title)
 VALUES
-    ("Ponerse la manga del brazo dominante");
+    ("Empieza a meter la manga dominante");
 
 INSERT INTO
     activity_steps (title)
 VALUES
-    ("Coger la otra manga");
+    ("Acaba de meter la manga dominante");
 
 INSERT INTO
     activity_steps (title)
 VALUES
-    ("Ponerse la manga del brazo NO dominante");
+    ("Empieza a meter la manga NO dominante");
 
 INSERT INTO
     activity_steps (title)
 VALUES
-    ("Colocarse la bata correctamente");
+    ("Acaba de meter la manga NO dominante");
 
 INSERT INTO
     activity_steps (title)
 VALUES
-    ("Acomodarse el cuello correctamente");
+    ("Acaba de colocarse la bata");
 
 INSERT INTO
     activity_steps (title)
 VALUES
-    ("Se abrocha un botón");
+    ("Empieza a colocar el cuello");
 
 INSERT INTO
     activity_steps (title)
 VALUES
-    ("Termina de acomodarse la bata finalmente");
+    ("Acaba de colocar el cuello");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Empieza a abrocharse los dos botones");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Acaba de abrocharse los dos botones");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Empieza a desabrocharse los dos botones");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Termina de desabrochar los dos botones");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Empieza a quitar la manga dominante");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Acaba de quitar la manga dominante");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Empieza a quitar la manga NO dominante");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Deja la bata donde estaba");
 
 INSERT INTO
     steps_for_activities (id_activity, id_step)
@@ -138,6 +183,46 @@ VALUES
     (1, 8);
 
 INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (1, 9);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (1, 10);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (1, 11);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (1, 12);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (1, 13);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (1, 14);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (1, 15);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (1, 16);
+
+INSERT INTO
     activities (id, title, description)
 VALUES
     (
@@ -164,44 +249,427 @@ VALUES
 INSERT INTO
     activity_steps (title)
 VALUES
-    ("Acaba de meter el pie en el zapato");
+    (
+        "Empieza a meter el pie ensanchando la zona del elástico"
+    );
 
 INSERT INTO
     activity_steps (title)
 VALUES
-    ("Ajusta la lengüeta");
+    ("Acaba de meter el pie");
 
 INSERT INTO
     activity_steps (title)
 VALUES
-    ("Se ata los cordones");
+    (
+        "Empieza a quitárselo ensanchando la zona del elástico"
+    );
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Acaba de quitarse el zapato");
 
 INSERT INTO
     steps_for_activities (id_activity, id_step)
 VALUES
-    (2, 9);
+    (2, 17);
 
 INSERT INTO
     steps_for_activities (id_activity, id_step)
 VALUES
-    (2, 10);
+    (2, 18);
 
 INSERT INTO
     steps_for_activities (id_activity, id_step)
 VALUES
-    (2, 11);
+    (2, 19);
 
 INSERT INTO
     steps_for_activities (id_activity, id_step)
 VALUES
-    (2, 12);
+    (2, 20);
 
 INSERT INTO
     steps_for_activities (id_activity, id_step)
 VALUES
-    (2, 13);
+    (2, 21);
 
 INSERT INTO
     steps_for_activities (id_activity, id_step)
 VALUES
-    (2, 14);
+    (2, 22);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (2, 23);
+
+INSERT INTO
+    activities (id, title, description)
+VALUES
+    (
+        3,
+        "Prueba del algómetro",
+        "Un dispositivo algométrico de presión de dial equipado con una cabeza circular."
+    );
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Empieza trapecio dominante 1");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Acaba trapecio dominante 1");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Empieza trapecio dominante 2");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Acaba trapecio dominante 2");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Empieza trapecio dominante 3");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Acaba trapecio dominante 3");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Empieza trapecio NO dominante 1");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Acaba trapecio NO dominante 1");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Empieza trapecio NO dominante 2");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Acaba trapecio NO dominante 2");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Empieza trapecio NO dominante 3");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Acaba trapecio NO dominante 3");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Empieza antebrazo dominante 1");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Acaba antebrazo dominante 1");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Empieza antebrazo dominante 2");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Acaba antebrazo dominante 2");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Empieza antebrazo dominante 3");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Acaba antebrazo dominante 3");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Empieza antebrazo NO dominante 1");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Acaba antebrazo NO dominante 1");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Empieza antebrazo NO dominante 2");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Acaba antebrazo NO dominante 2");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Empieza antebrazo NO dominante 3");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Acaba antebrazo NO dominante 3");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Empieza mano dominante 1");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Acaba mano dominante 1");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Empieza mano dominante 2");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Acaba mano dominante 2");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Empieza mano dominante 3");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Acaba mano dominante 3");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Empieza mano NO dominante 1");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Acaba mano NO dominante 1");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Empieza mano NO dominante 2");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Acaba mano NO dominante 2");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Empieza mano NO dominante 3");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Acaba mano NO dominante 3");
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (3, 24);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (3, 25);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (3, 26);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (3, 27);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (3, 28);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (3, 29);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (3, 30);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (3, 31);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (3, 32);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (3, 33);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (3, 34);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (3, 35);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (3, 36);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (3, 37);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (3, 38);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (3, 39);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (3, 40);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (3, 41);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (3, 42);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (3, 43);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (3, 44);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (3, 45);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (3, 46);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (3, 47);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (3, 48);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (3, 49);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (3, 50);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (3, 51);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (3, 52);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (3, 53);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (3, 54);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (3, 55);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (3, 56);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (3, 57);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (3, 58);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (3, 59);

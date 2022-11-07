@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".activities.LoginActivity">
+
+   <LinearLayout
+       android:layout_width="match_parent"
+       android:layout_height="match_parent"
+       android:orientation="vertical">
+       <TextView
+           android:id="@+id/loginTitle"
+           android:layout_width="match_parent"
+           android:layout_height="wrap_content"
+           android:layout_margin="0dp"
+           android:gravity="center"
+           android:text="Bienvenido a sensorable"
+           android:textSize="30sp"
+           android:textStyle="bold" />
+
+
+       <TextView
+           android:id="@+id/loginMessage"
+           android:layout_width="match_parent"
+           android:layout_height="wrap_content"
+           android:layout_margin="10dp"
+           android:background="@drawable/customborder"
+           android:gravity="center"
+           android:text='Hola, esta aplicación recolecta datos sobre tu estado físico y anímico de manera anónima mediante lecturas de los sensores de los dispositivos enlazados y de esta manera estudia cómo mejorar tu salud. Debe identificar tus datos de manera unívoca (y siempre anónima), introduce un código de usuario y presiona el botón "confirmar".'
+           android:textSize="18sp" />
+
+       <com.google.android.material.textfield.TextInputLayout
+           android:layout_width="match_parent"
+           android:layout_height="wrap_content"
+           android:layout_marginLeft="10dp"
+           android:layout_marginTop="10dp"
+           android:layout_marginRight="10dp">
+
+           <EditText
+               android:id="@+id/userCodeInput"
+               android:layout_width="match_parent"
+               android:layout_height="wrap_content"
+               android:ems="10"
+               android:hint="Introduce tu código de usuario"
+               android:inputType="textVisiblePassword" />
+
+       </com.google.android.material.textfield.TextInputLayout>
+
+       <Button
+           android:id="@+id/confirmLoginButton"
+           android:layout_width="match_parent"
+           android:layout_height="wrap_content"
+           android:layout_margin="10dp"
+           android:minHeight="@android:dimen/app_icon_size"
+           android:text="Confirmar" />
+
+       <TextView
+           android:id="@+id/loginErrorText"
+           android:layout_width="match_parent"
+           android:layout_height="wrap_content"
+           android:gravity="center"
+           android:textSize="18sp"
+           android:textColor="@color/red"
+           android:textStyle="bold"
+           android:visibility="gone"
+           android:text="Código de usuario demasiado corto ..." />
+
+
+
+
+   </LinearLayout>
+
+
+
+
+</RelativeLayout>

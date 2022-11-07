@@ -20,14 +20,23 @@ import java.util.concurrent.ExecutorService;
 
 public class BackUpService extends Service {
 
+    private SensorMessageDao sensorMessageDao;
+    private ExecutorService executorService;
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Toast.makeText(this, "BACKUP SERVICE", Toast.LENGTH_SHORT).show();
         Log.i("BACKUP_SERVICE", "started backup service correctly");
 
+        initializeMobileDatabase();
         initializeReminders();
 
         return super.onStartCommand(intent, flags, startId);
+    }
+
+    private void initializeMobileDatabase() {
+        sensorMessageDao = MobileDatabaseBuilder.getDatabase(BackUpService.this).sensorMessageDao();
+        executorService = MobileDatabaseBuilder.getExecutor();
     }
 
 
@@ -39,11 +48,15 @@ public class BackUpService extends Service {
                 // do something
                 MqttHelper.connect();
 
-                SensorMessageDao sensorMessageDao = MobileDatabaseBuilder.getDatabase(BackUpService.this).sensorMessageDao();
-                ExecutorService executorService = MobileDatabaseBuilder.getExecutor();
-
                 executorService.execute(() -> {
-                    List<SensorMessageEntity> sensorsData = sensorMessageDao.getAll();
+                    List<SensorMessageEntity> sensorsData = null;
+
+                    try {
+                        sensorsData = sensorMessageDao.getAll();
+                    } catch (Exception e) {
+                        Log.i("Sensors-back-up-service", "error getting the sensorMessageDao");
+                    }
+
                     if (!sensorsData.isEmpty()) {
                         final double parts = Math.ceil(sensorsData.size() / SensorableConstants.BACKUP_PART_SIZE);
 

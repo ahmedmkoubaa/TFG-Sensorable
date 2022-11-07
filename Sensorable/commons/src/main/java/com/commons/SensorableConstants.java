@@ -49,7 +49,7 @@ public class SensorableConstants {
     public final static long TIME_SINCE_LAST_ADL_DETECTION = 5 * MINUTES_TO_SECONDS * SECONDS_TO_MILLIS;
     public final static long TIME_SINCE_LAST_BLUETOOTH_DETECTION = 30 * MINUTES_TO_SECONDS * SECONDS_TO_MILLIS; // in milliseconds (those are 30 minutes)
     public final static int SCHEDULE_BLUETOOTH_DISCOVERY = 5 * SECONDS_TO_MILLIS; // in milliseconds
-    public final static int SCHEDULE_DATABASE_BACKUP = 5 * MINUTES_TO_SECONDS * SECONDS_TO_MILLIS; // in milliseconds
+    public final static int SCHEDULE_DATABASE_BACKUP = 5000; // 5 * MINUTES_TO_SECONDS * SECONDS_TO_MILLIS; // in milliseconds
     public static final int SCHEDULE_LOGGER_REFRESH = 10 * SECONDS_TO_MILLIS;
     public final static int TIME_SINCE_LAST_HEART_CHART_UPDATE = 5 * SECONDS_TO_MILLIS;
 
@@ -79,4 +79,6 @@ public class SensorableConstants {
     public static final int QTT_TIMEOUT = 4 * SECONDS_TO_MILLIS;
     public static final int MQTT_RECONNECT_PERIOD = 1 * SECONDS_TO_MILLIS;
 
+    public static final String LOGIN_DONE = "login_done";
+    public static final String USER_SESSION_CODE = "user_session_code";
 }

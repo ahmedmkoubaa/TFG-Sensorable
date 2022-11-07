@@ -673,3 +673,72 @@ INSERT INTO
     steps_for_activities (id_activity, id_step)
 VALUES
     (3, 59);
+
+INSERT INTO
+    activities (id, title, description)
+VALUES
+    (
+        4,
+        "Cuestionarios",
+        "Se le pasan una serie de cuestionarios al usuario para comprobar reacciona ante ciertas preguntas."
+    );
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Empieza el cuestionario 1");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Acaba el cuestionario 1");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Empieza el cuestionario 2");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Acaba el cuestionario 2");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Empieza el cuestionario 3");
+
+INSERT INTO
+    activity_steps (title)
+VALUES
+    ("Acaba el cuestionario 3");
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (4, 60);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (4, 61);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (4, 62);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (4, 63);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (4, 64);
+
+INSERT INTO
+    steps_for_activities (id_activity, id_step)
+VALUES
+    (4, 65);

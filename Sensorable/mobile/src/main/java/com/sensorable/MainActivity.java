@@ -6,8 +6,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Button;
@@ -29,15 +31,13 @@ import com.commons.database.SensorMessageDao;
 import com.commons.database.SensorMessageEntity;
 import com.commons.devicesDetection.BluetoothDevicesProvider;
 import com.commons.devicesDetection.WifiDirectDevicesProvider;
-import com.google.android.gms.wearable.MessageClient;
-import com.google.android.gms.wearable.MessageEvent;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
 import com.sensorable.activities.ActivitiesRegisterActivity;
 import com.sensorable.activities.AdlSummaryActivity;
-import com.sensorable.activities.BluetoothOptionsActivity;
 import com.sensorable.activities.DetailedSensorsListActivity;
 import com.sensorable.activities.LocationOptionsActivity;
+import com.sensorable.activities.LoginActivity;
 import com.sensorable.services.AdlDetectionService;
 import com.sensorable.services.BackUpService;
 import com.sensorable.services.BluetoothDetectionService;
@@ -53,7 +53,7 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 
 
-public class MainActivity extends AppCompatActivity implements MessageClient.OnMessageReceivedListener {
+public class MainActivity extends AppCompatActivity {
     private final ArrayList<SensorTransmissionCoder.SensorMessage> sensorDataBuffer = new ArrayList<>();
     private final int stepTarget = 5000;
     private Button userStateSummary;
@@ -74,10 +74,11 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
         SensorablePermissions.requestAll(this);
         SensorablePermissions.ignoreBatteryOptimization(this);
 
-        MqttHelper.connect();
+        initializeLogin();
 
         initializeAttributesFromUI();
 
@@ -98,6 +99,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 //        initializeSensors();
 //        initializeWifiDirectDetector();
 
+        MqttHelper.connect();
     }
 
 
@@ -367,7 +369,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
     }
 
     private void initializeAttributesFromUI() {
-        userStateSummary = (Button)findViewById(R.id.userStateSummary);
+        userStateSummary = (Button) findViewById(R.id.userStateSummary);
         useStateProgressBar = findViewById(R.id.userStateProgressBar);
         userStateMessage = findViewById(R.id.text);
 
@@ -410,11 +412,11 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         }
     }
 
+    private void initializeLogin() {
+        SharedPreferences savedValues = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
-
-    // TODO test me and find my utility if I have any
-    @Override
-    public void onMessageReceived(@NonNull MessageEvent messageEvent) {
-        Toast.makeText(this, "RECIBIDO", Toast.LENGTH_LONG).show();
+        if (!savedValues.getBoolean(SensorableConstants.LOGIN_DONE, false)) {
+            startActivity(new Intent(this, LoginActivity.class));
+        }
     }
 }

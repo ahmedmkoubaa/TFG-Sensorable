@@ -24,6 +24,7 @@ public class MqttHelper {
 
     // is necessary to make it blocking for lately requests
     public static boolean connect() {
+
         final MqttClientState status = client.toBlocking().getState();
 
         if (!status.isConnectedOrReconnect()) {

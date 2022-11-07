@@ -2,14 +2,19 @@ package com.sensorable.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.commons.SensorableConstants;
 import com.commons.database.ActivityDao;
 import com.commons.database.ActivityEntity;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationBarView;
+import com.sensorable.MainActivity;
 import com.sensorable.R;
 import com.sensorable.utils.ActivityEntityAdapter;
 import com.sensorable.utils.MobileDatabase;
@@ -47,6 +52,61 @@ public class ActivitiesRegisterActivity extends AppCompatActivity {
                         }
                 );
             });
+        });
+    }
+
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        BottomNavigationView bottomNavigation = findViewById(R.id.bottom_navigation);
+        bottomNavigation.setSelectedItemId(R.id.tab_home);
+        bottomNavigation.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                int id = item.getItemId();
+                switch (id) {
+//                    case R.id.tab_bluetooth:
+//                        startActivity(
+//                                new Intent(MainActivity.this, BluetoothOptionsActivity.class)
+//                        );
+//                        overridePendingTransition(0, 0);
+//
+//                        return true;
+
+                    case R.id.tab_home:
+                        startActivity(
+                                new Intent(ActivitiesRegisterActivity.this, MainActivity.class)
+                        );
+                        overridePendingTransition(0, 0);
+                        return true;
+
+                    case R.id.tab_adls:
+                        startActivity(
+                                new Intent(ActivitiesRegisterActivity.this, AdlSummaryActivity.class)
+                        );
+                        overridePendingTransition(0, 0);
+
+                        return true;
+
+                    case R.id.tab_locations:
+                        startActivity(
+                                new Intent(ActivitiesRegisterActivity.this, LocationOptionsActivity.class)
+                        );
+                        overridePendingTransition(0, 0);
+                        return true;
+
+                    case R.id.tab_charts:
+                        startActivity(
+                                new Intent(ActivitiesRegisterActivity.this, DetailedSensorsListActivity.class)
+                        );
+                        overridePendingTransition(0, 0);
+                        return true;
+                }
+
+                return true;
+            }
         });
     }
 

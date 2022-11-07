@@ -41,7 +41,6 @@ public class SensorTransmissionCoder {
     private static float[] decodeValue(String value) {
         String[] msg = value.split(VALUES_SEPARATOR);
 
-
         int size = msg.length;
         float[] arrayValue = new float[size];
 
@@ -94,6 +93,7 @@ public class SensorTransmissionCoder {
                 return new SensorMessage[size];
             }
         };
+
         private int sensorType;
         private float[] value;
         private int deviceType;
@@ -114,23 +114,18 @@ public class SensorTransmissionCoder {
             timestamp = in.readLong();
         }
 
-        public SensorMessageEntity toSensorDataMessage() {
-            SensorMessageEntity sensorData = new SensorMessageEntity();
-            sensorData.deviceType = deviceType;
-            sensorData.sensorType = sensorType;
-            sensorData.valuesX = value[0];
+        public SensorMessageEntity toSensorDataMessage(final String userCode) {
+            float valueY = 0, valueZ = 0;
 
             if (value.length > 1) {
-                sensorData.valuesY = value[1];
+               valueY = value[1];
             }
 
             if (value.length > 2) {
-                sensorData.valuesZ = value[2];
+                valueZ = value[2];
             }
 
-            sensorData.timestamp = timestamp;
-
-            return sensorData;
+            return new SensorMessageEntity(deviceType, sensorType, value[0], valueY, valueZ, timestamp, userCode);
         }
 
         private void initializeSensorMessage(int deviceType, int sensorType, float[] value, long timestamp) {

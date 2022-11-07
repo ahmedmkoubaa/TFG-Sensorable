@@ -16,15 +16,15 @@ public class StepsTimerRecorder {
     private static final MobileDatabase database = MobileDatabaseBuilder.getDatabase(null);
     private static final ExecutorService executor = MobileDatabaseBuilder.getExecutor();
 
-    public static void startRecordingSteps(final long activityId) {
-        saveTag(activityId, startId);
+    public static void startRecordingSteps(final long activityId, final String userCode) {
+        saveTag(activityId, startId, userCode);
     }
 
-    public static void stopRecordingSteps(final long activityId) {
-        saveTag(activityId, stopId);
+    public static void stopRecordingSteps(final long activityId, final String userCode) {
+        saveTag(activityId, stopId, userCode);
     }
 
-    public static void saveTag(long activityId, int stepId) {
+    public static void saveTag(long activityId, int stepId, final String userCode) {
         long timestamp = new Date().getTime();
 
         // get the id of the relation between activity and step and save it into
@@ -32,7 +32,7 @@ public class StepsTimerRecorder {
                 {
                     database.stepsForActivitiesRegistryDao().insert(
                             new StepsForActivitiesRegistryEntity(
-                                    activityId, stepId,timestamp
+                                    activityId, stepId,timestamp, userCode
                             )
                     );
                 }

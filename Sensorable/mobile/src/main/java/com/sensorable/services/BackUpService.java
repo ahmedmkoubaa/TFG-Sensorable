@@ -57,7 +57,7 @@ public class BackUpService extends Service {
                         Log.i("Sensors-back-up-service", "error getting the sensorMessageDao");
                     }
 
-                    if (!sensorsData.isEmpty()) {
+                    if (sensorsData != null && !sensorsData.isEmpty()) {
                         final double parts = Math.ceil(sensorsData.size() / SensorableConstants.BACKUP_PART_SIZE);
 
                         int i = 0;

@@ -6,10 +6,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Button;
@@ -45,6 +43,7 @@ import com.sensorable.services.EmpaticaTransmissionService;
 import com.sensorable.services.RegisterActivitiesService;
 import com.sensorable.services.SensorsProviderService;
 import com.sensorable.services.WearTransmissionService;
+import com.commons.LoginHelper;
 import com.sensorable.utils.MobileDatabase;
 import com.sensorable.utils.MobileDatabaseBuilder;
 import com.sensorable.utils.MqttHelper;
@@ -269,13 +268,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void collectReceivedSensorData
-            (ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage) {
+    private void collectReceivedSensorData (ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage) {
         // local database storing
         executor.execute(() -> {
             ArrayList<SensorMessageEntity> sensorMessageEntities = new ArrayList<>();
             for (SensorTransmissionCoder.SensorMessage s : arrayMessage) {
-                sensorMessageEntities.add(s.toSensorDataMessage());
+                sensorMessageEntities.add(s.toSensorDataMessage(LoginHelper.getUserCode(this)));
             }
             sensorMessageDao.insertAll(sensorMessageEntities);
         });
@@ -286,7 +284,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void collectReceivedSensorData(SensorTransmissionCoder.SensorMessage msg) {
         executor.execute(() -> {
-            sensorMessageDao.insert(msg.toSensorDataMessage());
+            sensorMessageDao.insert(msg.toSensorDataMessage(LoginHelper.getUserCode(this)));
         });
 
         sensorDataBuffer.add(msg);
@@ -413,9 +411,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initializeLogin() {
-        SharedPreferences savedValues = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-
-        if (!savedValues.getBoolean(SensorableConstants.LOGIN_DONE, false)) {
+        if (!LoginHelper.isLogged(getApplicationContext())) {
             startActivity(new Intent(this, LoginActivity.class));
         }
     }

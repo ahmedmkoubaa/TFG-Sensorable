@@ -28,8 +28,22 @@ public class SensorMessageEntity {
     @ColumnInfo(name = "timestamp")
     public long timestamp;
 
+    @ColumnInfo(name = "user_id")
+    public String userId;
+
+    public SensorMessageEntity(@NonNull int deviceType, @NonNull int sensorType, @NonNull float valuesX, float valuesY, float valuesZ, @NonNull long timestamp, @NonNull String userId) {
+        this.deviceType = deviceType;
+        this.sensorType = sensorType;
+        this.valuesX = valuesX;
+        this.valuesY = valuesY;
+        this.valuesZ = valuesZ;
+        this.timestamp = timestamp;
+        this.userId = userId;
+    }
+
+
     public String toJson() {
-        return "[" + deviceType + "," + sensorType + "," + valuesX + "," + valuesY + "," + valuesZ + "," + timestamp + " ]";
+        return "[" + deviceType + "," + sensorType + "," + valuesX + "," + valuesY + "," + valuesZ + "," + timestamp + ",\"" + userId + "\" ]";
     }
 
 }

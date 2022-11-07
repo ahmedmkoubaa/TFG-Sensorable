@@ -18,8 +18,10 @@ export function startSensorsBackUpService() {
 
   mqtt.onMessage((topic: string, payload: Buffer) => {
     console.log("received message in sensors-back-up topic:", topic)
+
     manager.doQuery({
-      query: "INSERT INTO sensors (device_type, sensor_type, values_x, values_y, values_z, timestamp) VALUES ?",
+      query:
+        "INSERT INTO sensors (device_type, sensor_type, values_x, values_y, values_z, timestamp, user_id) VALUES ?",
       data: JSON.parse(payload.toString()),
       queryCallback: (err, rows) => {
         if (!err) {

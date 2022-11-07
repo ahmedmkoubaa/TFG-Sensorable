@@ -79,8 +79,7 @@ CREATE TABLE sensors(
     values_z FLOAT,
     /* use of bigint due to java constraints*/
     timestamp BIGINT NOT NULL,
-    user_id VARCHAR(8) NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    user_id VARCHAR(8) NOT NULL
 );
 
 CREATE TABLE adls (
@@ -127,7 +126,7 @@ CREATE TABLE events_for_adls (
     UNIQUE KEY(id_adl, id_event, version)
 );
 
-CREATE TABLE users (id VARCHAR(8) PRIMARY KEY);
+CREATE TABLE users (id INT PRIMARY KEY AUTO_INCREMENT);
 
 CREATE TABLE custom_adls_for_users (
     id INT AUTO_INCREMENT PRIMARY KEY,

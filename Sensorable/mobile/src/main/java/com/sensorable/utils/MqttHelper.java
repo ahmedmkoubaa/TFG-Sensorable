@@ -24,7 +24,6 @@ public class MqttHelper {
 
     // is necessary to make it blocking for lately requests
     public static boolean connect() {
-
         final MqttClientState status = client.toBlocking().getState();
 
         if (!status.isConnectedOrReconnect()) {
@@ -42,7 +41,7 @@ public class MqttHelper {
     }
 
 
-    public static void subscribe() {
+    public static void testSubscribe() {
         subscribe(SensorableConstants.MQTT_TEST_TOPIC, message -> {
             Log.i("MQTT", "received message " + message.toString());
         });

@@ -11,6 +11,7 @@ import android.widget.Button;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.commons.LoginHelper;
 import com.commons.database.ActivityStepEntity;
 import com.sensorable.R;
 
@@ -55,7 +56,7 @@ public class ActivityStepEntityAdapter extends ArrayAdapter<ActivityStepEntity> 
         Button tagStep = convertView.findViewById(R.id.tagStepButton);
         tagStep.setText(title);
         tagStep.setOnClickListener(view -> {
-            saveTag(idActivity, id);
+            saveTag(idActivity, id, LoginHelper.getUserCode(context));
 //            tagStep.setVisibility(View.GONE);
             tagStep.setBackgroundColor(Color.GRAY);
         });

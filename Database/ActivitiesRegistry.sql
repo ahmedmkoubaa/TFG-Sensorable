@@ -33,12 +33,14 @@ CREATE TABLE steps_for_activities (
  FOREIGN KEY (id_step_for_activity) REFERENCES steps_for_activities(id) ON DELETE CASCADE
  );*/
 CREATE TABLE steps_for_activities_registry (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id INT AUTO_INCREMENT,
     id_activity INT NOT NULL,
     id_step INT NOT NULL,
     FOREIGN KEY (id_activity) REFERENCES activities(id) ON DELETE CASCADE,
     FOREIGN KEY (id_step) REFERENCES activity_steps(id) ON DELETE CASCADE,
-    timestamp BIGINT NOT NULL
+    timestamp BIGINT NOT NULL,
+    user_id VARCHAR(8) NOT NULL,
+    PRIMARY KEY (id, user_id)
 );
 
 /*steps to make easy the registry*/

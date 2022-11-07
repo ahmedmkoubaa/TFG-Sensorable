@@ -34,14 +34,17 @@ public class StepsForActivitiesRegistryEntity {
     @ColumnInfo(name = "timestamp")
     public long timestamp;
 
+    @ColumnInfo(name = "user_id")
+    public String userId;
 
-    public StepsForActivitiesRegistryEntity(@NonNull long idActivity, int idStep, @NonNull long timestamp) {
+    public StepsForActivitiesRegistryEntity(@NonNull long idActivity, int idStep, @NonNull long timestamp, @NonNull String userId) {
         this.idActivity = idActivity;
         this.idStep = idStep;
         this.timestamp = timestamp;
+        this.userId = userId;
     }
 
     public String toJson() {
-        return "[" + id + "," + idActivity + "," + idStep + "," + timestamp + " ]";
+        return "[" + id + "," + idActivity + "," + idStep + "," + timestamp + ", \"" + userId + "\" ]";
     }
 }

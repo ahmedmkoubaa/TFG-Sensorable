@@ -8,6 +8,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.commons.LoginHelper;
 import com.commons.SensorableConstants;
 import com.commons.database.ActivityStepDao;
 import com.commons.database.ActivityStepEntity;
@@ -76,12 +77,12 @@ public class ActivitiesStepsRecorderActivity extends AppCompatActivity {
 
             activityStepsAdapter.setStepsEnabled(activityStarted = true);
             activityStepsAdapter.notifyDataSetChanged();
-            startRecordingSteps(activityId);
+            startRecordingSteps(activityId, LoginHelper.getUserCode(getApplicationContext()));
 
         });
 
         stopButton.setOnClickListener(view -> {
-            stopRecordingSteps(activityId);
+            stopRecordingSteps(activityId,  LoginHelper.getUserCode(getApplicationContext()));
             executor.execute(() -> {
                 // generate the json data structure
                 final String[] payload = {"["};

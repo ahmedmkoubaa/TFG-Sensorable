@@ -13,7 +13,6 @@ import com.commons.SensorableConstants;
 import com.commons.SensorablePermissions;
 import com.commons.SensorsProvider;
 
-
 public class MainActivity extends WearableActivity {
     private final int[] listenedSensors = {
             Sensor.TYPE_HEART_RATE,

@@ -14,7 +14,7 @@ public class EventEntity {
     public int id;
 
     @NonNull
-    @ColumnInfo(name = "device_type")
+    @ColumnInfo(name = "adl")
     public int deviceType;
 
     @NonNull

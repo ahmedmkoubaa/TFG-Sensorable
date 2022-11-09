@@ -1,9 +1,11 @@
 use test;
 
-DROP TABLE IF EXISTS sensors,
+DROP TABLE IF EXISTS custom_adls_for_users,
+generic_adls,
 events_for_adls,
-events,
+sensors,
 adls,
+events,
 users;
 
 SET
@@ -67,7 +69,7 @@ SET
     @ALL := 5;
 
 /*EXAMPLE OF INSERT:
- INSERT INTO sensors (device_type, sensor_type, values_x, values_y, values_z, timestamp) VALUES (0,21, 67, -1, -1, 1234567981)*/
+ INSERT INTO sensors (device_type, sensor_type, values_x, values_y, values_z, timestamp) VALUES (0,21, 67, -1, -1, 1234567981, "EX-001")*/
 CREATE TABLE sensors(
     Id INT AUTO_INCREMENT PRIMARY KEY,
     device_type INT NOT NULL,
@@ -75,7 +77,9 @@ CREATE TABLE sensors(
     values_x FLOAT NOT NULL,
     values_y FLOAT,
     values_z FLOAT,
-    timestamp BIGINT NOT NULL
+    /* use of bigint due to java constraints*/
+    timestamp BIGINT NOT NULL,
+    user_id VARCHAR(8) NOT NULL
 );
 
 CREATE TABLE adls (
@@ -122,7 +126,7 @@ CREATE TABLE events_for_adls (
     UNIQUE KEY(id_adl, id_event, version)
 );
 
-CREATE TABLE users (id INT AUTO_INCREMENT PRIMARY KEY);
+CREATE TABLE users (id INT PRIMARY KEY AUTO_INCREMENT);
 
 CREATE TABLE custom_adls_for_users (
     id INT AUTO_INCREMENT PRIMARY KEY,

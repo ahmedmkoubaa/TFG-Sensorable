@@ -92,20 +92,26 @@ public class LocationOptionsActivity extends AppCompatActivity {
     }
 
     private void initializeAttributesFromUI() {
-        BottomNavigationView bottomNavigation = (BottomNavigationView) findViewById(R.id.bottom_navigation);
+        BottomNavigationView bottomNavigation = findViewById(R.id.bottom_navigation);
         bottomNavigation.setSelectedItemId(R.id.tab_locations);
         bottomNavigation.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 int id = item.getItemId();
                 switch (id) {
-                    case R.id.tab_bluetooth:
+//                    case R.id.tab_bluetooth:
+//                        startActivity(
+//                                new Intent(LocationOptionsActivity.this, BluetoothOptionsActivity.class)
+//                        );
+//                        overridePendingTransition(0, 0);
+//                        finish();
+//
+//                        return true;
+                    case R.id.tab_activities_recorder:
                         startActivity(
-                                new Intent(LocationOptionsActivity.this, BluetoothOptionsActivity.class)
+                                new Intent(LocationOptionsActivity.this, ActivitiesRegisterActivity.class)
                         );
                         overridePendingTransition(0, 0);
-                        finish();
-
                         return true;
 
                     case R.id.tab_adls:
@@ -206,7 +212,7 @@ public class LocationOptionsActivity extends AppCompatActivity {
 
 
             for (KnownLocationEntity k : locArray) {
-                setMarker(new GeoPoint( k.latitude,  k.longitude,  k.altitude), k.title, k.address);
+                setMarker(new GeoPoint(k.latitude, k.longitude, k.altitude), k.title, k.address);
             }
         });
 
@@ -272,6 +278,7 @@ public class LocationOptionsActivity extends AppCompatActivity {
     private void setMarker(GeoPoint point) {
         setMarker(point, "", "");
     }
+
     private void setMarker(GeoPoint point, String title, String description) {
         // this is how to display a position
         Marker marker = new Marker(map);

@@ -1,0 +1,26 @@
+{
+  "name": "fitbit-api",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "repository": "https://github.com/ahmedmkoubaa/TFG-Sensorable",
+  "author": "Ahmed El Moukhtari Koubaa",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "start": "DEBUG='fitbit-api' tsc && node ./dist/index.js",
+    "dev": "DEBUG='fitbit-api' ts-node ./src/index.ts"
+  },
+  "dependencies": {
+    "@types/express": "^4.17.14",
+    "express": "^4.18.2",
+    "typescript": "^4.6.2",
+    "ws": "^8.10.0"
+  },
+  "devDependencies": {
+    "@types/mysql": "^2.15.21",
+    "@types/node": "^17.0.21",
+    "@types/ws": "^8.5.3",
+    "ts-node": "^10.7.0"
+  }
+}

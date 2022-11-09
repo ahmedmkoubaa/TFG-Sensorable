@@ -76,27 +76,31 @@ public class AdlSummaryActivity extends AppCompatActivity {
                 detectedAdlInfoAdapter.notifyDataSetChanged();
             });
         });
-
-
     }
 
     private void initializeAttributesFromUI() {
-        detectedAdlList = findViewById(R.id.detectedAdlsList);
-
-        BottomNavigationView bottomNavigation = (BottomNavigationView) findViewById(R.id.bottom_navigation);
+        BottomNavigationView bottomNavigation = findViewById(R.id.bottom_navigation);
         bottomNavigation.setSelectedItemId(R.id.tab_adls);
         bottomNavigation.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 int id = item.getItemId();
                 switch (id) {
-                    case R.id.tab_bluetooth:
+//                    case R.id.tab_bluetooth:
+//                        startActivity(
+//                                new Intent(AdlSummaryActivity.this, BluetoothOptionsActivity.class)
+//                        );
+//                        overridePendingTransition(0, 0);
+//
+//                        return true;
+
+                    case R.id.tab_activities_recorder:
                         startActivity(
-                                new Intent(AdlSummaryActivity.this, BluetoothOptionsActivity.class)
+                                new Intent(AdlSummaryActivity.this, ActivitiesRegisterActivity.class)
                         );
                         overridePendingTransition(0, 0);
-
                         return true;
+
 
                     case R.id.tab_locations:
                         startActivity(
@@ -127,6 +131,7 @@ public class AdlSummaryActivity extends AppCompatActivity {
             }
         });
 
+        detectedAdlList = findViewById(R.id.detectedAdlsList);
         detectedAdlList.setDivider(null);
         adlArray = new ArrayList<>();
 

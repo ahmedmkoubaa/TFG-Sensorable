@@ -20,14 +20,23 @@ import java.util.concurrent.ExecutorService;
 
 public class BackUpService extends Service {
 
+    private SensorMessageDao sensorMessageDao;
+    private ExecutorService executorService;
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Toast.makeText(this, "BACKUP SERVICE", Toast.LENGTH_SHORT).show();
         Log.i("BACKUP_SERVICE", "started backup service correctly");
 
+        initializeMobileDatabase();
         initializeReminders();
 
         return super.onStartCommand(intent, flags, startId);
+    }
+
+    private void initializeMobileDatabase() {
+        sensorMessageDao = MobileDatabaseBuilder.getDatabase(BackUpService.this).sensorMessageDao();
+        executorService = MobileDatabaseBuilder.getExecutor();
     }
 
 
@@ -39,29 +48,29 @@ public class BackUpService extends Service {
                 // do something
                 MqttHelper.connect();
 
-                SensorMessageDao sensorMessageDao = MobileDatabaseBuilder.getDatabase(BackUpService.this).sensorMessageDao();
-                ExecutorService executorService = MobileDatabaseBuilder.getExecutor();
+                executorService.execute(() -> {
+                    List<SensorMessageEntity> sensorsData = null;
 
-                executorService.execute(() ->
-                {
-                    List<SensorMessageEntity> content = sensorMessageDao.getAll();
-                    if (!content.isEmpty()) {
+                    try {
+                        sensorsData = sensorMessageDao.getAll();
+                    } catch (Exception e) {
+                        Log.i("Sensors-back-up-service", "error getting the sensorMessageDao");
+                    }
 
-                        final double BACKUP_PART_SIZE = 4000;
-                        final double parts = Math.ceil(content.size() / BACKUP_PART_SIZE);
+                    if (sensorsData != null && !sensorsData.isEmpty()) {
+                        final double parts = Math.ceil(sensorsData.size() / SensorableConstants.BACKUP_PART_SIZE);
 
                         int i = 0;
                         for (int j = 1; j <= parts; j++) {
                             String payload = "[ ";
 
-                            for (i = (int) ((j - 1) * parts); i < content.size() && i < j * BACKUP_PART_SIZE; i++) {
-                                payload += content.get(i).toJson() + ",";
+                            for (i = (int) ((j - 1) * parts); i < sensorsData.size() && i < j * SensorableConstants.BACKUP_PART_SIZE; i++) {
+                                payload += sensorsData.get(i).toJson() + ",";
                             }
 
-                            payload = payload.substring(0, payload.length() - 1);
-                            payload += "]";
+                            payload = payload.substring(0, payload.length() - 1) + "]";
 
-                            MqttHelper.publish("sensorable/database/sensors/insert", payload.getBytes());
+                            MqttHelper.publish(SensorableConstants.MQTT_SENSORS_INSERT, payload.getBytes());
                             Log.i("TEST_MQTT", payload);
                         }
 
@@ -73,10 +82,11 @@ public class BackUpService extends Service {
                 });
 
 
-                Log.i("BACKUP_SERVICE", "ALARMITAAA FIRING AGAIN");
-                handler.postDelayed(this, SensorableConstants.SCHEDULE_DATABASE_BACKUP);  // 1 second delay
+                Log.i("BACKUP_SERVICE", "ALARM FIRING AGAIN");
+                handler.postDelayed(this, SensorableConstants.SCHEDULE_DATABASE_BACKUP);
             }
         };
+
         handler.post(runnable);
     }
 

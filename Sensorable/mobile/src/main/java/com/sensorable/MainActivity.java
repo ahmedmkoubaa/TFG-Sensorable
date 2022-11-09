@@ -28,21 +28,22 @@ import com.commons.SensorsProvider;
 import com.commons.database.SensorMessageDao;
 import com.commons.database.SensorMessageEntity;
 import com.commons.devicesDetection.BluetoothDevicesProvider;
-import com.example.commons.devicesDetection.WifiDirectDevicesProvider;
-import com.google.android.gms.wearable.MessageClient;
-import com.google.android.gms.wearable.MessageEvent;
+import com.commons.devicesDetection.WifiDirectDevicesProvider;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
+import com.sensorable.activities.ActivitiesRegisterActivity;
 import com.sensorable.activities.AdlSummaryActivity;
-import com.sensorable.activities.BluetoothOptionsActivity;
 import com.sensorable.activities.DetailedSensorsListActivity;
 import com.sensorable.activities.LocationOptionsActivity;
+import com.sensorable.activities.LoginActivity;
 import com.sensorable.services.AdlDetectionService;
 import com.sensorable.services.BackUpService;
 import com.sensorable.services.BluetoothDetectionService;
 import com.sensorable.services.EmpaticaTransmissionService;
+import com.sensorable.services.RegisterActivitiesService;
 import com.sensorable.services.SensorsProviderService;
 import com.sensorable.services.WearTransmissionService;
+import com.commons.LoginHelper;
 import com.sensorable.utils.MobileDatabase;
 import com.sensorable.utils.MobileDatabaseBuilder;
 import com.sensorable.utils.MqttHelper;
@@ -51,7 +52,7 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 
 
-public class MainActivity extends AppCompatActivity implements MessageClient.OnMessageReceivedListener {
+public class MainActivity extends AppCompatActivity {
     private final ArrayList<SensorTransmissionCoder.SensorMessage> sensorDataBuffer = new ArrayList<>();
     private final int stepTarget = 5000;
     private Button userStateSummary;
@@ -72,10 +73,11 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
         SensorablePermissions.requestAll(this);
         SensorablePermissions.ignoreBatteryOptimization(this);
 
-        MqttHelper.connect();
+        initializeLogin();
 
         initializeAttributesFromUI();
 
@@ -91,9 +93,12 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         initializeBackUpService();
         initializeBluetoothDetectionService();
 
+        initializeRegisterActivitiesService();
+
 //        initializeSensors();
 //        initializeWifiDirectDetector();
 
+        MqttHelper.connect();
     }
 
 
@@ -118,12 +123,19 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 int id = item.getItemId();
                 switch (id) {
-                    case R.id.tab_bluetooth:
+//                    case R.id.tab_bluetooth:
+//                        startActivity(
+//                                new Intent(MainActivity.this, BluetoothOptionsActivity.class)
+//                        );
+//                        overridePendingTransition(0, 0);
+//
+//                        return true;
+
+                    case R.id.tab_activities_recorder:
                         startActivity(
-                                new Intent(MainActivity.this, BluetoothOptionsActivity.class)
+                                new Intent(MainActivity.this, ActivitiesRegisterActivity.class)
                         );
                         overridePendingTransition(0, 0);
-
                         return true;
 
                     case R.id.tab_adls:
@@ -142,7 +154,6 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
                         return true;
 
                     case R.id.tab_charts:
-
                         startActivity(
                                 new Intent(MainActivity.this, DetailedSensorsListActivity.class)
                         );
@@ -257,13 +268,12 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         }
     }
 
-    private void collectReceivedSensorData
-            (ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage) {
+    private void collectReceivedSensorData (ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage) {
         // local database storing
         executor.execute(() -> {
             ArrayList<SensorMessageEntity> sensorMessageEntities = new ArrayList<>();
             for (SensorTransmissionCoder.SensorMessage s : arrayMessage) {
-                sensorMessageEntities.add(s.toSensorDataMessage());
+                sensorMessageEntities.add(s.toSensorDataMessage(LoginHelper.getUserCode(this)));
             }
             sensorMessageDao.insertAll(sensorMessageEntities);
         });
@@ -274,7 +284,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 
     private void collectReceivedSensorData(SensorTransmissionCoder.SensorMessage msg) {
         executor.execute(() -> {
-            sensorMessageDao.insert(msg.toSensorDataMessage());
+            sensorMessageDao.insert(msg.toSensorDataMessage(LoginHelper.getUserCode(this)));
         });
 
         sensorDataBuffer.add(msg);
@@ -357,7 +367,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
     }
 
     private void initializeAttributesFromUI() {
-        userStateSummary = findViewById(R.id.userStateSummary);
+        userStateSummary = (Button) findViewById(R.id.userStateSummary);
         useStateProgressBar = findViewById(R.id.userStateProgressBar);
         userStateMessage = findViewById(R.id.text);
 
@@ -394,10 +404,15 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
                 new IntentFilter(SensorableConstants.SENSORS_PROVIDER_SENDS_SENSORS));
     }
 
+    private void initializeRegisterActivitiesService() {
+        if (!isMyServiceRunning(RegisterActivitiesService.class)) {
+            startService(new Intent(this, RegisterActivitiesService.class));
+        }
+    }
 
-    // TODO test me and find my utility if I have any
-    @Override
-    public void onMessageReceived(@NonNull MessageEvent messageEvent) {
-        Toast.makeText(this, "RECIBIDO", Toast.LENGTH_LONG).show();
+    private void initializeLogin() {
+        if (!LoginHelper.isLogged(getApplicationContext())) {
+            startActivity(new Intent(this, LoginActivity.class));
+        }
     }
 }

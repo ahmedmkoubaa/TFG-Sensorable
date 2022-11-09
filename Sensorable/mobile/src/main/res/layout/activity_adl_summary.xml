@@ -18,13 +18,13 @@
         android:layout_marginEnd="0dp"
         android:text="ADLS DETECTADAS"
         android:textAlignment="center"
-        android:textSize="20sp"
+        android:textSize="32sp"
         android:textStyle="bold" />
 
     <ListView
         android:id="@+id/detectedAdlsList"
         android:layout_width="407dp"
-        android:layout_height="637dp"
+        android:layout_height="600dp"
         android:layout_below="@+id/AdlListTitleText"
         android:layout_marginStart="5dp"
         android:layout_marginLeft="5dp"

@@ -98,7 +98,7 @@ public class BluetoothOptionsActivity extends AppCompatActivity {
     private void initializeAttributesFromUI() {
         bluetoothFoundDevices = findViewById(R.id.foundDevices);
         BottomNavigationView bottomNavigation = (BottomNavigationView) findViewById(R.id.bottom_navigation);
-        bottomNavigation.setSelectedItemId(R.id.tab_bluetooth);
+//        bottomNavigation.setSelectedItemId(R.id.tab_bluetooth);
         bottomNavigation.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -155,7 +155,6 @@ public class BluetoothOptionsActivity extends AppCompatActivity {
     }
 
     private void updateFromDatabase() {
-
         executor.execute(() -> {
             ArrayList<BluetoothDeviceInfo> bleArrayCopy = new ArrayList<>();
 

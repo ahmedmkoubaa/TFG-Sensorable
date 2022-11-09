@@ -81,4 +81,5 @@ public class SensorableConstants {
 
     public static final String LOGIN_DONE = "login_done";
     public static final String USER_SESSION_CODE = "user_session_code";
+    public static final int MAX_WEAR_OS_LOGGER_ELEMENTS = 5;
 }

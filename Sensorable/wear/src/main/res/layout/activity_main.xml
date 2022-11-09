@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/dark_grey"
+    android:keepScreenOn="true"
     tools:context=".MainActivity"
     tools:deviceIds="wear">
 
@@ -15,6 +16,7 @@
         android:layout_margin="5dp"
         android:layout_marginLeft="15dp"
         android:layout_marginRight="15dp"
+        android:keepScreenOn="true"
         android:padding="5dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

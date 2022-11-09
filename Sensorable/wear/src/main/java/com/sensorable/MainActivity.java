@@ -17,9 +17,9 @@ public class MainActivity extends WearableActivity {
     private final int[] listenedSensors = {
             Sensor.TYPE_HEART_RATE,
             Sensor.TYPE_STEP_COUNTER,
-            Sensor.TYPE_LIGHT,
-            Sensor.TYPE_PROXIMITY,
-            Sensor.TYPE_LINEAR_ACCELERATION
+            Sensor.TYPE_LINEAR_ACCELERATION,
+            Sensor.TYPE_ACCELEROMETER,
+            Sensor.TYPE_GYROSCOPE
     };
 
     private LoggerAdapter loggerAdapter;
@@ -79,7 +79,7 @@ public class MainActivity extends WearableActivity {
     }
 
     private void initializeListenersForUI() {
-        loggerAdapter = new LoggerAdapter(getBaseContext(), R.layout.logger_message_layout, SensorableLogger.get());
+        loggerAdapter = new LoggerAdapter(getBaseContext(), R.layout.logger_message_layout, SensorableLogger.getLoggedData());
         loggerAdapter.setNotifyOnChange(true);
 
         loggerList = (ListView) findViewById(R.id.loggerList);

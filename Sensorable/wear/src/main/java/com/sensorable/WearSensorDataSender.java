@@ -1,7 +1,6 @@
 package com.sensorable;
 
 import android.app.Activity;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -75,7 +74,7 @@ public class WearSensorDataSender {
                     sendTask.addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
-                            SensorableLogger.log("Failed to sent sensors");
+                            SensorableLogger.log("Failed to send sensors");
                         }
                     });
                 } else {

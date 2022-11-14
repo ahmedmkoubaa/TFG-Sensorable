@@ -22,9 +22,7 @@ public class WearTransmissionService extends WearableListenerService {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-
-        Toast.makeText(this, "WEAR OS SERVICE", Toast.LENGTH_SHORT).show();
-        return super.onStartCommand(intent, flags, startId);
+        return super.onStartCommand(intent, flags, startId);    
     }
 
     @Override
@@ -58,12 +56,10 @@ public class WearTransmissionService extends WearableListenerService {
     @Override
     public void onDataChanged(@NonNull DataEventBuffer dataEventBuffer) {
         super.onDataChanged(dataEventBuffer);
-        Toast.makeText(this, "DATA CHANGED", Toast.LENGTH_LONG).show();
     }
 
     @Override
     public void onChannelOpened(@NonNull Channel channel) {
         super.onChannelOpened(channel);
-        Toast.makeText(this, "CANAL ABIERTO RECIBIDO", Toast.LENGTH_SHORT).show();
     }
 }

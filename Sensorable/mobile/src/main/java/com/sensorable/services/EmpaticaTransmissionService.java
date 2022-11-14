@@ -31,7 +31,6 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        sendInfoMessage("EMPATICE SERVICE");
 
         try {
             // Create a new EmpaDeviceManager. MainActivity is both its data and status delegate.
@@ -80,23 +79,25 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
 
     @Override
     public void didUpdateStatus(EmpaStatus status) {
+        // Start scanning
+        if (deviceManager != null) {
+            deviceManager.startScanning();
+        }
+
         // The device manager is ready for use
         if (status == EmpaStatus.READY) {
-            sendInfoMessage("ENCIENDE LA PULSERA");
-            // Start scanning
-            deviceManager.startScanning();
+            sendInfoMessage("Enciende la Empatica");
 
             // The device manager has established a connection
         } else if (status == EmpaStatus.CONNECTED) {
 
-            sendInfoMessage("CONNECTED");
+            sendInfoMessage("Empatica se ha conectado");
             deviceManager.stopScanning();
             // The device manager connected to a device
 
         } else if (status == EmpaStatus.DISCONNECTED) {
-            sendInfoMessage("DISCONNECTED");
-
             // The device manager manager disconnected from a device
+            sendInfoMessage("Empatica se ha desconectado");
         }
     }
 
@@ -167,13 +168,12 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
 
     @Override
     public void didReceiveTag(double timestamp) {
-        sendInfoMessage("RECEIVED TAG");
+        sendInfoMessage("Conexión estable");
     }
-
 
     @Override
     public void didEstablishConnection() {
-        sendInfoMessage("CONNECTION ESTABLISHED");
+        sendInfoMessage("Conexión establecida!!");
     }
 
     @Override
@@ -183,21 +183,19 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
 
     @Override
     public void didFailedScanning(int errorCode) {
-        sendInfoMessage("NOTHING FOUND");
+        sendInfoMessage("Volviendo a escanear ...");
     }
 
     @Override
     public void didRequestEnableBluetooth() {
-        sendInfoMessage("ENCIENDE EL BLUETOOTH POR FAVOR");
+        sendInfoMessage("Enciende el Bluetooth por favor");
     }
 
     @Override
-    public void bluetoothStateChanged() {
-        sendInfoMessage("Bluetooth state changed");
-    }
+    public void bluetoothStateChanged() {}
 
     @Override
     public void didUpdateOnWristStatus(int status) {
-        sendInfoMessage("WRIST STATUS CHANGED");
+        sendInfoMessage("");
     }
 }

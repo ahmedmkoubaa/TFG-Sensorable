@@ -43,8 +43,6 @@ public class SensorsProviderService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Toast.makeText(this, "SENSORS PROVIDER SERVICE", Toast.LENGTH_SHORT).show();
-
         initializeSensorsProvider();
 
         Log.i("ADL_DETECTION_SERVICE", "initialized adl detection service");

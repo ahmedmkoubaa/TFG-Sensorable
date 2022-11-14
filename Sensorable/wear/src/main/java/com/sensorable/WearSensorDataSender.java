@@ -41,9 +41,9 @@ public class WearSensorDataSender {
             @Override
             public void run() {
                 try {
-                    capabilityInfo = Tasks.await(
-                            Wearable.getCapabilityClient(context).getCapability(
-                                    WEAR_DATA_RECEPTION, CapabilityClient.FILTER_REACHABLE)
+                    capabilityInfo = Tasks.await(Wearable
+                            .getCapabilityClient(context)
+                            .getCapability(WEAR_DATA_RECEPTION, CapabilityClient.FILTER_REACHABLE)
                     );
                 } catch (ExecutionException e) {
                     e.printStackTrace();

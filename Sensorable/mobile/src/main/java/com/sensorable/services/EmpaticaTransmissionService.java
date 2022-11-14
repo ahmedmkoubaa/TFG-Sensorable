@@ -91,13 +91,13 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
             // The device manager has established a connection
         } else if (status == EmpaStatus.CONNECTED) {
 
-            sendInfoMessage("CONNECTED");
+            sendInfoMessage("Empatica se ha conectado");
             deviceManager.stopScanning();
             // The device manager connected to a device
 
         } else if (status == EmpaStatus.DISCONNECTED) {
             // The device manager manager disconnected from a device
-            sendInfoMessage("DISCONNECTED");
+            sendInfoMessage("Empatica se ha desconectado");
         }
     }
 
@@ -173,7 +173,7 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
 
     @Override
     public void didEstablishConnection() {
-        sendInfoMessage("CONNECTION ESTABLISHED");
+        sendInfoMessage("Conexión establecida!!");
     }
 
     @Override
@@ -183,21 +183,19 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
 
     @Override
     public void didFailedScanning(int errorCode) {
-        sendInfoMessage("Escaneando ...");
+        sendInfoMessage("Volviendo a escanear ...");
     }
 
     @Override
     public void didRequestEnableBluetooth() {
-        sendInfoMessage("ENCIENDE EL BLUETOOTH POR FAVOR");
+        sendInfoMessage("Enciende el Bluetooth por favor");
     }
 
     @Override
-    public void bluetoothStateChanged() {
-        sendInfoMessage("Ha cambiado el estado del bluetooth");
-    }
+    public void bluetoothStateChanged() {}
 
     @Override
     public void didUpdateOnWristStatus(int status) {
-        sendInfoMessage("WRIST STATUS CHANGED");
+        sendInfoMessage("");
     }
 }

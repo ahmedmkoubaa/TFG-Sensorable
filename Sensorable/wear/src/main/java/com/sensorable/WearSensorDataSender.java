@@ -43,14 +43,19 @@ public class WearSensorDataSender {
                 try {
                     capabilityInfo = Tasks.await(
                             Wearable.getCapabilityClient(context).getCapability(
-                                    WEAR_DATA_RECEPTION, CapabilityClient.FILTER_REACHABLE));
+                                    WEAR_DATA_RECEPTION, CapabilityClient.FILTER_REACHABLE)
+                    );
                 } catch (ExecutionException e) {
                     e.printStackTrace();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
 
-                String bestNode = pickBestNodeId(capabilityInfo.getNodes());
+                String bestNode = null;
+
+                if (capabilityInfo != null) {
+                    bestNode = pickBestNodeId(capabilityInfo.getNodes());
+                }
 
                 if (bestNode != null) {
                     byte[] sensorData = SensorTransmissionCoder.codeMessage(message);

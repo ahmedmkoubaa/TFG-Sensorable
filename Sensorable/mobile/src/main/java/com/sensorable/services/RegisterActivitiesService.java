@@ -35,7 +35,6 @@ public class RegisterActivitiesService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         initializeMobileDatabase();
         loadDataViaMqtt();
-        Toast.makeText(this, "ACTIVITIES REGISTER SERVICE", Toast.LENGTH_SHORT).show();
 
         Log.i("ADL_DETECTION_SERVICE", "initialized adl detection service");
 

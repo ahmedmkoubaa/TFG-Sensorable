@@ -31,7 +31,6 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        sendInfoMessage("EMPATICE SERVICE");
 
         try {
             // Create a new EmpaDeviceManager. MainActivity is both its data and status delegate.
@@ -80,11 +79,14 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
 
     @Override
     public void didUpdateStatus(EmpaStatus status) {
+        // Start scanning
+        if (deviceManager != null) {
+            deviceManager.startScanning();
+        }
+
         // The device manager is ready for use
         if (status == EmpaStatus.READY) {
-            sendInfoMessage("ENCIENDE LA PULSERA");
-            // Start scanning
-            deviceManager.startScanning();
+            sendInfoMessage("Enciende la Empatica");
 
             // The device manager has established a connection
         } else if (status == EmpaStatus.CONNECTED) {
@@ -94,9 +96,8 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
             // The device manager connected to a device
 
         } else if (status == EmpaStatus.DISCONNECTED) {
-            sendInfoMessage("DISCONNECTED");
-
             // The device manager manager disconnected from a device
+            sendInfoMessage("DISCONNECTED");
         }
     }
 
@@ -167,9 +168,8 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
 
     @Override
     public void didReceiveTag(double timestamp) {
-        sendInfoMessage("RECEIVED TAG");
+        sendInfoMessage("Conexión estable");
     }
-
 
     @Override
     public void didEstablishConnection() {
@@ -183,7 +183,7 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
 
     @Override
     public void didFailedScanning(int errorCode) {
-        sendInfoMessage("NOTHING FOUND");
+        sendInfoMessage("Escaneando ...");
     }
 
     @Override
@@ -193,7 +193,7 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
 
     @Override
     public void bluetoothStateChanged() {
-        sendInfoMessage("Bluetooth state changed");
+        sendInfoMessage("Ha cambiado el estado del bluetooth");
     }
 
     @Override

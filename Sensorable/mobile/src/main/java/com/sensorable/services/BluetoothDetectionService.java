@@ -35,7 +35,6 @@ public class BluetoothDetectionService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Toast.makeText(this, "BLUETOOTH DETECTION SERVICE", Toast.LENGTH_SHORT).show();
         initializeMobileDatabase();
         initializeBluetoothProvider();
 

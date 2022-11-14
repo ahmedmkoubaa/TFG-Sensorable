@@ -25,7 +25,6 @@ public class BackUpService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Toast.makeText(this, "BACKUP SERVICE", Toast.LENGTH_SHORT).show();
         Log.i("BACKUP_SERVICE", "started backup service correctly");
 
         initializeMobileDatabase();

@@ -1,33 +1,30 @@
 import { useMyMqtt } from "../../my-mqtt/src"
 import { databaseManager } from "../../database-client/src"
-
-import debug from "debug"
-const log = debug("activities-back-up")
+import { MQTT_ACTIVITIES_INSERT } from "../../sensorable-constants/src"
 
 export function startActivitiesBackUpService() {
   const manager = databaseManager()
   manager.init()
   manager.connect()
 
-  log("running service")
+  console.log("running service activities-registry-back-up")
   const mqtt = useMyMqtt()
 
-  mqtt.subscribe(["sensorable/database/activities/insert"], () => {
-    log("subscribed to topic %o", ["sensorable/database/activities/insert"])
+  mqtt.subscribe([MQTT_ACTIVITIES_INSERT], () => {
+    console.log("subscribed to topic %o", [MQTT_ACTIVITIES_INSERT])
   })
 
   mqtt.onMessage((topic: string, payload: Buffer) => {
-    log("received message in activities-back-up topic:", topic)
-    log("received ", JSON.parse(payload.toString()))
+    console.log("received ", JSON.parse(payload.toString()))
 
     manager.doQuery({
       query: "INSERT INTO steps_for_activities_registry (id, id_activity, id_step, timestamp, user_id) VALUES ?",
       data: JSON.parse(payload.toString()),
       queryCallback: (err, rows) => {
         if (!err) {
-          log("Activities registries were inserted correctly, rows: ", rows)
+          console.error("Activities registries were inserted correctly, rows: ", rows)
         } else {
-          log("Error inserting activities registry data in activities table in activities-back-up", err)
+          console.log("Error inserting activities registry data in activities table in activities-back-up", err)
         }
       },
     })

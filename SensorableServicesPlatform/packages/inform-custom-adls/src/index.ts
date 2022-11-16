@@ -1,10 +1,8 @@
 import { useMyMqtt } from "../../my-mqtt/src"
 import { databaseManager } from "../../database-client/src"
-import { JSON_FIELDS_SEPARATOR, JSON_TABLES_SEPARATOR } from "../../sensorable-constants/src"
+import { JSON_FIELDS_SEPARATOR, JSON_TABLES_SEPARATOR, MQTT_REQUEST_CUSTOM_ADLS } from "../../sensorable-constants/src"
 
-import debug from "debug"
 import { IPublishPacket } from "mqtt"
-const log = debug("inform-custom-adls")
 
 export function startInformCustomAdls() {
   const manager = databaseManager()
@@ -13,19 +11,19 @@ export function startInformCustomAdls() {
 
   const mqtt = useMyMqtt()
 
-  log("running service")
+  console.log("running service inform-custom-adls")
 
-  mqtt.subscribe(["sensorable/database/adls/custom/request"], () => {
-    log("subscribed to topic %o", ["sensorable/database/adls/custom/request"])
+  mqtt.subscribe([MQTT_REQUEST_CUSTOM_ADLS], () => {
+    console.log("subscribed to topic %o", [MQTT_REQUEST_CUSTOM_ADLS])
   })
 
   mqtt.onMessage((topic: string, payload: Buffer, packet: IPublishPacket) => {
-    log("received message from topic ", topic)
+    console.log("received message from topic ", topic)
 
     // Finish the function if there is no response topic. This service
     // is intended to extract data from database and send it to the request emitter.
     if (!packet.properties?.responseTopic) {
-      return log("Exiting messge callback because there is no response topic")
+      return console.log("Exiting messge callback because there is no response topic")
     }
 
     // for inform about new adls

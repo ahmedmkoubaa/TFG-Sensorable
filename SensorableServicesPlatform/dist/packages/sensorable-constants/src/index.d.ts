@@ -8,6 +8,14 @@ export declare const MQTT_TEST_TOPIC = "sensorable/test";
 export declare const JSON_FIELDS_SEPARATOR = "|";
 export declare const JSON_TABLES_SEPARATOR = "#";
 export declare const MQTT_CONNECT_URL: string;
+export declare const MQTT_SENSORS_INSERT = "sensorable/database/sensors/insert";
+export declare const MQTT_REQUEST_CUSTOM_ADLS = "sensorable/database/adls/custom/request";
+export declare const MQQTT_INFORM_CUSTOM_ADLS = "sensorable/database/adls/custom/inform";
+export declare const MQTT_REQUEST_GENERIC_ADLS = "sensorable/database/adls/generics/request";
+export declare const MQTT_INFORM_GENERIC_ADLS = "sensorable/database/adls/generics/inform";
+export declare const MQTT_INFORM_ACTIVITIES = "sensorable/database/activities/inform";
+export declare const MQTT_REQUEST_ACTIVITIES = "sensorable/database/activities/request";
+export declare const MQTT_ACTIVITIES_INSERT = "sensorable/database/activities/insert";
 export declare enum DATABASE_TABLES {
     SENSORS = "sensors",
     USERS = "users",

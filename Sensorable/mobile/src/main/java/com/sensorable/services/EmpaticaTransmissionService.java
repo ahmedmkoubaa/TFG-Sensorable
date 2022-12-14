@@ -146,6 +146,7 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
     public void didReceiveIBI(float ibi, double timestamp) {
         float[] values = {60 / ibi};
         sendMessageToActivity(Sensor.TYPE_HEART_RATE, values);
+        sendMessageToActivity(EmpaticaSensorType.IBI, values);
     }
 
     @Override
@@ -178,7 +179,7 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
 
     @Override
     public void didUpdateSensorStatus(int status, EmpaSensorType type) {
-        sendInfoMessage("UPDATE SENSORS");
+        sendInfoMessage("Sensores actualizados");
     }
 
     @Override
@@ -192,10 +193,11 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
     }
 
     @Override
-    public void bluetoothStateChanged() {}
+    public void bluetoothStateChanged() {
+    }
 
     @Override
     public void didUpdateOnWristStatus(int status) {
-        sendInfoMessage("");
+        sendInfoMessage(status == 0 ? "Pulsera mal puesta" : "Pulsera colocada correctamente!");
     }
 }

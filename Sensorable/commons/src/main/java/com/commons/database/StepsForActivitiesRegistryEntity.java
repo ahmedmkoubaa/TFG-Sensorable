@@ -45,6 +45,6 @@ public class StepsForActivitiesRegistryEntity {
     }
 
     public String toJson() {
-        return "[" + id + "," + idActivity + "," + idStep + "," + timestamp + ", \"" + userId + "\" ]";
+        return "[" + idActivity + "," + idStep + "," + timestamp + ", \"" + userId + "\" ]";
     }
 }

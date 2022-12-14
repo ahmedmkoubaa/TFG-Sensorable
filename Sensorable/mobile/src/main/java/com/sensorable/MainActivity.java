@@ -21,6 +21,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.commons.DeviceType;
+import com.commons.LoginHelper;
 import com.commons.SensorTransmissionCoder;
 import com.commons.SensorableConstants;
 import com.commons.SensorablePermissions;
@@ -43,7 +44,6 @@ import com.sensorable.services.EmpaticaTransmissionService;
 import com.sensorable.services.RegisterActivitiesService;
 import com.sensorable.services.SensorsProviderService;
 import com.sensorable.services.WearTransmissionService;
-import com.commons.LoginHelper;
 import com.sensorable.utils.MobileDatabase;
 import com.sensorable.utils.MobileDatabaseBuilder;
 import com.sensorable.utils.MqttHelper;
@@ -183,7 +183,8 @@ public class MainActivity extends AppCompatActivity {
                         arrayMessage.forEach(sensorMessage -> {
                             switch (sensorMessage.getDeviceType()) {
                                 case DeviceType.MOBILE:
-                                case DeviceType.WEAROS:
+                                case DeviceType.WEAROS_RIGHT_HAND:
+                                case DeviceType.WEAROS_LEFT_HAND:
                                 case DeviceType.EMPATICA:
                                     switch (sensorMessage.getSensorType()) {
                                         case Sensor.TYPE_STEP_COUNTER:
@@ -268,7 +269,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void collectReceivedSensorData (ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage) {
+    private void collectReceivedSensorData(ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage) {
         // local database storing
         executor.execute(() -> {
             ArrayList<SensorMessageEntity> sensorMessageEntities = new ArrayList<>();

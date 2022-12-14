@@ -7,16 +7,21 @@ import com.commons.database.SensorMessageEntity;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Date;
 
 public class SensorTransmissionCoder {
-    private static final String FIELDS_SEPARATOR = "~";
-    private static final String VALUES_SEPARATOR = ",";
-    private static Charset charset = StandardCharsets.US_ASCII;
+    public static final String FIELDS_SEPARATOR = "~";
+    public static final String VALUES_SEPARATOR = ",";
+    public static final String DATA_SEPARATOR = "#";
 
-    public static void setCharset(Charset newCharset) {
-        charset = newCharset;
+    private static final Charset charset = StandardCharsets.US_ASCII;
+
+    public static byte[] codeString(String value) {
+        return value.getBytes(charset);
+    }
+
+    public static String decodeString(byte[] bytes) {
+        return new String(bytes, (charset));
     }
 
     public static String getFieldsSeparator() {
@@ -71,7 +76,12 @@ public class SensorTransmissionCoder {
     // it decodes a byte array returning the corresponding SensorMessage data
     public static SensorMessage decodeMessage(byte[] message) {
         String stringMessage = new String(message, (charset));
-        String[] splitedMessage = stringMessage.split(FIELDS_SEPARATOR);
+        return decodeMessage(stringMessage);
+    }
+
+    public static SensorMessage decodeMessage(String message) {
+        String[] splitedMessage = message.split(FIELDS_SEPARATOR);
+
         int deviceType = Integer.parseInt(splitedMessage[0]);
         int sensorType = Integer.parseInt(splitedMessage[1]);
         float[] value = decodeValue(splitedMessage[2]);
@@ -118,7 +128,7 @@ public class SensorTransmissionCoder {
             float valueY = 0, valueZ = 0;
 
             if (value.length > 1) {
-               valueY = value[1];
+                valueY = value[1];
             }
 
             if (value.length > 2) {
@@ -154,7 +164,7 @@ public class SensorTransmissionCoder {
         public String toString() {
             return deviceType + FIELDS_SEPARATOR +
                     sensorType + FIELDS_SEPARATOR +
-                    Arrays.toString(value) + FIELDS_SEPARATOR +
+                    codeValue(value) + FIELDS_SEPARATOR +
                     timestamp;
         }
 

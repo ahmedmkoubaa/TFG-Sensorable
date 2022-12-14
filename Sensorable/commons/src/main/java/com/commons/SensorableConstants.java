@@ -24,7 +24,7 @@ public class SensorableConstants {
     public final static String SENSORS_PROVIDER_SENDS_LOCATION = "SensorsProviderSendsLocation";
     public final static String ACTIVITY_ID = "activity_id";
 
-    //for syntactical separators
+    //for syntactical separators at mqtt communication with nodejs services
     public final static String JSON_TABLES_SEPARATOR = "#";
     public final static String JSON_FIELDS_SEPARATOR = "\\|";
     public final static String JSON_ROWS_SEPARATOR = "\\}\\{";
@@ -33,7 +33,7 @@ public class SensorableConstants {
     public final static int SENSOR_GPS = 2411;
 
     public final static int COLLECTED_SENSOR_DATA_SIZE = 1024;
-    public final static int WEAR_BUFFER_SIZE = 128;
+    public final static int WEAR_BUFFER_SIZE = 1024;
     public final static int EMPATICA_BUFFER_SIZE = 128;
     public final static int SENSORS_PROVIDER_SERVICE_BUFFER_SIZE = 128;
 
@@ -76,10 +76,10 @@ public class SensorableConstants {
     public static final String TIME_SEPARATOR = ":";
 
 
-    public static final int QTT_TIMEOUT = 4 * SECONDS_TO_MILLIS;
+    public static final int MQTT_TIMEOUT = 4 * SECONDS_TO_MILLIS;
     public static final int MQTT_RECONNECT_PERIOD = 1 * SECONDS_TO_MILLIS;
 
     public static final String LOGIN_DONE = "login_done";
     public static final String USER_SESSION_CODE = "user_session_code";
-    public static final int MAX_WEAR_OS_LOGGER_ELEMENTS = 5;
+    public static final int MAX_WEAR_OS_LOGGER_ELEMENTS = 3;
 }

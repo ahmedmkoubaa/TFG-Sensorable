@@ -18,7 +18,7 @@ export function startActivitiesBackUpService() {
     console.log("received ", JSON.parse(payload.toString()))
 
     manager.doQuery({
-      query: "INSERT INTO steps_for_activities_registry (id, id_activity, id_step, timestamp, user_id) VALUES ?",
+      query: "INSERT INTO steps_for_activities_registry (id_activity, id_step, timestamp, user_id) VALUES ?",
       data: JSON.parse(payload.toString()),
       queryCallback: (err, rows) => {
         if (!err) {

@@ -42,7 +42,7 @@ public class ActivitiesRegisterActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_activities_register);
 
-        intiializeAttributesFromUI();
+        initializeAttributesFromUI();
 
         initializeMobileDatabase();
         initializeActivitiesToRecord();
@@ -63,7 +63,7 @@ public class ActivitiesRegisterActivity extends AppCompatActivity {
         });
     }
 
-    private void intiializeAttributesFromUI() {
+    private void initializeAttributesFromUI() {
         userCode = (EditText) findViewById(R.id.userCodeForActivityRegistry);
         modifyUserCode = (Button) findViewById(R.id.modifyUserCode);
 

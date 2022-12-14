@@ -1,10 +1,8 @@
 import { useMyMqtt } from "../../my-mqtt/src"
 import { databaseManager } from "../../database-client/src"
-import { JSON_FIELDS_SEPARATOR, JSON_TABLES_SEPARATOR } from "../../sensorable-constants/src"
+import { JSON_FIELDS_SEPARATOR, JSON_TABLES_SEPARATOR, MQTT_REQUEST_ACTIVITIES } from "../../sensorable-constants/src"
 
-import debug from "debug"
 import { IPublishPacket } from "mqtt"
-const log = debug("inform-activities-to-register")
 
 export function startInformActivitiesToRegister() {
   const manager = databaseManager()
@@ -13,14 +11,14 @@ export function startInformActivitiesToRegister() {
 
   const mqtt = useMyMqtt()
 
-  log("running service")
+  console.log("running service inform-activities-to-register")
 
-  mqtt.subscribe(["sensorable/database/activities/request"], () => {
-    log("subscribed to topic %o", ["sensorable/database/activities/request"])
+  mqtt.subscribe([MQTT_REQUEST_ACTIVITIES], () => {
+    console.log("subscribed to topic %o", [MQTT_REQUEST_ACTIVITIES])
   })
 
   mqtt.onMessage((topic: string, payload: Buffer, packet: IPublishPacket) => {
-    log("received message from topic ", topic)
+    console.log("received message from topic ", topic)
 
     // To inform about activities
     let activities = ""

@@ -146,7 +146,8 @@ public class DetailedSensorsListActivity extends AppCompatActivity {
                     arrayMessage.forEach(sensorMessage -> {
                         switch (sensorMessage.getDeviceType()) {
                             case DeviceType.MOBILE:
-                            case DeviceType.WEAROS:
+                            case DeviceType.WEAROS_RIGHT_HAND:
+                            case DeviceType.WEAROS_LEFT_HAND:
                             case DeviceType.EMPATICA:
 
                                 switch (sensorMessage.getSensorType()) {

@@ -85,7 +85,10 @@ public class ActivitiesStepsRecorderActivity extends AppCompatActivity {
             stopRecordingSteps(activityId,  LoginHelper.getUserCode(getApplicationContext()));
             executor.execute(() -> {
                 // generate the json data structure
+                // in lambda expression we can only use final, we need to modify the paylod so this is the reason
+                // we use a final array modifying the first element
                 final String[] payload = {"["};
+
                 stepsForActivitiesRegistryDao.getAll().forEach(registry -> payload[0] += registry.toJson() + ",");
                 payload[0] = payload[0].substring(0, payload[0].length() - 1) + "]";
 

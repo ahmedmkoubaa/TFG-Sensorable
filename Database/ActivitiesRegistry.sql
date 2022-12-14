@@ -40,7 +40,7 @@ CREATE TABLE steps_for_activities_registry (
     FOREIGN KEY (id_step) REFERENCES activity_steps(id) ON DELETE CASCADE,
     timestamp BIGINT NOT NULL,
     user_id VARCHAR(8) NOT NULL,
-    PRIMARY KEY (id, user_id)
+    PRIMARY KEY (id, user_id, timestamp)
 );
 
 /*steps to make easy the registry*/

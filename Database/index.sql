@@ -1,4 +1,4 @@
-use test;
+use ahmed_test;
 
 DROP TABLE IF EXISTS custom_adls_for_users,
 generic_adls,

@@ -29,10 +29,10 @@ export function databaseManager(): DatabaseManager {
   //  A function to create and use a connection to the database
   // this function also handles errors related to the disconnection and reconnection
   function connect() {
-    const connection = mysql.createConnection(databaseConfig) // first attempt of creating a connection
+    database = mysql.createConnection(databaseConfig) // first attempt of creating a connection
 
     // Now connect to the database server and check if there was any error
-    connection.connect(function (err) {
+    database.connect(function (err) {
       if (err) {
         // The server is either down or restarting (takes a while sometimes).
         console.log("error when connecting to db:", err)
@@ -40,7 +40,7 @@ export function databaseManager(): DatabaseManager {
       }
     })
 
-    connection.on("error", function (err) {
+    database.on("error", function (err) {
       console.log("db error", err)
       if (err.code === "PROTOCOL_CONNECTION_LOST") {
         // Connection to the MySQL server is usually
@@ -54,8 +54,7 @@ export function databaseManager(): DatabaseManager {
 
   function checkQueryErrors(err: mysql.MysqlError | null, msg?: string) {
     if (err) {
-      log("Error: while executing a query -> %o optional message is -> %s", err, msg)
-      throw new Error("Error: trying to execute a query and handled the next error")
+      throw new Error(`Error trying to do a query -> ${msg}: ${err}`)
     }
   }
 

@@ -25,6 +25,7 @@ export function databaseManager(): DatabaseManager {
 
   log("called usedatabase")
   let database: mysql.Connection
+  const pendingQueries: Array<QueryParams> = []
 
   //  A function to create and use a connection to the database
   // this function also handles errors related to the disconnection and reconnection
@@ -37,6 +38,11 @@ export function databaseManager(): DatabaseManager {
         // The server is either down or restarting (takes a while sometimes).
         console.log("error when connecting to db:", err)
         setTimeout(connect, 5000)
+      } else {
+        pendingQueries.forEach((query) => {
+          doQuery(query)
+          pendingQueries.shift()
+        })
       }
     })
 
@@ -52,21 +58,19 @@ export function databaseManager(): DatabaseManager {
     })
   }
 
-  function checkQueryErrors(err: mysql.MysqlError | null, msg?: string) {
-    if (err) {
-      throw new Error(`Error trying to do a query -> ${msg}: ${err}`)
-    }
-  }
-
   function doQuery(params: QueryParams) {
     if (params.data?.length == 0) {
-      log("No params tu push")
+      log("No params to push")
       return
     }
 
     database.query(params.query, [params.data], (err, rows) => {
-      checkQueryErrors(err)
-      params.queryCallback(err, rows)
+      if (err) {
+        log(`Error trying to do a query: ${err}`)
+        pendingQueries.push({ ...params })
+      } else {
+        params.queryCallback(err, rows)
+      }
     })
   }
 

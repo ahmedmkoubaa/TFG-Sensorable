@@ -10,42 +10,45 @@ export interface QueryParams {
 }
 
 export interface DatabaseManager {
-  init: () => void
-  checkInitialized: () => void
   connect: () => void
   doQuery: (queryParams: QueryParams) => void
 }
 
 export function databaseManager(): DatabaseManager {
+  const databaseConfig: mysql.ConnectionConfig = {
+    host: process.env.DATABASE_HOST || "127.0.0.1",
+    port: parseInt(process.env.DATABASE_PORT || "") || 3306,
+    user: process.env.DATABASE_USER || "database-service",
+    password: process.env.DATABASE_PASS || "12345678",
+    database: process.env.DATABASE_NAME || "test",
+  }
+
   log("called usedatabase")
   let database: mysql.Connection
 
-  function init() {
-    database = mysql.createConnection({
-      host: process.env.DATABASE_HOST || "127.0.0.1",
-      port: parseInt(process.env.DATABASE_PORT || "") || 3306,
-      user: process.env.DATABASE_USER || "database-service",
-      password: process.env.DATABASE_PASS || "12345678",
-      database: process.env.DATABASE_NAME || "test",
-    })
-  }
-
-  function checkInitialized() {
-    if (!database) {
-      throw new Error("Error: using unintialized database, call init you use the mentioned database")
-    }
-  }
-
+  //  A function to create and use a connection to the database
+  // this function also handles errors related to the disconnection and reconnection
   function connect() {
-    checkInitialized()
+    const connection = mysql.createConnection(databaseConfig) // first attempt of creating a connection
 
-    database.connect((err: unknown) => {
+    // Now connect to the database server and check if there was any error
+    connection.connect(function (err) {
       if (err) {
-        log("Error: can't connect to database server, code: %o", err)
-        throw err
+        // The server is either down or restarting (takes a while sometimes).
+        console.log("error when connecting to db:", err)
+        setTimeout(connect, 5000)
       }
+    })
 
-      log("SUCCESS DATABASE CONNECTION!")
+    connection.on("error", function (err) {
+      console.log("db error", err)
+      if (err.code === "PROTOCOL_CONNECTION_LOST") {
+        // Connection to the MySQL server is usually
+        connect() // lost due to either server restart, or a
+      } else {
+        // connnection idle timeout (the wait_timeout
+        throw err // server variable configures this)
+      }
     })
   }
 
@@ -57,8 +60,6 @@ export function databaseManager(): DatabaseManager {
   }
 
   function doQuery(params: QueryParams) {
-    checkInitialized()
-
     if (params.data?.length == 0) {
       log("No params tu push")
       return
@@ -71,8 +72,6 @@ export function databaseManager(): DatabaseManager {
   }
 
   return {
-    init,
-    checkInitialized,
     connect,
     doQuery,
   }

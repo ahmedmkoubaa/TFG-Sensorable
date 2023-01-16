@@ -4,7 +4,6 @@ import { MQTT_SENSORS_INSERT } from "../../sensorable-constants/src"
 
 export function startSensorsBackUpService() {
   const manager = databaseManager()
-  manager.init()
   manager.connect()
 
   console.log("running service sensors-back-up")

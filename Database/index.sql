@@ -12,7 +12,7 @@ SET
     @DEVICE_MOBILE := 0;
 
 SET
-    @DEVICE_WEAR_OS := 1;
+    @DEVICE_WEAR_OS_RIGHT := 1;
 
 SET
     @DEVICE_EMPATICA := 2;

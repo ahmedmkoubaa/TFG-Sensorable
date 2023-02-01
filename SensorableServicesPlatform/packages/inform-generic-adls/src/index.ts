@@ -6,7 +6,6 @@ import debug from "debug"
 
 export function startInformGenericAdls() {
   const manager = databaseManager()
-  manager.init()
   manager.connect()
 
   const mqtt = useMyMqtt()

@@ -4,7 +4,6 @@ import { MQTT_ACTIVITIES_INSERT } from "../../sensorable-constants/src"
 
 export function startActivitiesBackUpService() {
   const manager = databaseManager()
-  manager.init()
   manager.connect()
 
   console.log("running service activities-registry-back-up")

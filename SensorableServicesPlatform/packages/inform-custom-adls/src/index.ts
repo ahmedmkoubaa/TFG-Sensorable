@@ -6,7 +6,6 @@ import { IPublishPacket } from "mqtt"
 
 export function startInformCustomAdls() {
   const manager = databaseManager()
-  manager.init()
   manager.connect()
 
   const mqtt = useMyMqtt()

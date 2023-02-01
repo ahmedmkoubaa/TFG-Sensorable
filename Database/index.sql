@@ -1,4 +1,4 @@
-use test;
+use ahmed_test;
 
 DROP TABLE IF EXISTS custom_adls_for_users,
 generic_adls,
@@ -12,10 +12,13 @@ SET
     @DEVICE_MOBILE := 0;
 
 SET
-    @DEVICE_WEAR_OS := 1;
+    @DEVICE_WEAR_OS_RIGHT := 1;
 
 SET
     @DEVICE_EMPATICA := 2;
+
+SET
+    @DEVICE_WEAR_OS_LEFT := 3;
 
 SET
     @TYPE_ACCELEROMETER := 1;

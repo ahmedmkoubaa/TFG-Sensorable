@@ -1,4 +1,4 @@
-use test;
+use ahmed_test;
 
 DROP TABLE IF EXISTS steps_for_activities_registry,
 steps_for_activities,

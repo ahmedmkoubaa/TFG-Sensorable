@@ -15,7 +15,10 @@ sudo mysql -e "
         *,
         FROM_UNIXTIME (timestamp / 1000) AS date
     FROM
-        steps_for_activities_registry INTO OUTFILE '/var/lib/mysql-files/steps_for_activities_registry.csv' FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\n';
+        steps_for_activities_registry 
+    WHERE
+        user_id LIKE \"MR-___\"
+            INTO OUTFILE '/var/lib/mysql-files/steps_for_activities_registry.csv' FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\n';
 
     SELECT
         'id',

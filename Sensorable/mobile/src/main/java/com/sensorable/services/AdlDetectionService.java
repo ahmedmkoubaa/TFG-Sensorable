@@ -327,10 +327,7 @@ public class AdlDetectionService extends Service {
                         operation = switchOperation(e.operator);
 
                         if (operation != null) {
-                            evaluatedEvents.put(
-                                    e.id,
-                                    switchOperate(operation, s.getValue(), e)
-                            );
+                            evaluatedEvents.put( e.id, switchOperate(operation, s.getValue(), e));
 
                         } else {
                             Log.i("ADL_DETECTION_SERVICE", "null operation, operator bad specified");
@@ -414,8 +411,6 @@ public class AdlDetectionService extends Service {
     }
 
     private void evaluateAdls(HashMap<Integer, Boolean> evaluatedEvents) {
-        HashMap<Integer, HashMap<Integer, ArrayList<Pair<Integer, Boolean>>>> databaseDeepCopy = deepDatabaseAdlsCopy();
-
         // let's take from database adls the events registry owned by each adl
         for (int idCurrentAdl : databaseAdls.keySet()) {
             databaseAdls.get(idCurrentAdl).forEach((version, eventsOfCurrentAdl) -> {

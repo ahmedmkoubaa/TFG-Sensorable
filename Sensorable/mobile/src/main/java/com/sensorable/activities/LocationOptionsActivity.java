@@ -99,14 +99,6 @@ public class LocationOptionsActivity extends AppCompatActivity {
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 int id = item.getItemId();
                 switch (id) {
-//                    case R.id.tab_bluetooth:
-//                        startActivity(
-//                                new Intent(LocationOptionsActivity.this, BluetoothOptionsActivity.class)
-//                        );
-//                        overridePendingTransition(0, 0);
-//                        finish();
-//
-//                        return true;
                     case R.id.tab_activities_recorder:
                         startActivity(
                                 new Intent(LocationOptionsActivity.this, ActivitiesRegisterActivity.class)
@@ -235,12 +227,12 @@ public class LocationOptionsActivity extends AppCompatActivity {
             sensor.subscribeToGps(new LocationListener() {
                 @Override
                 public void onProviderEnabled(@NonNull String provider) {
-                    Toast.makeText(LocationOptionsActivity.this, "Provider is enabled", Toast.LENGTH_SHORT).show();
+                    Log.i("LOCATIONS OPTIONS", "Provider is enabled");
                 }
 
                 @Override
                 public void onProviderDisabled(@NonNull String provider) {
-                    Toast.makeText(LocationOptionsActivity.this, "Provider is disabled", Toast.LENGTH_SHORT).show();
+                    Log.i("LOCATIONS OPTIONS", "Provider is disabled");
                 }
 
                 @Override

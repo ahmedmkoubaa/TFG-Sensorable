@@ -123,14 +123,6 @@ public class MainActivity extends AppCompatActivity {
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 int id = item.getItemId();
                 switch (id) {
-//                    case R.id.tab_bluetooth:
-//                        startActivity(
-//                                new Intent(MainActivity.this, BluetoothOptionsActivity.class)
-//                        );
-//                        overridePendingTransition(0, 0);
-//
-//                        return true;
-
                     case R.id.tab_activities_recorder:
                         startActivity(
                                 new Intent(MainActivity.this, ActivitiesRegisterActivity.class)
@@ -258,7 +250,6 @@ public class MainActivity extends AppCompatActivity {
                     if (!isMyServiceRunning(BluetoothDetectionService.class)) {
                         startService(new Intent(this, BluetoothDetectionService.class));
                     }
-                    Toast.makeText(this, "Bluetooth was turned on", Toast.LENGTH_SHORT).show();
                 }
                 break;
             default:
@@ -321,21 +312,7 @@ public class MainActivity extends AppCompatActivity {
     private void initializeAdlDetectionService() {
         if (!isMyServiceRunning(AdlDetectionService.class)) {
             startService(new Intent(this, AdlDetectionService.class));
-
-
         }
-
-        LocalBroadcastManager.getInstance(MainActivity.this).registerReceiver(
-                new BroadcastReceiver() {
-                    @Override
-                    public void onReceive(Context context, Intent intent) {
-                        Toast.makeText(context, "mobile: received" +
-                                        intent.getBundleExtra(SensorableConstants.EXTRA_MESSAGE)
-                                                .getString(SensorableConstants.BROADCAST_MESSAGE),
-                                Toast.LENGTH_SHORT).show();
-                    }
-                }, new IntentFilter(SensorableConstants.ADL_UPDATE));
-
     }
 
     private void initializeBackUpService() {

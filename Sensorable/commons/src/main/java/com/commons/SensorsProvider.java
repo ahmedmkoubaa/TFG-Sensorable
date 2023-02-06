@@ -42,7 +42,7 @@ public class SensorsProvider {
             Log.i("SENSORS_PROVIDER", "ERROR-> " + e.getMessage());
 
             if (!canAccessLocation()) {
-                Toast.makeText(context, "Not granted permissions are necessary", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "GPS no disponible", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -75,12 +75,12 @@ public class SensorsProvider {
         final boolean gpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
 
         if (!gpsEnabled) {
-            Toast.makeText(context, "Please turn on location", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Enciende el GPS, por favor", Toast.LENGTH_SHORT).show();
         } else {
             try {
                 locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, listener);
             } catch (SecurityException e) {
-                Toast.makeText(context, "You should ask for permissions", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "No se facilitaron los permisos de GPS", Toast.LENGTH_SHORT).show();
             }
         }
     }

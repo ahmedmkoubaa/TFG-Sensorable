@@ -88,14 +88,6 @@ public class DetailedSensorsListActivity extends AppCompatActivity {
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 int id = item.getItemId();
                 switch (id) {
-//                    case R.id.tab_bluetooth:
-//                        startActivity(
-//                                new Intent(DetailedSensorsListActivity.this, BluetoothOptionsActivity.class)
-//                        );
-//                        overridePendingTransition(0, 0);
-//
-//                        return true;
-
                     case R.id.tab_activities_recorder:
                         startActivity(
                                 new Intent(DetailedSensorsListActivity.this, ActivitiesRegisterActivity.class)

@@ -3,7 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.sensorable"
     android:allowBackup="false">
-
     <!--
          The ACCESS_COARSE/FINE_LOCATION permissions are not required to use
          Google Maps Android API v2, but you must specify either coarse or fine
@@ -16,6 +15,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN"/>
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
@@ -23,10 +23,15 @@
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-    <uses-permission android:name="android.permission.SET_ALARM"/>
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.SET_ALARM" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
 
+    <!--bibo01 : hardware option-->
+    <uses-feature android:name="android.hardware.bluetooth" android:required="false"/>
+    <uses-feature android:name="android.hardware.bluetooth_le" android:required="false"/>
 
     <uses-feature android:name="android.software.companion_device_setup" />
 
@@ -38,10 +43,20 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MyApplication"
         tools:replace="android:theme">
+        <activity android:name=".activities.LoginActivity" />
+
+        <service
+            android:name=".services.RegisterActivitiesService"
+            android:enabled="true"
+            android:exported="true" />
+
+        <activity android:name=".activities.ActivitiesStepsRecorderActivity" />
+        <activity android:name=".activities.ActivitiesRegisterActivity" />
+
         <service
             android:name=".services.BackUpService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
         <service
             android:name=".services.SensorsProviderService"
             android:enabled="true"
@@ -51,26 +66,42 @@
             android:enabled="true"
             android:exported="true" />
 
-        <activity android:name=".activities.LocationOptionsActivity" android:noHistory="false"/>
-        <activity android:name=".activities.AdlSummaryActivity" android:noHistory="true" />
-        <activity android:name=".activities.AddLocationActivity"  android:noHistory="true" />
-        <activity android:name=".activities.BluetoothOptionsActivity"  android:noHistory="true" /> <!-- Activities that the application is composed by -->
-        <activity android:name=".MainActivity"  android:noHistory="true">
+        <activity
+            android:name=".activities.LocationOptionsActivity"
+            android:noHistory="false" />
+        <activity
+            android:name=".activities.AdlSummaryActivity"
+            android:noHistory="true" />
+        <activity
+            android:name=".activities.AddLocationActivity"
+            android:noHistory="true" />
+        <activity
+            android:name=".activities.BluetoothOptionsActivity"
+            android:noHistory="true" /> <!-- Activities that the application is composed by -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:noHistory="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activities.DetailedSensorsListActivity"  android:noHistory="true" />
+        <activity
+            android:name=".activities.DetailedSensorsListActivity"
+            android:noHistory="true" />
+
         <!-- Services deployed by the applicaton -->
         <service
             android:name=".services.AdlDetectionService"
             android:enabled="true"
             android:exported="true" />
-        <service android:name=".services.WearTransmissionService">
-            <intent-filter>
+        <service
+            android:name=".services.WearTransmissionService"
+            android:exported="true">
 
+            <intent-filter>
                 <!-- listeners receive events that match the action and data filters -->
                 <action android:name="com.google.android.gms.wearable.DATA_CHANGED" />
                 <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" />
@@ -86,7 +117,6 @@
             android:name=".services.EmpaticaTransmissionService"
             android:enabled="true"
             android:exported="true" />
-
     </application>
 
 </manifest>

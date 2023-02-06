@@ -7,20 +7,23 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.wearable.activity.WearableActivity;
+import android.widget.CompoundButton;
 import android.widget.ListView;
+import android.widget.ToggleButton;
 
+import com.commons.DeviceType;
 import com.commons.SensorableConstants;
 import com.commons.SensorablePermissions;
 import com.commons.SensorsProvider;
-
+import com.sensorable.utils.WearosEnvironment;
 
 public class MainActivity extends WearableActivity {
     private final int[] listenedSensors = {
             Sensor.TYPE_HEART_RATE,
             Sensor.TYPE_STEP_COUNTER,
-            Sensor.TYPE_LIGHT,
-            Sensor.TYPE_PROXIMITY,
-            Sensor.TYPE_LINEAR_ACCELERATION
+            Sensor.TYPE_LINEAR_ACCELERATION,
+            Sensor.TYPE_ACCELEROMETER,
+            Sensor.TYPE_GYROSCOPE
     };
 
     private LoggerAdapter loggerAdapter;
@@ -29,6 +32,7 @@ public class MainActivity extends WearableActivity {
     private WearSensorDataSender sensorSender;
 
     private ListView loggerList;
+    private ToggleButton rightHand;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,7 +56,7 @@ public class MainActivity extends WearableActivity {
         SensorEventListener listenerDataSender = new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent sensorEvent) {
-                sensorSender.sendMessage(sensorEvent.sensor.getType(), sensorEvent.values);
+                sensorSender.sendMessage(WearosEnvironment.getDeviceType(), sensorEvent.sensor.getType(), sensorEvent.values);
             }
 
             @Override
@@ -80,11 +84,19 @@ public class MainActivity extends WearableActivity {
     }
 
     private void initializeListenersForUI() {
-        loggerAdapter = new LoggerAdapter(getBaseContext(), R.layout.logger_message_layout, SensorableLogger.get());
+        loggerAdapter = new LoggerAdapter(getBaseContext(), R.layout.logger_message_layout, SensorableLogger.getLoggedData());
         loggerAdapter.setNotifyOnChange(true);
 
         loggerList = (ListView) findViewById(R.id.loggerList);
         loggerList.setAdapter(loggerAdapter);
+
+        rightHand = (ToggleButton) findViewById(R.id.rightHand);
+        rightHand.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                WearosEnvironment.setDeviceType(isChecked ? DeviceType.WEAROS_RIGHT_HAND : DeviceType.WEAROS_LEFT_HAND);
+            }
+        });
     }
 
     @Override

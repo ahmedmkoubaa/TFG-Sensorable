@@ -31,7 +31,8 @@ public class SensorablePermissions {
             Manifest.permission.WAKE_LOCK,
             Manifest.permission.SCHEDULE_EXACT_ALARM,
             Manifest.permission.SET_ALARM,
-            Manifest.permission.RECEIVE_BOOT_COMPLETED
+            Manifest.permission.RECEIVE_BOOT_COMPLETED,
+            Manifest.permission.BLUETOOTH_SCAN
     };
 
     public static void requestAll(Activity requestingActivity) {

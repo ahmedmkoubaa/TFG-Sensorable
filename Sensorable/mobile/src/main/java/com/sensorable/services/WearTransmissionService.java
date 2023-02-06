@@ -2,7 +2,6 @@ package com.sensorable.services;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
@@ -22,19 +21,24 @@ public class WearTransmissionService extends WearableListenerService {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-
-        Toast.makeText(this, "WEAR OS SERVICE", Toast.LENGTH_SHORT).show();
         return super.onStartCommand(intent, flags, startId);
     }
 
     @Override
     public void onMessageReceived(@NonNull MessageEvent messageEvent) {
         super.onMessageReceived(messageEvent);
-        sendMessageToActivity(
-                SensorTransmissionCoder.decodeMessage(
-                        messageEvent.getData()
-                )
+
+        String receivedSensors = SensorTransmissionCoder.decodeString(
+                messageEvent.getData()
         );
+
+        if (!receivedSensors.equals("")) {
+            String[] splitedSensors = receivedSensors.split(SensorTransmissionCoder.DATA_SEPARATOR);
+
+            for (String s : splitedSensors) {
+                sendMessageToActivity(SensorTransmissionCoder.decodeMessage(s));
+            }
+        }
     }
 
     private void sendMessageToActivity(SensorTransmissionCoder.SensorMessage msg) {
@@ -58,12 +62,10 @@ public class WearTransmissionService extends WearableListenerService {
     @Override
     public void onDataChanged(@NonNull DataEventBuffer dataEventBuffer) {
         super.onDataChanged(dataEventBuffer);
-        Toast.makeText(this, "DATA CHANGED", Toast.LENGTH_LONG).show();
     }
 
     @Override
     public void onChannelOpened(@NonNull Channel channel) {
         super.onChannelOpened(channel);
-        Toast.makeText(this, "CANAL ABIERTO RECIBIDO", Toast.LENGTH_SHORT).show();
     }
 }

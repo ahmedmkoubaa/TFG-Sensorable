@@ -27,11 +27,14 @@ import java.util.ArrayList;
 public class SensorsProviderService extends Service {
     private final ArrayList<SensorTransmissionCoder.SensorMessage> sensorMessagesBuffer;
     private final int[] listenedSensors = {
-            Sensor.TYPE_PROXIMITY, Sensor.TYPE_HEART_RATE,
-            Sensor.TYPE_AMBIENT_TEMPERATURE, Sensor.TYPE_RELATIVE_HUMIDITY,
-            Sensor.TYPE_STEP_COUNTER, Sensor.TYPE_LIGHT,
-            Sensor.TYPE_ACCELEROMETER, Sensor.TYPE_LINEAR_ACCELERATION
+            Sensor.TYPE_PROXIMITY,
+            Sensor.TYPE_HEART_RATE,
+            Sensor.TYPE_STEP_COUNTER,
+            Sensor.TYPE_LIGHT,
+            Sensor.TYPE_ACCELEROMETER,
+            Sensor.TYPE_LINEAR_ACCELERATION
     };
+
     private SensorsProvider sensorsProvider;
 
     public SensorsProviderService() {
@@ -40,8 +43,6 @@ public class SensorsProviderService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Toast.makeText(this, "SENSORS PROVIDER SERVICE", Toast.LENGTH_SHORT).show();
-
         initializeSensorsProvider();
 
         Log.i("ADL_DETECTION_SERVICE", "initialized adl detection service");

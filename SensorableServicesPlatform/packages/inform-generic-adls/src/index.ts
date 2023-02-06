@@ -1,25 +1,23 @@
 import { useMyMqtt } from "../../my-mqtt/src"
 import { databaseManager } from "../../database-client/src"
-import { JSON_FIELDS_SEPARATOR, JSON_TABLES_SEPARATOR } from "../../sensorable-constants/src"
+import { JSON_FIELDS_SEPARATOR, JSON_TABLES_SEPARATOR, MQTT_REQUEST_GENERIC_ADLS } from "../../sensorable-constants/src"
 
 import debug from "debug"
-const log = debug("inform-generic-adls")
 
 export function startInformGenericAdls() {
   const manager = databaseManager()
-  manager.init()
   manager.connect()
 
   const mqtt = useMyMqtt()
 
-  log("running service inform-generic-adls")
+  console.log("running service inform-generic-adls")
 
-  mqtt.subscribe(["sensorable/database/adls/generics/request"], () => {
-    log("subscribed to topic %o", ["sensorable/database/adls/generics/request"])
+  mqtt.subscribe([MQTT_REQUEST_GENERIC_ADLS], () => {
+    console.log("subscribed to topic %o", [MQTT_REQUEST_GENERIC_ADLS])
   })
 
   mqtt.onMessage((topic: string, payload: Buffer) => {
-    log("received message from topic ", topic)
+    console.log("received message from topic ", topic)
 
     // for inform about new adls
     let newAdls = ""

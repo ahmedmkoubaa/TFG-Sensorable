@@ -8,7 +8,6 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
@@ -117,12 +116,11 @@ public class AdlDetectionService extends Service {
 
         if (MqttHelper.connect()) {
             final Consumer<Mqtt5Publish> handleAdlsScheme = mqtt5Publish -> {
-
                 String payload = new String(mqtt5Publish.getPayloadAsBytes());
                 String[] tables = payload.split(SensorableConstants.JSON_TABLES_SEPARATOR);
 
 
-                updateFromDatabase(
+                updateDatabase(
                         composeTableAdls(removeFirstAndLastChar(tables[0])),
                         composeTableEvents(removeFirstAndLastChar(tables[1])),
                         composeTableEventsForAdls(removeFirstAndLastChar(tables[2]))
@@ -136,7 +134,6 @@ public class AdlDetectionService extends Service {
             if (session != null) {
                 String responseTopic = SensorableConstants.MQQTT_INFORM_CUSTOM_ADLS + "/" + session;
 
-//                MqttHelper.unsubscribe(responseTopic);
                 MqttHelper.subscribe(responseTopic, handleAdlsScheme);
                 MqttHelper.publish(
                         SensorableConstants.MQTT_REQUEST_CUSTOM_ADLS,
@@ -144,7 +141,6 @@ public class AdlDetectionService extends Service {
                         responseTopic
                 );
             } else {
-//                MqttHelper.unsubscribe(SensorableConstants.MQTT_INFORM_GENERIC_ADLS);
                 MqttHelper.subscribe(SensorableConstants.MQTT_INFORM_GENERIC_ADLS, handleAdlsScheme);
                 MqttHelper.publish(SensorableConstants.MQTT_REQUEST_GENERIC_ADLS);
             }
@@ -157,7 +153,7 @@ public class AdlDetectionService extends Service {
         return someString.substring(1, someString.length() - 1);
     }
 
-    private void updateFromDatabase(final ArrayList<AdlEntity> adlEntities, final ArrayList<EventEntity> eventEntities, final ArrayList<EventForAdlEntity> eventsForAdlsEntities) {
+    private void updateDatabase(final ArrayList<AdlEntity> adlEntities, final ArrayList<EventEntity> eventEntities, final ArrayList<EventForAdlEntity> eventsForAdlsEntities) {
         executor.execute(() -> {
             adlDao.deleteAll();
             eventDao.deleteAll();
@@ -326,14 +322,12 @@ public class AdlDetectionService extends Service {
                 for (SensorTransmissionCoder.SensorMessage s : filteredData.get(timestamp)) {
 
                     // evaluate the events
-                    if (s.getDeviceType() == e.deviceType && s.getSensorType() == e.sensorType) {
+                    // TODO remember to check the device type
+                    if (s.getSensorType() == e.sensorType) {
                         operation = switchOperation(e.operator);
 
                         if (operation != null) {
-                            evaluatedEvents.put(
-                                    e.id,
-                                    switchOperate(operation, s.getValue(), e)
-                            );
+                            evaluatedEvents.put( e.id, switchOperate(operation, s.getValue(), e));
 
                         } else {
                             Log.i("ADL_DETECTION_SERVICE", "null operation, operator bad specified");
@@ -417,11 +411,9 @@ public class AdlDetectionService extends Service {
     }
 
     private void evaluateAdls(HashMap<Integer, Boolean> evaluatedEvents) {
-        HashMap<Integer, HashMap<Integer, ArrayList<Pair<Integer, Boolean>>>> databaseDeepCopy = deepDatabaseAdlsCopy();
-
         // let's take from database adls the events registry owned by each adl
-        for (int idCurrentAdl : databaseDeepCopy.keySet()) {
-            databaseDeepCopy.get(idCurrentAdl).forEach((version, eventsOfCurrentAdl) -> {
+        for (int idCurrentAdl : databaseAdls.keySet()) {
+            databaseAdls.get(idCurrentAdl).forEach((version, eventsOfCurrentAdl) -> {
                 boolean evaluation = true;
                 int size = eventsOfCurrentAdl.size();
 
@@ -436,7 +428,7 @@ public class AdlDetectionService extends Service {
                          * exact order they were associated to the adl, so we only check if an event is
                          * true if the previous event was.
                          * If the event is the first or the unique in the array, we supose then that we
-                         * have the previous too (becase there isn't any previous). After this just look for
+                         * have the previous too (because there isn't any previous). After this just look for
                          * the event in the evaluated events array and use its last value.
                          */
 
@@ -487,7 +479,7 @@ public class AdlDetectionService extends Service {
 
             // interval is the current time less 5 minutes, counts made on millis
             long sinceTime = currentTime - SensorableConstants.TIME_SINCE_LAST_ADL_DETECTION;
-            AdlRegistryEntity res = adlRegistryDao.getAdlRegistryAfter(sinceTime);
+            AdlRegistryEntity res = adlRegistryDao.getAdlRegistryAfter(idCurrentAdl, sinceTime);
 
             if (res != null) {
                 res.endTime = currentTime;

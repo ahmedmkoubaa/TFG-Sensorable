@@ -18,12 +18,12 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import com.commons.DeviceType;
 import com.commons.SensorTransmissionCoder;
 import com.commons.SensorableConstants;
+import com.commons.SensorableDates;
 import com.commons.SensorsProvider;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
 import com.sensorable.MainActivity;
 import com.sensorable.R;
-import com.commons.SensorableDates;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -88,12 +88,19 @@ public class DetailedSensorsListActivity extends AppCompatActivity {
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 int id = item.getItemId();
                 switch (id) {
-                    case R.id.tab_bluetooth:
+//                    case R.id.tab_bluetooth:
+//                        startActivity(
+//                                new Intent(DetailedSensorsListActivity.this, BluetoothOptionsActivity.class)
+//                        );
+//                        overridePendingTransition(0, 0);
+//
+//                        return true;
+
+                    case R.id.tab_activities_recorder:
                         startActivity(
-                                new Intent(DetailedSensorsListActivity.this, BluetoothOptionsActivity.class)
+                                new Intent(DetailedSensorsListActivity.this, ActivitiesRegisterActivity.class)
                         );
                         overridePendingTransition(0, 0);
-
                         return true;
 
                     case R.id.tab_adls:
@@ -139,7 +146,8 @@ public class DetailedSensorsListActivity extends AppCompatActivity {
                     arrayMessage.forEach(sensorMessage -> {
                         switch (sensorMessage.getDeviceType()) {
                             case DeviceType.MOBILE:
-                            case DeviceType.WEAROS:
+                            case DeviceType.WEAROS_RIGHT_HAND:
+                            case DeviceType.WEAROS_LEFT_HAND:
                             case DeviceType.EMPATICA:
 
                                 switch (sensorMessage.getSensorType()) {

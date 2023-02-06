@@ -23,8 +23,8 @@
             android:layout_height="wrap_content">
 
             <TextView
-                android:id="@+id/adlTitle"
-                android:layout_width="199dp"
+                android:id="@+id/adlRecordTitle"
+                android:layout_width="147dp"
                 android:layout_height="wrap_content"
                 android:layout_margin="3dp"
                 android:text="Title of ADL"

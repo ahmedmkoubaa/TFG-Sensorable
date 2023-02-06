@@ -5,18 +5,50 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/dark_grey"
+    android:backgroundTint="@color/black"
+    android:keepScreenOn="true"
     tools:context=".MainActivity"
     tools:deviceIds="wear">
 
-    <ListView
-        android:id="@+id/loggerList"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_margin="5dp"
-        android:layout_marginLeft="15dp"
-        android:layout_marginRight="15dp"
-        android:padding="5dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:keepScreenOn="true"
+
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:keepScreenOn="true"
+            android:orientation="horizontal">
+
+            <ToggleButton
+                android:id="@+id/rightHand"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:keepScreenOn="true"
+                android:minHeight="65dp"
+                android:text="¿Mano?"
+                android:textOff="Izquierda"
+                android:textOn="Derecha"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+
+        <ListView
+            android:id="@+id/loggerList"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="5dp"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"
+            android:keepScreenOn="true"
+            android:padding="5dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+
+    </LinearLayout>
 </androidx.wear.widget.BoxInsetLayout>

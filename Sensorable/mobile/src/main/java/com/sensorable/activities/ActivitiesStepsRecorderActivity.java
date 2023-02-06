@@ -1,6 +1,7 @@
 package com.sensorable.activities;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.GridView;
@@ -55,7 +56,7 @@ public class ActivitiesStepsRecorderActivity extends AppCompatActivity {
                 runOnUiThread(() -> activityStepsAdapter.notifyDataSetChanged());
             });
         } else {
-            Toast.makeText(this, "Something has failed, refresh this screen", Toast.LENGTH_SHORT).show();
+            Log.i("ACTIVITIES STEPS RECORDER", "Didn't receive the activity ID");
         }
     }
 

@@ -86,14 +86,6 @@ public class AdlSummaryActivity extends AppCompatActivity {
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 int id = item.getItemId();
                 switch (id) {
-//                    case R.id.tab_bluetooth:
-//                        startActivity(
-//                                new Intent(AdlSummaryActivity.this, BluetoothOptionsActivity.class)
-//                        );
-//                        overridePendingTransition(0, 0);
-//
-//                        return true;
-
                     case R.id.tab_activities_recorder:
                         startActivity(
                                 new Intent(AdlSummaryActivity.this, ActivitiesRegisterActivity.class)

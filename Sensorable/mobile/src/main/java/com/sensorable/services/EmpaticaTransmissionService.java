@@ -107,7 +107,7 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
         // the device is not linked with your API key. Please check your developer area at
         // https://www.empatica.com/connect/developer.php
 
-        sendInfoMessage("DISCOVERED " + deviceName);
+        sendInfoMessage("Encontrada " + deviceName);
 
         if (allowed) {
             // Stop scanning. The first allowed device will do.
@@ -119,7 +119,7 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
 
             } catch (ConnectionNotAllowedException e) {
                 // This should happen only if you try to connect when allowed == false.
-                sendInfoMessage("Sorry, you can't connect to this device");
+                sendInfoMessage("Conexión no permitida con este dispositivo");
             }
         }
     }
@@ -189,7 +189,7 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
 
     @Override
     public void didRequestEnableBluetooth() {
-        sendInfoMessage("Enciende el Bluetooth por favor");
+        sendInfoMessage("Enciende el Bluetooth");
     }
 
     @Override
@@ -198,6 +198,5 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
 
     @Override
     public void didUpdateOnWristStatus(int status) {
-        sendInfoMessage(status == 0 ? "Pulsera mal puesta" : "Pulsera colocada correctamente!");
     }
 }

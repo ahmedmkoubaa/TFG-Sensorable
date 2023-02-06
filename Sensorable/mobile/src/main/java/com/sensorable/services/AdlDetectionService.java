@@ -40,6 +40,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 
 public class AdlDetectionService extends Service {
+    private final ArrayList<SensorTransmissionCoder.SensorMessage> sensorDataBuffer = new ArrayList<>();
+    private BroadcastReceiver dataReceiver;
+
     private final ArrayList<EventEntity> events = new ArrayList<>();
     private final ArrayList<EventForAdlEntity> eventsForAdls = new ArrayList<>();
     private final ArrayList<AdlEntity> adls = new ArrayList<>();
@@ -80,7 +83,7 @@ public class AdlDetectionService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        initializeMobileReceiver();
+        initializeDataReceiver();
         initializeMobileDatabase();
         initializeMqttClient();
 
@@ -285,18 +288,34 @@ public class AdlDetectionService extends Service {
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
-    private void initializeMobileReceiver() {
-        LocalBroadcastManager.getInstance(this).registerReceiver(
-                new BroadcastReceiver() {
-                    @Override
-                    public void onReceive(Context context, Intent intent) {
-                        Bundle b = intent.getBundleExtra(SensorableConstants.EXTRA_MESSAGE);
-                        ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage = b.getParcelableArrayList(SensorableConstants.BROADCAST_MESSAGE);
-                        detectAdls(arrayMessage);
+    private void initializeDataReceiver() {
+        dataReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Bundle b = intent.getBundleExtra(SensorableConstants.EXTRA_MESSAGE);
+                ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage = b.getParcelableArrayList(SensorableConstants.BROADCAST_MESSAGE);
 
-                        Log.i("ADL_DETECTION_SERVICE", "received new data from mobile " + arrayMessage.size());
-                    }
-                }, new IntentFilter(SensorableConstants.MOBILE_SENDS_SENSOR_DATA));
+                sensorDataBuffer.addAll(arrayMessage);
+                if (sensorDataBuffer.size() > SensorableConstants.COLLECTED_SENSOR_DATA_SIZE) {
+                    detectAdls(sensorDataBuffer);
+                    sensorDataBuffer.clear();
+                }
+
+                Log.i("ADL_DETECTION_SERVICE", "received new data " + arrayMessage.size());
+            }
+        };
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                dataReceiver,
+                new IntentFilter(SensorableConstants.EMPATICA_SENDS_SENSOR_DATA));
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                dataReceiver,
+                new IntentFilter(SensorableConstants.WEAR_SENDS_SENSOR_DATA));
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                dataReceiver,
+                new IntentFilter(SensorableConstants.SENSORS_PROVIDER_SENDS_SENSORS));
     }
 
     private void detectAdls(ArrayList<SensorTransmissionCoder.SensorMessage> data) {

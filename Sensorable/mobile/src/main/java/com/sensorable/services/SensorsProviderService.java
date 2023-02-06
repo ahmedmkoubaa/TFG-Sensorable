@@ -138,7 +138,7 @@ public class SensorsProviderService extends Service {
     }
 
     private void broadcastSensorMessages(int sensorType, float[] values) {
-        broadcastSensorMessages(new SensorTransmissionCoder.SensorMessage(DeviceType.EMPATICA, sensorType, values));
+        broadcastSensorMessages(new SensorTransmissionCoder.SensorMessage(DeviceType.MOBILE, sensorType, values));
     }
 
     @Nullable

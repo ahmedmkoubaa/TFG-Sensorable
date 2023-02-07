@@ -46,10 +46,6 @@
         android:theme="@style/Theme.MyApplication"
         tools:replace="android:theme">
         <service
-            android:name=".services.DataCollectorService"
-            android:enabled="true"
-            android:exported="true"></service>
-        <service
             android:name=".services.ManagerService"
             android:enabled="true"
             android:exported="true" />
@@ -65,7 +61,7 @@
         <activity android:name=".activities.ActivitiesRegisterActivity" />
 
         <service
-            android:name=".services.BackUpService"
+            android:name=".services.StorageService"
             android:enabled="true"
             android:exported="true" />
         <service

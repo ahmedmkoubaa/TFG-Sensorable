@@ -4,7 +4,6 @@ import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
@@ -16,6 +15,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import com.commons.OperatorType;
 import com.commons.SensorTransmissionCoder;
 import com.commons.SensorableConstants;
+import com.commons.SensorableIntentFilters;
 import com.commons.database.AdlDao;
 import com.commons.database.AdlEntity;
 import com.commons.database.AdlRegistryDao;
@@ -41,14 +41,12 @@ import java.util.function.Consumer;
 
 public class AdlDetectionService extends Service {
     private final ArrayList<SensorTransmissionCoder.SensorMessage> sensorDataBuffer = new ArrayList<>();
-    private BroadcastReceiver dataReceiver;
-
     private final ArrayList<EventEntity> events = new ArrayList<>();
     private final ArrayList<EventForAdlEntity> eventsForAdls = new ArrayList<>();
     private final ArrayList<AdlEntity> adls = new ArrayList<>();
     private final ArrayList<KnownLocationEntity> knownLocations = new ArrayList<>();
     private final HashMap<Integer, HashMap<Integer, ArrayList<Pair<Integer, Boolean>>>> databaseAdls = new HashMap<>();
-
+    private BroadcastReceiver dataReceiver;
     private EventDao eventDao;
     private AdlDao adlDao;
     private EventForAdlDao eventForAdlDao;
@@ -305,17 +303,14 @@ public class AdlDetectionService extends Service {
             }
         };
 
-        LocalBroadcastManager.getInstance(this).registerReceiver(
-                dataReceiver,
-                new IntentFilter(SensorableConstants.EMPATICA_SENDS_SENSOR_DATA));
+        LocalBroadcastManager.getInstance(this).
+                registerReceiver(dataReceiver, SensorableIntentFilters.EMPATICA_SENSORS);
 
-        LocalBroadcastManager.getInstance(this).registerReceiver(
-                dataReceiver,
-                new IntentFilter(SensorableConstants.WEAR_SENDS_SENSOR_DATA));
+        LocalBroadcastManager.getInstance(this).
+                registerReceiver(dataReceiver, SensorableIntentFilters.WEAR_SENSORS);
 
-        LocalBroadcastManager.getInstance(this).registerReceiver(
-                dataReceiver,
-                new IntentFilter(SensorableConstants.SENSORS_PROVIDER_SENDS_SENSORS));
+        LocalBroadcastManager.getInstance(this).
+                registerReceiver(dataReceiver, SensorableIntentFilters.MOBILE_SENSORS);
     }
 
     private void detectAdls(ArrayList<SensorTransmissionCoder.SensorMessage> data) {
@@ -346,7 +341,7 @@ public class AdlDetectionService extends Service {
                         operation = switchOperation(e.operator);
 
                         if (operation != null) {
-                            evaluatedEvents.put( e.id, switchOperate(operation, s.getValue(), e));
+                            evaluatedEvents.put(e.id, switchOperate(operation, s.getValue(), e));
 
                         } else {
                             Log.i("ADL_DETECTION_SERVICE", "null operation, operator bad specified");

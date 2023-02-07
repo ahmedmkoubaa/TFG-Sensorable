@@ -35,7 +35,7 @@ public class SensorableConstants {
     public final static int COLLECTED_SENSOR_DATA_SIZE = 1024;
     public final static int WEAR_BUFFER_SIZE = 1024;
     public final static int EMPATICA_BUFFER_SIZE = 128;
-    public final static int SENSORS_PROVIDER_SERVICE_BUFFER_SIZE = 128;
+    public final static int SENSORS_PROVIDER_SERVICE_BUFFER_SIZE = 512;
 
     // for mobile database
     public final static String MOBILE_DATABASE_NAME = "default-mobile-database";
@@ -82,4 +82,7 @@ public class SensorableConstants {
     public static final String LOGIN_DONE = "login_done";
     public static final String USER_SESSION_CODE = "user_session_code";
     public static final int MAX_WEAR_OS_LOGGER_ELEMENTS = 3;
+
+    // for sensors shown in screen
+    public static final double DISTANCE_OF_STEP_IN_M = 0.5;
 }

@@ -4,7 +4,6 @@ import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
@@ -16,6 +15,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import com.commons.OperatorType;
 import com.commons.SensorTransmissionCoder;
 import com.commons.SensorableConstants;
+import com.commons.SensorableIntentFilters;
 import com.commons.database.AdlDao;
 import com.commons.database.AdlEntity;
 import com.commons.database.AdlRegistryDao;
@@ -40,12 +40,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 
 public class AdlDetectionService extends Service {
+    private final ArrayList<SensorTransmissionCoder.SensorMessage> sensorDataBuffer = new ArrayList<>();
     private final ArrayList<EventEntity> events = new ArrayList<>();
     private final ArrayList<EventForAdlEntity> eventsForAdls = new ArrayList<>();
     private final ArrayList<AdlEntity> adls = new ArrayList<>();
     private final ArrayList<KnownLocationEntity> knownLocations = new ArrayList<>();
     private final HashMap<Integer, HashMap<Integer, ArrayList<Pair<Integer, Boolean>>>> databaseAdls = new HashMap<>();
-
+    private BroadcastReceiver dataReceiver;
     private EventDao eventDao;
     private AdlDao adlDao;
     private EventForAdlDao eventForAdlDao;
@@ -80,7 +81,7 @@ public class AdlDetectionService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        initializeMobileReceiver();
+        initializeDataReceiver();
         initializeMobileDatabase();
         initializeMqttClient();
 
@@ -285,18 +286,31 @@ public class AdlDetectionService extends Service {
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
-    private void initializeMobileReceiver() {
-        LocalBroadcastManager.getInstance(this).registerReceiver(
-                new BroadcastReceiver() {
-                    @Override
-                    public void onReceive(Context context, Intent intent) {
-                        Bundle b = intent.getBundleExtra(SensorableConstants.EXTRA_MESSAGE);
-                        ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage = b.getParcelableArrayList(SensorableConstants.BROADCAST_MESSAGE);
-                        detectAdls(arrayMessage);
+    private void initializeDataReceiver() {
+        dataReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Bundle b = intent.getBundleExtra(SensorableConstants.EXTRA_MESSAGE);
+                ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage = b.getParcelableArrayList(SensorableConstants.BROADCAST_MESSAGE);
 
-                        Log.i("ADL_DETECTION_SERVICE", "received new data from mobile " + arrayMessage.size());
-                    }
-                }, new IntentFilter(SensorableConstants.MOBILE_SENDS_SENSOR_DATA));
+                sensorDataBuffer.addAll(arrayMessage);
+                if (sensorDataBuffer.size() > SensorableConstants.COLLECTED_SENSOR_DATA_SIZE) {
+                    detectAdls(sensorDataBuffer);
+                    sensorDataBuffer.clear();
+                }
+
+                Log.i("ADL_DETECTION_SERVICE", "received new data " + arrayMessage.size());
+            }
+        };
+
+        LocalBroadcastManager.getInstance(this).
+                registerReceiver(dataReceiver, SensorableIntentFilters.EMPATICA_SENSORS);
+
+        LocalBroadcastManager.getInstance(this).
+                registerReceiver(dataReceiver, SensorableIntentFilters.WEAR_SENSORS);
+
+        LocalBroadcastManager.getInstance(this).
+                registerReceiver(dataReceiver, SensorableIntentFilters.MOBILE_SENSORS);
     }
 
     private void detectAdls(ArrayList<SensorTransmissionCoder.SensorMessage> data) {
@@ -327,7 +341,7 @@ public class AdlDetectionService extends Service {
                         operation = switchOperation(e.operator);
 
                         if (operation != null) {
-                            evaluatedEvents.put( e.id, switchOperate(operation, s.getValue(), e));
+                            evaluatedEvents.put(e.id, switchOperate(operation, s.getValue(), e));
 
                         } else {
                             Log.i("ADL_DETECTION_SERVICE", "null operation, operator bad specified");

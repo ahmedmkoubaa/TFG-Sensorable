@@ -12,7 +12,6 @@ import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import com.commons.OperatorType;
 import com.commons.SensorTransmissionCoder;
 import com.commons.SensorableConstants;
 import com.commons.SensorableIntentFilters;
@@ -27,13 +26,13 @@ import com.commons.database.EventForAdlEntity;
 import com.commons.database.KnownLocationDao;
 import com.commons.database.KnownLocationEntity;
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
+import com.sensorable.utils.TablesFormatter;
 import com.sensorable.utils.MobileDatabase;
 import com.sensorable.utils.MobileDatabaseBuilder;
 import com.sensorable.utils.MqttHelper;
-import com.sensorable.utils.SensorAction;
+import com.sensorable.utils.SensorOperations;
 
 import java.util.ArrayList;
-import java.util.ConcurrentModificationException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
@@ -54,33 +53,8 @@ public class AdlDetectionService extends Service {
     private AdlRegistryDao adlRegistryDao;
     private ExecutorService executor;
 
-    private static boolean equal(float leftOperand, float rightOperand) {
-        return leftOperand == rightOperand;
-    }
-
-    private static boolean notEqual(float leftOperand, float rightOperand) {
-        return leftOperand != rightOperand;
-    }
-
-    private static boolean greaterEqual(float leftOperand, float rightOperand) {
-        return leftOperand >= rightOperand;
-    }
-
-    private static boolean lessEqual(float leftOperand, float rightOperand) {
-        return leftOperand <= rightOperand;
-    }
-
-    private static boolean greater(float leftOperand, float rightOperand) {
-        return leftOperand > rightOperand;
-    }
-
-    private static boolean less(float leftOperand, float rightOperand) {
-        return leftOperand < rightOperand;
-    }
-
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-
         initializeDataReceiver();
         initializeMobileDatabase();
         initializeMqttClient();
@@ -91,47 +65,35 @@ public class AdlDetectionService extends Service {
         return super.onStartCommand(intent, flags, startId);
     }
 
-    private HashMap<Integer, HashMap<Integer, ArrayList<Pair<Integer, Boolean>>>> deepDatabaseAdlsCopy() {
-        HashMap<Integer, HashMap<Integer, ArrayList<Pair<Integer, Boolean>>>> copiedAdls = new HashMap<>();
-
-        try {
-            databaseAdls.forEach((idAdl, eventsWithVersion) -> {
-                HashMap<Integer, ArrayList<Pair<Integer, Boolean>>> copiedAdl = new HashMap<>();
-
-                eventsWithVersion.forEach((version, events) -> {
-                    copiedAdl.put(version, new ArrayList<>(events));
-                });
-
-                copiedAdls.put(idAdl, copiedAdl);
-            });
-        } catch (ConcurrentModificationException e) {
-            Log.e("ADL_DETECTION_SERVICE", "Error, concurrent modification error in deep database copy");
-        }
-
-        return copiedAdls;
-    }
-
-
+    // Subscribe to MQTT broker and request the ADLs scheme
     private void initializeMqttClient() {
         Log.i("MQTT_RECEIVE_ADLS", "before connection");
 
+        // Each time we initialize this service is necessary to retrieve data from the remote database
+        // so we establish a connection via MQTT, if this connection doesn't work properly, then we use
+        // the previous stored data
         if (MqttHelper.connect()) {
-            final Consumer<Mqtt5Publish> handleAdlsScheme = mqtt5Publish -> {
-                String payload = new String(mqtt5Publish.getPayloadAsBytes());
-                String[] tables = payload.split(SensorableConstants.JSON_TABLES_SEPARATOR);
+            final Consumer<Mqtt5Publish> handleAdlsScheme = payload -> {
+                String[] tables = TablesFormatter.getTables(payload);
 
+                try {
+                    updateADLsScheme(
+                            TablesFormatter.composeTableAdls((tables[0])),
+                            TablesFormatter.composeTableEvents((tables[1])),
+                            TablesFormatter.composeTableEventsForAdls((tables[2]))
+                    );
+                } catch (NullPointerException e) {
+                    Log.e("MQTT RECEIVE ADLS", e.getMessage());
+                }
 
-                updateDatabase(
-                        composeTableAdls(removeFirstAndLastChar(tables[0])),
-                        composeTableEvents(removeFirstAndLastChar(tables[1])),
-                        composeTableEventsForAdls(removeFirstAndLastChar(tables[2]))
-                );
-
-                Log.i("MQTT_RECEIVE_ADLS", "new content " + payload);
+                Log.i("MQTT_RECEIVE_ADLS", "new adls scheme received");
             };
 
             // ask for new adls scheme
             String session = null;
+
+            // If there is a current session, then we'll communicate via our own response topic
+            // in order to get our custom ADLs, in other case we'll subscribe to the generic adls topic
             if (session != null) {
                 String responseTopic = SensorableConstants.MQQTT_INFORM_CUSTOM_ADLS + "/" + session;
 
@@ -146,15 +108,16 @@ public class AdlDetectionService extends Service {
                 MqttHelper.publish(SensorableConstants.MQTT_REQUEST_GENERIC_ADLS);
             }
         } else {
-            executor.execute((() -> loadAdlsScheme()));
+            // Use local stored data when it's not possible to connect to the remote server
+            loadAdlsScheme();
         }
     }
 
-    private String removeFirstAndLastChar(String someString) {
-        return someString.substring(1, someString.length() - 1);
-    }
-
-    private void updateDatabase(final ArrayList<AdlEntity> adlEntities, final ArrayList<EventEntity> eventEntities, final ArrayList<EventForAdlEntity> eventsForAdlsEntities) {
+    // Remove the previous adls scheme in database and save the new in order to have
+    // the new version received from the remote DB
+    private void updateADLsScheme(final ArrayList<AdlEntity> adlEntities,
+                                  final ArrayList<EventEntity> eventEntities,
+                                  final ArrayList<EventForAdlEntity> eventsForAdlsEntities) {
         executor.execute(() -> {
             adlDao.deleteAll();
             eventDao.deleteAll();
@@ -168,65 +131,8 @@ public class AdlDetectionService extends Service {
         });
     }
 
-    private ArrayList<AdlEntity> composeTableAdls(final String stringAdls) {
-        ArrayList<AdlEntity> adlEntities = new ArrayList<>();
-        String[] fields;
 
-        for (String r : stringAdls.split(SensorableConstants.JSON_ROWS_SEPARATOR)) {
-            fields = r.split(SensorableConstants.JSON_FIELDS_SEPARATOR);
-            adlEntities.add(new AdlEntity(Integer.parseInt(fields[0]), fields[1], fields[2]));
-            Log.i("MQTT_RECEIVE_ADLS", "new row is" + r);
-        }
-
-        return adlEntities;
-    }
-
-    private ArrayList<EventEntity> composeTableEvents(final String stringEvents) {
-        ArrayList<EventEntity> eventEntities = new ArrayList<>();
-        String[] fields;
-
-        for (String r : stringEvents.split(SensorableConstants.JSON_ROWS_SEPARATOR)) {
-            fields = r.split(SensorableConstants.JSON_FIELDS_SEPARATOR);
-            eventEntities.add(
-                    new EventEntity(
-                            Integer.parseInt(fields[0]),
-                            Integer.parseInt(fields[1]),
-                            Integer.parseInt(fields[2]),
-                            Integer.parseInt(fields[3]),
-                            OperatorType.valueOf(fields[4]),
-                            Float.parseFloat(fields[5]),
-                            fields[6]
-                    )
-            );
-
-            Log.i("MQTT_RECEIVE_ADLS", "new row is" + r);
-        }
-
-        return eventEntities;
-    }
-
-    private ArrayList<EventForAdlEntity> composeTableEventsForAdls(final String stringEventsForAdls) {
-        ArrayList<EventForAdlEntity> eventsForAdlsEntities = new ArrayList<>();
-        String[] fields;
-
-        for (String r : stringEventsForAdls.split(SensorableConstants.JSON_ROWS_SEPARATOR)) {
-            fields = r.split(SensorableConstants.JSON_FIELDS_SEPARATOR);
-            eventsForAdlsEntities.add(
-                    new EventForAdlEntity(
-                            Integer.parseInt(fields[0]),
-                            Integer.parseInt(fields[1]),
-                            Integer.parseInt(fields[2]),
-                            Integer.parseInt(fields[3])
-                    )
-            );
-
-            Log.i("MQTT_RECEIVE_ADLS", "new row is" + r);
-        }
-
-        return eventsForAdlsEntities;
-    }
-
-    // initialize data structures from the database
+    // Initialize data structures from the database
     private void initializeMobileDatabase() {
         MobileDatabase database = MobileDatabaseBuilder.getDatabase(this);
 
@@ -240,52 +146,44 @@ public class AdlDetectionService extends Service {
         executor = MobileDatabaseBuilder.getExecutor();
     }
 
-    // it does a query to local database and extract from it the data storing it in memory
+    // It does a query to local database and extract from it the data storing it in memory
     // data structures to manage it faster and more efficiently
     private void loadAdlsScheme() {
+        executor.execute((() -> {
+            events.clear();
+            adls.clear();
+            eventsForAdls.clear();
 
-        events.clear();
-        adls.clear();
-        eventsForAdls.clear();
+            events.addAll(eventDao.getAll());
+            adls.addAll(adlDao.getAll());
+            eventsForAdls.addAll(eventForAdlDao.getAll());
 
-        events.addAll(eventDao.getAll());
-        adls.addAll(adlDao.getAll());
-        eventsForAdls.addAll(eventForAdlDao.getAll());
+            // generation of data structure to evaluate adls
+            adls.forEach(adlEntity -> {
+                HashMap<Integer, ArrayList<Pair<Integer, Boolean>>> adlVersions = new HashMap<>();
 
-        // generation of data structure to evaluate adls
-        adls.forEach(adlEntity -> {
-            HashMap<Integer, ArrayList<Pair<Integer, Boolean>>> adlVersions = new HashMap<>();
+                eventsForAdls.forEach(eventForAdlEntity -> {
+                    if (eventForAdlEntity.idAdl == adlEntity.id) {
 
-            eventsForAdls.forEach(eventForAdlEntity -> {
-                if (eventForAdlEntity.idAdl == adlEntity.id) {
+                        int version = eventForAdlEntity.version;
+                        if (!adlVersions.containsKey(version)) {
+                            adlVersions.put(version, new ArrayList<>());
+                        }
 
-                    int version = eventForAdlEntity.version;
-                    if (!adlVersions.containsKey(version)) {
-                        adlVersions.put(version, new ArrayList<>());
+                        adlVersions
+                                .get(version)
+                                .add(new Pair<>(eventForAdlEntity.idEvent, false));
                     }
+                });
 
-                    adlVersions
-                            .get(version)
-                            .add(new Pair<>(eventForAdlEntity.idEvent, false));
-                }
+                databaseAdls.put(adlEntity.id, adlVersions);
             });
 
-            databaseAdls.put(adlEntity.id, adlVersions);
-        });
-
-        knownLocations.addAll(knownLocationDao.getAll());
+            knownLocations.addAll(knownLocationDao.getAll());
+        }));
     }
 
-    private void sendMessageToActivity(String msg) {
-        Intent intent = new Intent(SensorableConstants.ADL_UPDATE);
-
-        Bundle empaticaBundle = new Bundle();
-        empaticaBundle.putString(SensorableConstants.BROADCAST_MESSAGE, msg);
-
-        intent.putExtra(SensorableConstants.EXTRA_MESSAGE, empaticaBundle);
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
-    }
-
+    // This service receives via broadcasting communication the raw data got by the sensors
     private void initializeDataReceiver() {
         dataReceiver = new BroadcastReceiver() {
             @Override
@@ -326,7 +224,7 @@ public class AdlDetectionService extends Service {
 
     private HashMap<Integer, Boolean> evaluateEvents(HashMap<Long, ArrayList<SensorTransmissionCoder.SensorMessage>> filteredData) {
         HashMap<Integer, Boolean> evaluatedEvents = new HashMap<>();
-        SensorOperation operation;
+        SensorOperations.SensorOperation operation;
 
         for (EventEntity e : events) {
             for (long timestamp : filteredData.keySet()) {
@@ -338,10 +236,10 @@ public class AdlDetectionService extends Service {
                     // evaluate the events
                     // TODO remember to check the device type
                     if (s.getSensorType() == e.sensorType) {
-                        operation = switchOperation(e.operator);
+                        operation = SensorOperations.switchOperation(e.operator);
 
                         if (operation != null) {
-                            evaluatedEvents.put(e.id, switchOperate(operation, s.getValue(), e));
+                            evaluatedEvents.put(e.id, SensorOperations.switchOperate(operation, s.getValue(), e, knownLocations));
 
                         } else {
                             Log.i("ADL_DETECTION_SERVICE", "null operation, operator bad specified");
@@ -354,76 +252,7 @@ public class AdlDetectionService extends Service {
         return evaluatedEvents;
     }
 
-    private boolean switchOperate(SensorOperation operation, float[] values, EventEntity e) {
-        switch (e.pos) {
-            case SensorAction.FIRST:
-            case SensorAction.SECOND:
-            case SensorAction.THIRD:
-                return operation.operate(values[e.pos], e.operand);
-
-            case SensorAction.DISTANCE:
-                // Let's look for the desired location
-                for (KnownLocationEntity k : knownLocations) {
-                    if (k.tag.equals(e.tag)) {
-
-                        // calculate 3d distance from current gps value (in s) and the known location whose tag fits
-                        float distance = (float) Math.sqrt(
-                                Math.pow(values[0] - k.altitude, 2) +
-                                        Math.pow(values[1] - k.latitude, 2) +
-                                        Math.pow(values[2] - k.longitude, 2)
-                        );
-
-                        // when a true case is found, the loop is finished
-                        if (operation.operate(distance, e.operand)) {
-                            return true;
-                        }
-                    }
-                }
-
-                return false;
-
-            case SensorAction.ANY:
-                return operation.operate(values[0], e.operand) ||
-                        operation.operate(values[1], e.operand) ||
-                        operation.operate(values[2], e.operand);
-
-
-            case SensorAction.ALL:
-                return operation.operate(values[0], e.operand) &&
-                        operation.operate(values[1], e.operand) &&
-                        operation.operate(values[2], e.operand);
-            default:
-                Log.i("ADL_DETECTION_SERVICE", "received a non expected position in switchOperate");
-                return false;
-        }
-    }
-
-    private SensorOperation switchOperation(OperatorType operator) {
-        switch (operator) {
-            case EQUAL:
-                return AdlDetectionService::equal;
-
-            case NOT_EQUAL:
-                return AdlDetectionService::notEqual;
-
-            case LESS:
-                return AdlDetectionService::less;
-
-            case LESS_EQUAL:
-                return AdlDetectionService::lessEqual;
-
-            case GREATER:
-                return AdlDetectionService::greater;
-
-            case GREATER_EQUAL:
-                return AdlDetectionService::greaterEqual;
-
-            default:
-                Log.i("ADL_DETECTION_SERVICE", "not recognized operand, something went wrong");
-                return null;
-        }
-    }
-
+    // After detecting the events this method detects the adls checking the sequence of events
     private void evaluateAdls(HashMap<Integer, Boolean> evaluatedEvents) {
         // let's take from database adls the events registry owned by each adl
         for (int idCurrentAdl : databaseAdls.keySet()) {
@@ -506,7 +335,6 @@ public class AdlDetectionService extends Service {
         });
     }
 
-
     private HashMap<Long, ArrayList<SensorTransmissionCoder.SensorMessage>> filterData(ArrayList<SensorTransmissionCoder.SensorMessage> data) {
         long floorTimestamp;
 
@@ -564,10 +392,5 @@ public class AdlDetectionService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         return null;
-    }
-
-    @FunctionalInterface
-    private interface SensorOperation {
-        boolean operate(float leftOperand, float rightOperand);
     }
 }

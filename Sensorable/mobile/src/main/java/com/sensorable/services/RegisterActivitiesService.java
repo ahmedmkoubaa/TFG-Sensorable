@@ -4,7 +4,6 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
@@ -16,6 +15,7 @@ import com.commons.database.ActivityStepEntity;
 import com.commons.database.StepsForActivitiesDao;
 import com.commons.database.StepsForActivitiesEntity;
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
+import com.sensorable.utils.TablesFormatter;
 import com.sensorable.utils.MobileDatabase;
 import com.sensorable.utils.MobileDatabaseBuilder;
 import com.sensorable.utils.MqttHelper;
@@ -38,7 +38,6 @@ public class RegisterActivitiesService extends Service {
 
         Log.i("ADL_DETECTION_SERVICE", "initialized adl detection service");
 
-
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -46,19 +45,20 @@ public class RegisterActivitiesService extends Service {
         Log.i("MQTT_RECEIVE_ACTIVITIES", "before connection");
 
         if (MqttHelper.connect()) {
-            final Consumer<Mqtt5Publish> handleReceivedActivities = mqtt5Publish -> {
-                String payload = new String(mqtt5Publish.getPayloadAsBytes());
-                String[] tables = payload.split(SensorableConstants.JSON_TABLES_SEPARATOR);
+            final Consumer<Mqtt5Publish> handleReceivedActivities = payload -> {
+                String[] tables = TablesFormatter.getTables(payload);
 
-                if (tables.length > 2) {
-                    updateDatabase(
-                            composeTableActivities(removeFirstAndLastChar(tables[0])),
-                            composeTableSteps(removeFirstAndLastChar(tables[1])),
-                            composeTableStepsForActivities(removeFirstAndLastChar(tables[2]))
+                try {
+                    updateActivityRegistries(
+                            TablesFormatter.composeTableActivities(tables[0]),
+                            TablesFormatter.composeTableSteps(tables[1]),
+                            TablesFormatter.composeTableStepsForActivities(tables[2])
                     );
+                } catch(NullPointerException e) {
+                    Log.e("REGISTER ACTIVITIES", e.getMessage());
                 }
 
-                Log.i("MQTT_RECEIVE_ADLS", "new content " + payload);
+                Log.i("REGISTER ACTIVITIES", "Received new activities to register");
             };
 
             MqttHelper.subscribe(SensorableConstants.MQTT_INFORM_ACTIVITIES, handleReceivedActivities);
@@ -66,68 +66,22 @@ public class RegisterActivitiesService extends Service {
         }
     }
 
-    private void updateDatabase(ArrayList<ActivityEntity> activities,
-                                ArrayList<ActivityStepEntity> steps,
-                                ArrayList<StepsForActivitiesEntity> stepsForActivities) {
+    // Remove the previous adls scheme in database and save the new in order to have
+    // the new version received from the remote DB
+    private void updateActivityRegistries(final ArrayList<ActivityEntity> activitiesEntities,
+                                          final ArrayList<ActivityStepEntity> stepsEntities,
+                                          final ArrayList<StepsForActivitiesEntity> stepsForactivityEntities) {
         executor.execute(() -> {
             activityDao.deleteAll();
             activityStepDao.deleteAll();
             stepsForActivitiesDao.deleteAll();
 
-            activityDao.insertAll(activities);
-            activityStepDao.insertAll(steps);
-            stepsForActivitiesDao.insertAll(stepsForActivities);
+            activityDao.insertAll(activitiesEntities);
+            activityStepDao.insertAll(stepsEntities);
+            stepsForActivitiesDao.insertAll(stepsForactivityEntities);
         });
     }
 
-    private ArrayList<ActivityEntity> composeTableActivities(final String activities) {
-        ArrayList<ActivityEntity> activityEntities = new ArrayList<>();
-        String[] fields;
-
-        for (String r : activities.split(SensorableConstants.JSON_ROWS_SEPARATOR)) {
-            fields = r.split(SensorableConstants.JSON_FIELDS_SEPARATOR);
-            activityEntities.add(new ActivityEntity(Integer.parseInt(fields[0]), fields[1], fields[2]));
-
-        }
-
-        return activityEntities;
-    }
-
-    private ArrayList<ActivityStepEntity> composeTableSteps(final String steps) {
-        ArrayList<ActivityStepEntity> stepsEntities = new ArrayList<>();
-        String[] fields;
-
-        for (String r : steps.split(SensorableConstants.JSON_ROWS_SEPARATOR)) {
-            fields = r.split(SensorableConstants.JSON_FIELDS_SEPARATOR);
-            stepsEntities.add(new ActivityStepEntity(Integer.parseInt(fields[0]), fields[1]));
-
-        }
-
-        return stepsEntities;
-
-    }
-
-    private ArrayList<StepsForActivitiesEntity> composeTableStepsForActivities(final String stepsForActivities) {
-        ArrayList<StepsForActivitiesEntity> stepsForActivitieEntities = new ArrayList<>();
-        String[] fields;
-
-        for (String r : stepsForActivities.split(SensorableConstants.JSON_ROWS_SEPARATOR)) {
-            fields = r.split(SensorableConstants.JSON_FIELDS_SEPARATOR);
-            stepsForActivitieEntities.add(
-                    new StepsForActivitiesEntity(
-                            Integer.parseInt(fields[0]), Integer.parseInt(fields[1]), Integer.parseInt(fields[2])
-                    )
-            );
-
-        }
-
-        return stepsForActivitieEntities;
-    }
-
-
-    private String removeFirstAndLastChar(String someString) {
-        return someString.substring(1, someString.length() - 1);
-    }
 
     // initialize data structures from the database
     private void initializeMobileDatabase() {

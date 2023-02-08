@@ -54,7 +54,7 @@ public class SensorOperations {
                 return SensorOperations::greaterEqual;
 
             default:
-                Log.i("ADL_DETECTION_SERVICE", "not recognized operand, something went wrong");
+                Log.i("SensorOperations", "not recognized operand, something went wrong");
                 return null;
         }
     }
@@ -98,7 +98,7 @@ public class SensorOperations {
                         operation.operate(values[1], e.operand) &&
                         operation.operate(values[2], e.operand);
             default:
-                Log.i("ADL_DETECTION_SERVICE", "received a non expected position in switchOperate");
+                Log.e("SensorOperations", "received a non expected position in switchOperate");
                 return false;
         }
     }

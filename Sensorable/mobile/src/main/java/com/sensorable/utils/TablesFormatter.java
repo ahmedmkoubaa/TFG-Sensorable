@@ -87,7 +87,6 @@ public class TablesFormatter {
         for (String r : stringAdls.split(SensorableConstants.JSON_ROWS_SEPARATOR)) {
             fields = r.split(SensorableConstants.JSON_FIELDS_SEPARATOR);
             adlEntities.add(new AdlEntity(Integer.parseInt(fields[0]), fields[1], fields[2]));
-            Log.i("MQTT_RECEIVE_ADLS", "new row is" + r);
         }
 
         return adlEntities;
@@ -110,8 +109,6 @@ public class TablesFormatter {
                             fields[6]
                     )
             );
-
-            Log.i("MQTT_RECEIVE_ADLS", "new row is" + r);
         }
 
         return eventEntities;
@@ -131,8 +128,6 @@ public class TablesFormatter {
                             Integer.parseInt(fields[3])
                     )
             );
-
-            Log.i("MQTT_RECEIVE_ADLS", "new row is" + r);
         }
 
         return eventsForAdlsEntities;

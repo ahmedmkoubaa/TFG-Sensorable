@@ -1,6 +1,7 @@
 package com.commons.database;
 
 import androidx.room.Dao;
+import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
@@ -25,4 +26,7 @@ public interface SensorMessageDao {
 
     @Query("DELETE FROM SensorMessageEntity")
     void deleteAll();
+
+    @Delete
+    void deleteAll(List<SensorMessageEntity> sensors);
 }

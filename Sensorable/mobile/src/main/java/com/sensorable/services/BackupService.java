@@ -24,8 +24,10 @@ import com.sensorable.utils.MqttHelper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
-public class StorageService extends Service {
+public class BackupService extends Service {
     private final Handler handler = new Handler();
     private SensorMessageDao sensorMessageDao;
     private ExecutorService executor;
@@ -79,7 +81,7 @@ public class StorageService extends Service {
     }
 
     private void initializeMobileDatabase() {
-        sensorMessageDao = MobileDatabaseBuilder.getDatabase(StorageService.this).sensorMessageDao();
+        sensorMessageDao = MobileDatabaseBuilder.getDatabase(BackupService.this).sensorMessageDao();
         executor = MobileDatabaseBuilder.getExecutor();
     }
 
@@ -100,46 +102,53 @@ public class StorageService extends Service {
     // This function sends data in chunks via mqtt to remote services
     private void sendDataToMqttBroker() {
         // establish connection with the mqtt broker
-        MqttHelper.connect();
+        if (MqttHelper.connect()) {
+            executor.execute(() -> {
+                try {
+                    final List<SensorMessageEntity> sensorsData = sensorMessageDao.getAll();
 
-        executor.execute(() -> {
-            List<SensorMessageEntity> sensorsData = null;
+                    // Partition the sensors data in chunks and backup them to the remote database
+                    if (sensorsData != null && !sensorsData.isEmpty()) {
+                        // Necessary to avoid concurrent errors while iterating
+                        final AtomicInteger counter = new AtomicInteger();
+                        final int chunkSize = (int)(Math.ceil(sensorsData.size() / SensorableConstants.BACKUP_PART_SIZE));
 
-            try {
-                // retrieve all data from local database
-                sensorsData = sensorMessageDao.getAll();
-            } catch (Exception e) {
-                Log.i("Sensors-back-up-service", "error getting the sensorMessageDao");
-            }
+                        sensorsData.stream()
+                                .collect(Collectors.groupingBy(it -> counter.getAndIncrement() % chunkSize))
+                                .values()
+                                .forEach(s -> backupSensorData(s));
 
-            // check if there is data to send
-            if (sensorsData != null && !sensorsData.isEmpty()) {
-
-                // split data in chunks to send them easily
-                final double parts = Math.ceil(sensorsData.size() / SensorableConstants.BACKUP_PART_SIZE);
-
-                for (int j = 1; j <= parts; j++) {
-                    String payload = "[ ";
-
-                    for (int i = (int) ((j - 1) * parts); i < sensorsData.size() && i < j * SensorableConstants.BACKUP_PART_SIZE; i++) {
-                        payload += sensorsData.get(i).toJson() + ",";
+                    } else {
+                        Log.i("BACK UP SERVICE", "no rows to back up, see you soon");
                     }
-
-                    payload = payload.substring(0, payload.length() - 1) + "]";
-
-                    MqttHelper.publish(SensorableConstants.MQTT_SENSORS_INSERT, payload.getBytes());
-                    Log.i("BACK UP SERVICE", payload);
+                } catch (Exception e) {
+                    Log.i("Sensors-back-up-service", "error getting the sensorMessageDao");
                 }
+            });
+        } else {
+            Log.e("BACK_UP_SERVICE", "No internet connection awaiting for it");
+        }
+    }
 
-                // delete all the sent data
-                sensorMessageDao.deleteAll();
-            } else {
-                Log.i("BACK UP SERVICE", "no rows to back up, see you soon");
-            }
+    // This method sends the passed sensors data to the mqtt broker to save it in the remote database
+    // if the back service response to the proposed responseTopic then it was correctly done and it
+    // proceeds the remove the sent data of the local database
+    private void backupSensorData(final List<SensorMessageEntity> sensorsData) {
+        // Generate the responseTopic to receive the response confirmation of data correctly saved in remote database
+        final String responseTopic =
+                SensorableConstants.MQTT_SENSORS_INSERT +
+                        SensorableConstants.JSON_FIELDS_SEPARATOR +
+                        LoginHelper.getUserCode(this) + System.currentTimeMillis();
 
+        // Subscribe to the responseTopic delete users if its all correct and unsubscribe of it
+        MqttHelper.subscribe(responseTopic, message -> {
+            sensorMessageDao.deleteAll(sensorsData);
+            MqttHelper.unsubscribe(responseTopic);
         });
 
-
+        // Generate the string message and send
+        String payload = "[" + sensorsData.stream().map(SensorMessageEntity::toJson).collect(Collectors.joining(",")) + "]";
+        MqttHelper.publish(SensorableConstants.MQTT_SENSORS_INSERT, payload.getBytes(), responseTopic);
     }
 
     @Nullable

@@ -6,8 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 
-import com.sensorable.MainActivity;
-
 public class ManagerService extends Service {
 
     @Override
@@ -64,7 +62,7 @@ public class ManagerService extends Service {
     }
 
     private void initializeBackUpService() {
-        initializeService(StorageService.class);
+        initializeService(BackupService.class);
     }
 
     private void initializeRegisterActivitiesService() {

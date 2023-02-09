@@ -10,6 +10,8 @@ import com.hivemq.client.mqtt.mqtt5.Mqtt5AsyncClient;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5Client;
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
 import com.hivemq.client.mqtt.mqtt5.message.subscribe.Mqtt5RetainHandling;
+import com.hivemq.client.mqtt.mqtt5.message.unsubscribe.Mqtt5Unsubscribe;
+import com.hivemq.client.mqtt.mqtt5.message.unsubscribe.unsuback.Mqtt5UnsubAck;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -36,7 +38,6 @@ public class MqttHelper {
             }
             Log.i("MQTT", "client not connected, trying to connect");
         }
-
         return true;
     }
 
@@ -51,6 +52,12 @@ public class MqttHelper {
         for (String topic : topics) {
             subscribe(topic, callback);
         }
+    }
+
+    public static void unsubscribe(final String topic) {
+        // Create an Mqtt5Unsubscribe instance for the topic you want to unsubscribe from
+
+        client.unsubscribe(Mqtt5Unsubscribe.builder().topicFilter(topic).build());
     }
 
     public static void subscribe(String topic, Consumer<Mqtt5Publish> callback) {
@@ -68,10 +75,6 @@ public class MqttHelper {
                         Log.i("MQTT", throwable == null ? "success in susbcribe" : throwable.getMessage())
                 )
                 .thenAccept(mqtt5SubAck -> Log.i("MQTT", "subscribed to topic " + topic));
-    }
-
-    public static void unsubscribe(final String topic) {
-        client.toAsync().unsubscribeWith().topicFilter(topic).send();
     }
 
     public static void publish() {

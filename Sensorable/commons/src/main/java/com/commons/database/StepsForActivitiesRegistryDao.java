@@ -16,8 +16,8 @@ public interface StepsForActivitiesRegistryDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertAll(ArrayList<StepsForActivitiesRegistryEntity> stepsRegistries);
 
-    @Query("DELETE FROM StepsForActivitiesRegistryEntity")
-    void deleteAll();
+   /* @Query("DELETE FROM StepsForActivitiesRegistryEntity")
+    void deleteAll();*/
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(StepsForActivitiesRegistryEntity stepsRegistries);

@@ -15,7 +15,7 @@ import androidx.room.PrimaryKey;
                 parentColumns = "id",
                 childColumns = "id_step",
                 onDelete = ForeignKey.CASCADE)
-})
+}, tableName = "StepsForActivitiesRegistryEntity")
 public class StepsForActivitiesRegistryEntity {
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")
@@ -28,7 +28,6 @@ public class StepsForActivitiesRegistryEntity {
     @NonNull
     @ColumnInfo(name = "id_step")
     public int idStep;
-
 
     @NonNull
     @ColumnInfo(name = "timestamp")

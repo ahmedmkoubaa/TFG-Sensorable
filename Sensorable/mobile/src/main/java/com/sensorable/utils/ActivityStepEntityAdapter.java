@@ -14,10 +14,9 @@ import androidx.annotation.Nullable;
 import com.commons.LoginHelper;
 import com.commons.database.ActivityStepEntity;
 import com.sensorable.R;
+import com.sensorable.activities.ActivitiesStepsRecorderActivity;
 
 import java.util.ArrayList;
-
-import static com.sensorable.utils.StepsTimerRecorder.saveTag;
 
 public class ActivityStepEntityAdapter extends ArrayAdapter<ActivityStepEntity> {
     private final int resource;
@@ -56,7 +55,7 @@ public class ActivityStepEntityAdapter extends ArrayAdapter<ActivityStepEntity> 
         Button tagStep = convertView.findViewById(R.id.tagStepButton);
         tagStep.setText(title);
         tagStep.setOnClickListener(view -> {
-            saveTag(idActivity, id, LoginHelper.getUserCode(context));
+            ActivitiesStepsRecorderActivity.StepsTimerRecorder.saveTag(idActivity, id, LoginHelper.getUserCode(context));
 //            tagStep.setVisibility(View.GONE);
             tagStep.setBackgroundColor(Color.GRAY);
         });

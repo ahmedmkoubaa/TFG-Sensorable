@@ -47,7 +47,6 @@ public class ActivitiesRegisterActivity extends AppCompatActivity {
         initializeMobileDatabase();
         initializeActivitiesToRecord();
 
-
         executor.execute(() -> {
             activitiesArray.addAll(activityDao.getAll());
             runOnUiThread(() -> {
@@ -96,14 +95,6 @@ public class ActivitiesRegisterActivity extends AppCompatActivity {
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 int id = item.getItemId();
                 switch (id) {
-//                    case R.id.tab_bluetooth:
-//                        startActivity(
-//                                new Intent(MainActivity.this, BluetoothOptionsActivity.class)
-//                        );
-//                        overridePendingTransition(0, 0);
-//
-//                        return true;
-
                     case R.id.tab_home:
                         startActivity(
                                 new Intent(ActivitiesRegisterActivity.this, MainActivity.class)

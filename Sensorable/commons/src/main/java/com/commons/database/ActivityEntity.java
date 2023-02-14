@@ -5,6 +5,8 @@ import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
+import java.util.Objects;
+
 
 @Entity
 public class ActivityEntity {
@@ -19,6 +21,19 @@ public class ActivityEntity {
     @NonNull
     @ColumnInfo(name = "description")
     public String description;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ActivityEntity ActivityEntity = (ActivityEntity) o;
+        return id == ActivityEntity.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, title, description);
+    }
 
     public ActivityEntity(@NonNull int id, @NonNull String title, @NonNull String description) {
         this.id = id;

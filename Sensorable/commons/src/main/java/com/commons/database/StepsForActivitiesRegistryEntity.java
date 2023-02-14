@@ -36,11 +36,15 @@ public class StepsForActivitiesRegistryEntity {
     @ColumnInfo(name = "user_id")
     public String userId;
 
-    public StepsForActivitiesRegistryEntity(@NonNull long idActivity, int idStep, @NonNull long timestamp, @NonNull String userId) {
+    @ColumnInfo(name = "clicked")
+    public boolean clicked = false;
+
+    public StepsForActivitiesRegistryEntity(@NonNull long idActivity, int idStep, @NonNull long timestamp, @NonNull String userId, boolean clicked) {
         this.idActivity = idActivity;
         this.idStep = idStep;
         this.timestamp = timestamp;
         this.userId = userId;
+        this.clicked = clicked;
     }
 
     public String toJson() {

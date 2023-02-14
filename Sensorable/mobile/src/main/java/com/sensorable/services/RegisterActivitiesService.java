@@ -15,14 +15,15 @@ import com.commons.database.ActivityStepEntity;
 import com.commons.database.StepsForActivitiesDao;
 import com.commons.database.StepsForActivitiesEntity;
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
-import com.sensorable.utils.TablesFormatter;
 import com.sensorable.utils.MobileDatabase;
 import com.sensorable.utils.MobileDatabaseBuilder;
 import com.sensorable.utils.MqttHelper;
+import com.sensorable.utils.TablesFormatter;
 
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class RegisterActivitiesService extends Service {
 
@@ -54,7 +55,7 @@ public class RegisterActivitiesService extends Service {
                             TablesFormatter.composeTableSteps(tables[1]),
                             TablesFormatter.composeTableStepsForActivities(tables[2])
                     );
-                } catch(NullPointerException e) {
+                } catch (NullPointerException e) {
                     Log.e("REGISTER ACTIVITIES", e.getMessage());
                 }
 
@@ -66,22 +67,64 @@ public class RegisterActivitiesService extends Service {
         }
     }
 
-    // Remove the previous adls scheme in database and save the new in order to have
-    // the new version received from the remote DB
+    //This method updates the activities registry table entities by updating their stored
+    // data and removing the non sent (from remote db) data.
     private void updateActivityRegistries(final ArrayList<ActivityEntity> activitiesEntities,
                                           final ArrayList<ActivityStepEntity> stepsEntities,
-                                          final ArrayList<StepsForActivitiesEntity> stepsForactivityEntities) {
+                                          final ArrayList<StepsForActivitiesEntity> stepsForActivityEntities) {
         executor.execute(() -> {
-            activityDao.deleteAll();
-            activityStepDao.deleteAll();
-            stepsForActivitiesDao.deleteAll();
-
-            activityDao.insertAll(activitiesEntities);
-            activityStepDao.insertAll(stepsEntities);
-            stepsForActivitiesDao.insertAll(stepsForactivityEntities);
+            updateActivities(activitiesEntities);
+            updateSteps(stepsEntities);
+            updateStepsForActivities(stepsForActivityEntities);
         });
     }
 
+    private void updateActivities(final ArrayList<ActivityEntity> activitiesEntities) {
+        // update activity list
+        if ((activityDao.size() > 0)) {
+            activityDao.update(activitiesEntities);
+        } else {
+            activityDao.insertAll(activitiesEntities);
+        }
+
+        activityDao.delete(
+                activityDao.getAll()
+                        .stream()
+                        .filter(activityEntity -> !activitiesEntities.contains(activityEntity))
+                        .collect(Collectors.toList())
+        );
+    }
+
+    private void updateSteps(final ArrayList<ActivityStepEntity> stepsEntities) {
+        // update steps list
+        if (activityStepDao.size() > 0) {
+            activityStepDao.update(stepsEntities);
+        } else {
+            activityStepDao.insertAll(stepsEntities);
+        }
+
+        activityStepDao.delete(
+                activityStepDao.getAll()
+                        .stream()
+                        .filter(activityStepEntity -> !stepsEntities.contains(activityStepEntity))
+                        .collect(Collectors.toList())
+        );
+    }
+
+    private void updateStepsForActivities(final ArrayList<StepsForActivitiesEntity> stepsForActivityEntities) {
+        // update stepsForActivities list
+        if (stepsForActivitiesDao.size() > 0) {
+            stepsForActivitiesDao.update(stepsForActivityEntities);
+        } else {
+            stepsForActivitiesDao.insertAll(stepsForActivityEntities);
+        }
+        stepsForActivitiesDao.delete(
+                stepsForActivitiesDao.getAll()
+                        .stream()
+                        .filter(stepForAct -> !stepsForActivityEntities.contains(stepForAct))
+                        .collect(Collectors.toList())
+        );
+    }
 
     // initialize data structures from the database
     private void initializeMobileDatabase() {

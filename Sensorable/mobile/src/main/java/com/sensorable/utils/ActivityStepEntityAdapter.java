@@ -16,7 +16,9 @@ import com.commons.database.ActivityStepEntity;
 import com.sensorable.R;
 import com.sensorable.activities.ActivitiesStepsRecorderActivity;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 public class ActivityStepEntityAdapter extends ArrayAdapter<ActivityStepEntity> {
     private final int resource;
@@ -24,14 +26,17 @@ public class ActivityStepEntityAdapter extends ArrayAdapter<ActivityStepEntity> 
     private final long idActivity;
     private boolean stepsEnabled;
 
+    final private ArrayList<Integer> clickedArrays = new ArrayList<>();
+
     public ActivityStepEntityAdapter(@NonNull Context context, int resource, @NonNull ArrayList<ActivityStepEntity> objects, final long idActivity, boolean stepsEnabled) {
         super(context, resource, objects);
         this.context = context;
         this.resource = resource;
         this.stepsEnabled = stepsEnabled;
         this.idActivity = idActivity;
-    }
 
+        clickedArrays.addAll(ActivitiesStepsRecorderActivity.StepsTimerRecorder.getClickedStepsByActivityId(idActivity));
+    }
 
     @Override
     public boolean areAllItemsEnabled() {
@@ -45,19 +50,24 @@ public class ActivityStepEntityAdapter extends ArrayAdapter<ActivityStepEntity> 
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        ActivityStepEntity activityStep = this.getItem(position);
-        String title = activityStep.getTitle();
-        int id = activityStep.getId();
-
         LayoutInflater inflater = LayoutInflater.from(context);
         convertView = inflater.inflate(this.resource, parent, false);
 
+        ActivityStepEntity activityStep = this.getItem(position);
+        String title = activityStep.getTitle();
+        int currentStepId = activityStep.getId();
+
         Button tagStep = convertView.findViewById(R.id.tagStepButton);
         tagStep.setText(title);
-        tagStep.setOnClickListener(view -> {
-            ActivitiesStepsRecorderActivity.StepsTimerRecorder.saveTag(idActivity, id, LoginHelper.getUserCode(context));
-//            tagStep.setVisibility(View.GONE);
+
+        if (clickedArrays.contains(currentStepId)) {
             tagStep.setBackgroundColor(Color.GRAY);
+        }
+
+        tagStep.setOnClickListener(view -> {
+            tagStep.setBackgroundColor(Color.GRAY);
+            clickedArrays.add(currentStepId);
+            ActivitiesStepsRecorderActivity.StepsTimerRecorder.saveTag(idActivity, currentStepId, LoginHelper.getUserCode(context));
         });
 
         tagStep.setEnabled(areAllItemsEnabled());

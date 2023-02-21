@@ -28,6 +28,7 @@ public class SensorableConstants {
     public final static String JSON_TABLES_SEPARATOR = "#";
     public final static String JSON_FIELDS_SEPARATOR = "\\|";
     public final static String JSON_ROWS_SEPARATOR = "\\}\\{";
+    public final static String MQTT_FIELDS_SEPARATOR = "/";
 
     // code number to identify gps as a sensor
     public final static int SENSOR_GPS = 2411;

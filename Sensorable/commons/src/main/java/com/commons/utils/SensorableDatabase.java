@@ -1,9 +1,32 @@
-package com.commons.database;
+package com.commons.utils;
 
 import androidx.room.Database;
 import androidx.room.RoomDatabase;
 
-import com.commons.utils.SensorableConstants;
+import com.commons.database.ActivityDao;
+import com.commons.database.ActivityEntity;
+import com.commons.database.ActivityStepDao;
+import com.commons.database.ActivityStepEntity;
+import com.commons.database.AdlDao;
+import com.commons.database.AdlEntity;
+import com.commons.database.AdlRegistryDao;
+import com.commons.database.AdlRegistryEntity;
+import com.commons.database.BluetoothDeviceDao;
+import com.commons.database.BluetoothDeviceEntity;
+import com.commons.database.BluetoothDeviceRegistryDao;
+import com.commons.database.BluetoothDeviceRegistryEntity;
+import com.commons.database.EventDao;
+import com.commons.database.EventEntity;
+import com.commons.database.EventForAdlDao;
+import com.commons.database.EventForAdlEntity;
+import com.commons.database.KnownLocationDao;
+import com.commons.database.KnownLocationEntity;
+import com.commons.database.SensorMessageDao;
+import com.commons.database.SensorMessageEntity;
+import com.commons.database.StepsForActivitiesDao;
+import com.commons.database.StepsForActivitiesEntity;
+import com.commons.database.StepsForActivitiesRegistryDao;
+import com.commons.database.StepsForActivitiesRegistryEntity;
 
 @Database(entities = {
         BluetoothDeviceEntity.class,
@@ -17,7 +40,7 @@ import com.commons.utils.SensorableConstants;
         ActivityEntity.class,
         ActivityStepEntity.class,
         StepsForActivitiesEntity.class,
-        StepsForActivitiesRegistryEntity    .class
+        StepsForActivitiesRegistryEntity.class
 }, version = SensorableConstants.MOBILE_DATABASE_VERSION)
 
 public abstract class SensorableDatabase extends RoomDatabase {

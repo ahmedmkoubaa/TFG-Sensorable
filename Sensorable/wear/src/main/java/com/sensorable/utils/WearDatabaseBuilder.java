@@ -5,7 +5,7 @@ import android.content.Context;
 import androidx.room.Room;
 
 import com.commons.utils.SensorableConstants;
-import com.commons.database.SensorableDatabase;
+import com.commons.utils.SensorableDatabase;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

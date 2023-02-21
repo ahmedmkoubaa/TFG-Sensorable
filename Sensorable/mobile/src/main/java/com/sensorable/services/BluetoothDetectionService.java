@@ -17,7 +17,7 @@ import com.commons.database.BluetoothDeviceEntity;
 import com.commons.database.BluetoothDeviceRegistryDao;
 import com.commons.database.BluetoothDeviceRegistryEntity;
 import com.commons.devicesDetection.BluetoothDevicesProvider;
-import com.commons.database.SensorableDatabase;
+import com.commons.utils.SensorableDatabase;
 import com.sensorable.utils.MobileDatabaseBuilder;
 
 import java.util.Date;

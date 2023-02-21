@@ -27,7 +27,7 @@ import com.commons.database.KnownLocationDao;
 import com.commons.database.KnownLocationEntity;
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
 import com.sensorable.utils.TablesFormatter;
-import com.commons.database.SensorableDatabase;
+import com.commons.utils.SensorableDatabase;
 import com.sensorable.utils.MobileDatabaseBuilder;
 import com.sensorable.utils.MqttHelper;
 import com.sensorable.utils.SensorOperations;

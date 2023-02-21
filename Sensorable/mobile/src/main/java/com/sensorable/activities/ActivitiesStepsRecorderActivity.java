@@ -19,7 +19,7 @@ import com.commons.database.StepsForActivitiesRegistryDao;
 import com.commons.database.StepsForActivitiesRegistryEntity;
 import com.sensorable.R;
 import com.sensorable.utils.ActivityStepEntityAdapter;
-import com.commons.database.SensorableDatabase;
+import com.commons.utils.SensorableDatabase;
 import com.sensorable.utils.MobileDatabaseBuilder;
 import com.sensorable.utils.MqttHelper;
 

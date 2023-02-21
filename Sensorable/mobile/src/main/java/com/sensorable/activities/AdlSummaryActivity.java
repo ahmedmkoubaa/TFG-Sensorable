@@ -19,7 +19,7 @@ import com.sensorable.MainActivity;
 import com.sensorable.R;
 import com.sensorable.utils.DetectedAdlInfo;
 import com.sensorable.utils.DetectedAdlInfoAdapter;
-import com.commons.database.SensorableDatabase;
+import com.commons.utils.SensorableDatabase;
 import com.sensorable.utils.MobileDatabaseBuilder;
 
 import java.util.ArrayList;

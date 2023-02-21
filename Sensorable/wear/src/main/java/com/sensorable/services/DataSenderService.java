@@ -11,8 +11,8 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.commons.utils.SensorTransmissionCoder;
 import com.commons.utils.SensorableConstants;
+import com.commons.utils.SensorableDatabase;
 import com.commons.utils.SensorableIntentFilters;
-import com.commons.database.SensorableDatabase;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.wearable.DataItem;
 import com.google.android.gms.wearable.PutDataMapRequest;

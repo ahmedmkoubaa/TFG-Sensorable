@@ -60,8 +60,6 @@ public class MqttHelper {
     }
 
     public static void subscribe(String topic, Consumer<Mqtt5Publish> callback) {
-
-
         client.toAsync()
                 .subscribeWith()
                 .topicFilter(topic)

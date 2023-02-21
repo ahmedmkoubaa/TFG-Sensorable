@@ -137,7 +137,7 @@ public class BackupService extends Service {
         // Generate the responseTopic to receive the response confirmation of data correctly saved in remote database
         final String responseTopic =
                 SensorableConstants.MQTT_SENSORS_INSERT +
-                        SensorableConstants.JSON_FIELDS_SEPARATOR +
+                        SensorableConstants.MQTT_FIELDS_SEPARATOR +
                         LoginHelper.getUserCode(this) + System.currentTimeMillis();
 
         // Subscribe to the responseTopic delete users if its all correct and unsubscribe of it

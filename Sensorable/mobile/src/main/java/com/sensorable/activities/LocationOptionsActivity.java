@@ -31,7 +31,7 @@ import com.google.android.material.navigation.NavigationBarView;
 import com.sensorable.MainActivity;
 import com.sensorable.R;
 import com.sensorable.utils.KnownLocationsAdapter;
-import com.commons.database.SensorableDatabase;
+import com.commons.utils.SensorableDatabase;
 import com.sensorable.utils.MobileDatabaseBuilder;
 
 import org.osmdroid.config.Configuration;

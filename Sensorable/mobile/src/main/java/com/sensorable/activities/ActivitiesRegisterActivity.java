@@ -21,7 +21,7 @@ import com.sensorable.MainActivity;
 import com.sensorable.R;
 import com.sensorable.utils.ActivityEntityAdapter;
 import com.commons.utils.LoginHelper;
-import com.commons.database.SensorableDatabase;
+import com.commons.utils.SensorableDatabase;
 import com.sensorable.utils.MobileDatabaseBuilder;
 
 import java.util.ArrayList;

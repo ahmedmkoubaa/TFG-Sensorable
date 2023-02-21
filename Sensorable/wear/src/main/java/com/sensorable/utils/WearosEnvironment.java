@@ -1,6 +1,6 @@
 package com.sensorable.utils;
 
-import com.commons.DeviceType;
+import com.commons.utils.DeviceType;
 
 public class WearosEnvironment {
     private static int DEVICE_TYPE = DeviceType.WEAROS_LEFT_HAND;

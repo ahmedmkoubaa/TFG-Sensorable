@@ -11,14 +11,12 @@ import android.widget.Button;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.commons.LoginHelper;
+import com.commons.utils.LoginHelper;
 import com.commons.database.ActivityStepEntity;
 import com.sensorable.R;
 import com.sensorable.activities.ActivitiesStepsRecorderActivity;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.stream.Collectors;
 
 public class ActivityStepEntityAdapter extends ArrayAdapter<ActivityStepEntity> {
     private final int resource;

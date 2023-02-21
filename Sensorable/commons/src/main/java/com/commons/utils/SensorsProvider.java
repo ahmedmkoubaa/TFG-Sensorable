@@ -1,4 +1,4 @@
-package com.commons;
+package com.commons.utils;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -34,36 +34,7 @@ public class SensorsProvider {
         return sensorManager.getSensorList(Sensor.TYPE_ALL);
     }
 
-    private void initializeProviderLocation() {
-        try {
-            locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-
-        } catch (Exception e) {
-            Log.i("SENSORS_PROVIDER", "ERROR-> " + e.getMessage());
-
-            if (!canAccessLocation()) {
-                Toast.makeText(context, "GPS no disponible", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
-
-    private void initializeSensorManager() {
-        if (sensorManager == null) {
-            sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
-        }
-    }
-
-    public void subscribeToSensor(int sensorType, SensorEventListener listener, int delay) {
-        initializeSensorManager();
-        Sensor newSensor = sensorManager.getDefaultSensor(sensorType);
-        sensorManager.registerListener(listener, newSensor, delay);
-    }
-
-    public void unsubscribeToSensor(SensorEventListener listener) {
-        initializeSensorManager();
-        sensorManager.unregisterListener(listener);
-    }
-
+    // We're already asking for permissions in the method but the compiler doesn't recognize it
     @SuppressLint("MissingPermission")
     public void subscribeToGps(LocationListener listener) {
         // This verification should be done during onStart() because the system calls
@@ -82,6 +53,36 @@ public class SensorsProvider {
             } catch (SecurityException e) {
                 Toast.makeText(context, "No se facilitaron los permisos de GPS", Toast.LENGTH_SHORT).show();
             }
+        }
+    }
+
+    public void subscribeToSensor(int sensorType, SensorEventListener listener, int delay) {
+        initializeSensorManager();
+        Sensor newSensor = sensorManager.getDefaultSensor(sensorType);
+        sensorManager.registerListener(listener, newSensor, delay);
+    }
+
+    public void unsubscribeToSensor(SensorEventListener listener) {
+        initializeSensorManager();
+        sensorManager.unregisterListener(listener);
+    }
+
+    private void initializeProviderLocation() {
+        try {
+            locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+
+        } catch (Exception e) {
+            Log.i("SENSORS_PROVIDER", "ERROR-> " + e.getMessage());
+
+            if (!canAccessLocation()) {
+                Toast.makeText(context, "GPS no disponible", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private void initializeSensorManager() {
+        if (sensorManager == null) {
+            sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
         }
     }
 

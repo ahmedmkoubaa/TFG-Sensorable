@@ -12,10 +12,10 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import com.commons.LoginHelper;
-import com.commons.SensorTransmissionCoder;
-import com.commons.SensorableConstants;
-import com.commons.SensorableIntentFilters;
+import com.commons.utils.LoginHelper;
+import com.commons.utils.SensorTransmissionCoder;
+import com.commons.utils.SensorableConstants;
+import com.commons.utils.SensorableIntentFilters;
 import com.commons.database.SensorMessageDao;
 import com.commons.database.SensorMessageEntity;
 import com.sensorable.utils.MobileDatabaseBuilder;
@@ -53,7 +53,7 @@ public class BackupService extends Service {
                     @Override
                     public void onReceive(Context context, Intent intent) {
                         Bundle b = intent.getBundleExtra(SensorableConstants.EXTRA_MESSAGE);
-                        ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage = b.getParcelableArrayList(SensorableConstants.BROADCAST_MESSAGE);
+                        ArrayList<SensorTransmissionCoder.SensorData> arrayMessage = b.getParcelableArrayList(SensorableConstants.BROADCAST_MESSAGE);
                         saveSensorReads(arrayMessage);
                     }
 
@@ -67,13 +67,13 @@ public class BackupService extends Service {
                 registerReceiver(sensorDataReceiver, SensorableIntentFilters.WEAR_SENSORS);
 
         LocalBroadcastManager.getInstance(this).
-                registerReceiver(sensorDataReceiver, SensorableIntentFilters.MOBILE_SENSORS);
+                registerReceiver(sensorDataReceiver, SensorableIntentFilters.SENSORS_PROVIDER_SENSORS);
     }
 
-    private void saveSensorReads(ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage) {
+    private void saveSensorReads(ArrayList<SensorTransmissionCoder.SensorData> arrayMessage) {
         executor.execute(() -> {
             ArrayList<SensorMessageEntity> sensorMessageEntities = new ArrayList<>();
-            for (SensorTransmissionCoder.SensorMessage s : arrayMessage) {
+            for (SensorTransmissionCoder.SensorData s : arrayMessage) {
                 sensorMessageEntities.add(s.toSensorDataMessage(LoginHelper.getUserCode(this)));
             }
             sensorMessageDao.insertAll(sensorMessageEntities);

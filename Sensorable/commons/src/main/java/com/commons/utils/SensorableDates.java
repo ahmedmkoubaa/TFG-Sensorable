@@ -1,6 +1,4 @@
-package com.commons;
-
-import com.commons.SensorableConstants;
+package com.commons.utils;
 
 import java.util.Calendar;
 

@@ -2,7 +2,7 @@ package com.sensorable.utils;
 
 import android.util.Log;
 
-import com.commons.OperatorType;
+import com.commons.utils.OperatorType;
 import com.commons.database.EventEntity;
 import com.commons.database.KnownLocationEntity;
 

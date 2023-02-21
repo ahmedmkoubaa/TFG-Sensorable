@@ -1,7 +1,7 @@
-package com.sensorable;
+package com.sensorable.utils;
 
-import com.commons.SensorableConstants;
-import com.commons.SensorableDates;
+import com.commons.utils.SensorableConstants;
+import com.commons.utils.SensorableDates;
 
 import java.util.ArrayList;
 import java.util.Date;

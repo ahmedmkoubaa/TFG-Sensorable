@@ -1,4 +1,4 @@
-package com.commons;
+package com.commons.utils;
 
 public class EmpaticaSensorType {
     public static final int BATTERY_LEVEL = 2414;

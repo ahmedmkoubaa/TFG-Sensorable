@@ -21,7 +21,7 @@ import com.sensorable.MainActivity;
 import com.sensorable.R;
 import com.sensorable.utils.BluetoothDeviceInfo;
 import com.sensorable.utils.BluetoothDeviceInfoAdapter;
-import com.sensorable.utils.MobileDatabase;
+import com.commons.database.SensorableDatabase;
 import com.sensorable.utils.MobileDatabaseBuilder;
 
 import java.util.ArrayList;
@@ -49,7 +49,7 @@ public class BluetoothOptionsActivity extends AppCompatActivity {
     }
 
     private void initializeDatabase() {
-        MobileDatabase database = MobileDatabaseBuilder.getDatabase(this);
+        SensorableDatabase database = MobileDatabaseBuilder.getDatabase(this);
         bluetoothDeviceDao = database.bluetoothDeviceDao();
         bluetoothDeviceRegistryDao = database.bluetoothDeviceRegistryDao();
         executor = MobileDatabaseBuilder.getExecutor();

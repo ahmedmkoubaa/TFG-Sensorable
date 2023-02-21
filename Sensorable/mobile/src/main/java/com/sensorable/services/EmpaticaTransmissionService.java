@@ -10,10 +10,10 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import com.commons.DeviceType;
-import com.commons.EmpaticaSensorType;
-import com.commons.SensorTransmissionCoder;
-import com.commons.SensorableConstants;
+import com.commons.utils.DeviceType;
+import com.commons.utils.EmpaticaSensorType;
+import com.commons.utils.SensorTransmissionCoder;
+import com.commons.utils.SensorableConstants;
 import com.empatica.empalink.ConnectionNotAllowedException;
 import com.empatica.empalink.EmpaDeviceManager;
 import com.empatica.empalink.EmpaticaDevice;
@@ -26,7 +26,7 @@ import java.util.ArrayList;
 
 public class EmpaticaTransmissionService extends Service implements EmpaDataDelegate, EmpaStatusDelegate {
     private static final String EMPATICA_API_KEY = "e910f7a73ce74dbd99b774b9f6010ab5";
-    private ArrayList<SensorTransmissionCoder.SensorMessage> sensorMessagesBuffer;
+    private ArrayList<SensorTransmissionCoder.SensorData> sensorMessagesBuffer;
     private EmpaDeviceManager deviceManager;
 
     @Override
@@ -50,7 +50,7 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
     }
 
 
-    private void sendMessageToActivity(SensorTransmissionCoder.SensorMessage msg) {
+    private void sendMessageToActivity(SensorTransmissionCoder.SensorData msg) {
         sensorMessagesBuffer.add(msg);
         if (sensorMessagesBuffer.size() >= SensorableConstants.EMPATICA_BUFFER_SIZE) {
             Intent intent = new Intent(SensorableConstants.EMPATICA_SENDS_SENSOR_DATA);
@@ -68,7 +68,7 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
     }
 
     private void sendMessageToActivity(int sensorType, float[] values) {
-        sendMessageToActivity(new SensorTransmissionCoder.SensorMessage(DeviceType.EMPATICA, sensorType, values));
+        sendMessageToActivity(new SensorTransmissionCoder.SensorData(DeviceType.EMPATICA, sensorType, values));
     }
 
     private void sendInfoMessage(String msg) {

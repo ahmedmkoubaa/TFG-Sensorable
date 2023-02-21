@@ -3,7 +3,6 @@ package com.sensorable.activities;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.graphics.Color;
 import android.hardware.Sensor;
 import android.os.Bundle;
@@ -15,11 +14,12 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import com.commons.DeviceType;
-import com.commons.SensorTransmissionCoder;
-import com.commons.SensorableConstants;
-import com.commons.SensorableDates;
-import com.commons.SensorsProvider;
+import com.commons.utils.DeviceType;
+import com.commons.utils.SensorTransmissionCoder;
+import com.commons.utils.SensorableConstants;
+import com.commons.utils.SensorableDates;
+import com.commons.utils.SensorableIntentFilters;
+import com.commons.utils.SensorsProvider;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
 import com.sensorable.MainActivity;
@@ -132,7 +132,7 @@ public class DetailedSensorsListActivity extends AppCompatActivity {
             @Override
             public void onReceive(Context context, Intent intent) {
                 Bundle b = intent.getBundleExtra(SensorableConstants.EXTRA_MESSAGE);
-                ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage = b.getParcelableArrayList(SensorableConstants.BROADCAST_MESSAGE);
+                ArrayList<SensorTransmissionCoder.SensorData> arrayMessage = b.getParcelableArrayList(SensorableConstants.BROADCAST_MESSAGE);
 
                 try {
                     arrayMessage.forEach(sensorMessage -> {
@@ -217,17 +217,17 @@ public class DetailedSensorsListActivity extends AppCompatActivity {
 
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 sensorReceiver,
-                new IntentFilter(SensorableConstants.SENSORS_PROVIDER_SENDS_SENSORS)
+                SensorableIntentFilters.SENSORS_PROVIDER_SENSORS
         );
 
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 sensorReceiver,
-                new IntentFilter(SensorableConstants.WEAR_SENDS_SENSOR_DATA)
+                SensorableIntentFilters.WEAR_SENSORS
         );
 
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 sensorReceiver,
-                new IntentFilter(SensorableConstants.EMPATICA_SENDS_SENSOR_DATA)
+                SensorableIntentFilters.EMPATICA_SENSORS
         );
     }
 }

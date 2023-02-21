@@ -46,6 +46,10 @@
         android:theme="@style/Theme.MyApplication"
         tools:replace="android:theme">
         <service
+            android:name=".services.CsvSaverService"
+            android:enabled="true"
+            android:exported="true"></service>
+        <service
             android:name=".services.ManagerService"
             android:enabled="true"
             android:exported="true" />
@@ -65,7 +69,7 @@
             android:enabled="true"
             android:exported="true" />
         <service
-            android:name=".services.SensorsProviderService"
+            android:name="com.commons.services.SensorsProviderService"
             android:enabled="true"
             android:exported="true" />
         <service

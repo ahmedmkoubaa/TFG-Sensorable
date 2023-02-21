@@ -1,5 +1,6 @@
 package com.sensorable;
 
+import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -11,10 +12,15 @@ import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.ToggleButton;
 
-import com.commons.DeviceType;
-import com.commons.SensorableConstants;
-import com.commons.SensorablePermissions;
-import com.commons.SensorsProvider;
+import com.commons.utils.DeviceType;
+import com.commons.utils.SensorableConstants;
+import com.commons.utils.SensorablePermissions;
+import com.commons.utils.SensorsProvider;
+import com.commons.services.SensorsProviderService;
+import com.sensorable.services.DataSenderService;
+import com.sensorable.utils.LoggerAdapter;
+import com.sensorable.utils.SensorableLogger;
+import com.sensorable.utils.WearSensorDataSender;
 import com.sensorable.utils.WearosEnvironment;
 
 public class MainActivity extends WearableActivity {
@@ -42,17 +48,28 @@ public class MainActivity extends WearableActivity {
         // request all necessary permissions
         SensorablePermissions.requestAll(this);
 
+        initializeServices();
 
+        initializeListenersForUI();
+        initializeReminders();
+
+        initializeSensorsDataSendingListeners();
+    }
+
+    private void initializeServices() {
+        Intent intent = new Intent(this, SensorsProviderService.class);
+        intent.putExtra(SensorableConstants.SENSORS_PROVIDER_DEVICE_TYPE, WearosEnvironment.getDeviceType());
+        startService(intent);
+
+        startService(new Intent(this, DataSenderService.class));
+    }
+
+
+    // initialize a sensors data receptor
+    private void initializeSensorsDataSendingListeners() {
         sensorsProvider = new SensorsProvider(this);
         sensorSender = new WearSensorDataSender(this);
 
-        initializeListenersForUI();
-        initializeSensorsDataSendingListeners();
-        initializeReminders();
-
-    }
-
-    private void initializeSensorsDataSendingListeners() {
         SensorEventListener listenerDataSender = new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent sensorEvent) {
@@ -64,12 +81,12 @@ public class MainActivity extends WearableActivity {
             }
         };
 
-
         for (int sensorCode : listenedSensors) {
             sensorsProvider.subscribeToSensor(sensorCode, listenerDataSender, SensorManager.SENSOR_DELAY_NORMAL);
         }
     }
 
+    // remind to show the logging messages when sent some information data
     private void initializeReminders() {
         final Handler handler = new Handler();
         Runnable runnable = new Runnable() {
@@ -83,6 +100,7 @@ public class MainActivity extends WearableActivity {
         handler.post(runnable);
     }
 
+    // this is pure front end and can stay right here
     private void initializeListenersForUI() {
         loggerAdapter = new LoggerAdapter(getBaseContext(), R.layout.logger_message_layout, SensorableLogger.getLoggedData());
         loggerAdapter.setNotifyOnChange(true);
@@ -102,7 +120,6 @@ public class MainActivity extends WearableActivity {
     @Override
     protected void onStart() {
         super.onStart();
-
     }
 
     @Override

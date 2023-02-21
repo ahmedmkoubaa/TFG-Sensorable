@@ -10,7 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.sensorable.MainActivity;
 import com.sensorable.R;
-import com.commons.LoginHelper;
+import com.commons.utils.LoginHelper;
 
 public class LoginActivity extends AppCompatActivity {
 

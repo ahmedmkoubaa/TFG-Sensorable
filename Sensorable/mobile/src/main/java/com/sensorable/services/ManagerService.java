@@ -6,11 +6,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 
+import com.commons.utils.DeviceType;
+import com.commons.utils.SensorableConstants;
+import com.commons.services.SensorsProviderService;
+
 public class ManagerService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        initializeWearOsTranmissionService();
+        initializeWearOsTransmissionService();
         initializeEmpaticaTransmissionService();
 
         initializeSensorsProviderService();
@@ -26,7 +30,6 @@ public class ManagerService extends Service {
         return super.onStartCommand(intent, flags, startId);
     }
 
-
     public boolean isMyServiceRunning(Class<?> serviceClass) {
         ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
@@ -38,13 +41,16 @@ public class ManagerService extends Service {
     }
 
     private void initializeService(Class<?> serviceClass) {
-        if (!isMyServiceRunning(serviceClass)) {
-            // start new data transmission service to collect data from wear os
-            startService(new Intent(this, serviceClass));
+        initializeService(new Intent(this, serviceClass));
+    }
+
+    private void initializeService(Intent intent) {
+        if (!isMyServiceRunning(intent.getClass())) {
+            startService(intent);
         }
     }
 
-    private void initializeWearOsTranmissionService() {
+    private void initializeWearOsTransmissionService() {
         initializeService(WearTransmissionService.class);
     }
 
@@ -52,9 +58,11 @@ public class ManagerService extends Service {
         initializeService(EmpaticaTransmissionService.class);
     }
 
-
     private void initializeSensorsProviderService() {
-        initializeService(SensorsProviderService.class);
+        Intent intent = new Intent(this, SensorsProviderService.class);
+        intent.putExtra(SensorableConstants.SENSORS_PROVIDER_DEVICE_TYPE, DeviceType.MOBILE);
+
+        initializeService(intent);
     }
 
     private void initializeAdlDetectionService() {

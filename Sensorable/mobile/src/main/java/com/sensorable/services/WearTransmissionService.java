@@ -2,14 +2,18 @@ package com.sensorable.services;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import com.commons.SensorTransmissionCoder;
-import com.commons.SensorableConstants;
+import com.commons.utils.SensorTransmissionCoder;
+import com.commons.utils.SensorableConstants;
 import com.google.android.gms.wearable.Channel;
+import com.google.android.gms.wearable.DataEvent;
 import com.google.android.gms.wearable.DataEventBuffer;
+import com.google.android.gms.wearable.DataMap;
+import com.google.android.gms.wearable.DataMapItem;
 import com.google.android.gms.wearable.MessageEvent;
 import com.google.android.gms.wearable.WearableListenerService;
 
@@ -17,7 +21,7 @@ import java.util.ArrayList;
 
 
 public class WearTransmissionService extends WearableListenerService {
-    private final ArrayList<SensorTransmissionCoder.SensorMessage> sensorMessagesBuffer = new ArrayList<>();
+    private final ArrayList<SensorTransmissionCoder.SensorData> sensorMessagesBuffer = new ArrayList<>();
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -33,15 +37,15 @@ public class WearTransmissionService extends WearableListenerService {
         );
 
         if (!receivedSensors.equals("")) {
-            String[] splitedSensors = receivedSensors.split(SensorTransmissionCoder.DATA_SEPARATOR);
+            String[] splittedSensors = receivedSensors.split(SensorTransmissionCoder.DATA_SEPARATOR);
 
-            for (String s : splitedSensors) {
+            for (String s : splittedSensors) {
                 sendMessageToActivity(SensorTransmissionCoder.decodeMessage(s));
             }
         }
     }
 
-    private void sendMessageToActivity(SensorTransmissionCoder.SensorMessage msg) {
+    private void sendMessageToActivity(SensorTransmissionCoder.SensorData msg) {
 
         sensorMessagesBuffer.add(msg);
         if (sensorMessagesBuffer.size() >= SensorableConstants.WEAR_BUFFER_SIZE) {
@@ -59,9 +63,18 @@ public class WearTransmissionService extends WearableListenerService {
         }
     }
 
+
     @Override
-    public void onDataChanged(@NonNull DataEventBuffer dataEventBuffer) {
-        super.onDataChanged(dataEventBuffer);
+    public void onDataChanged(DataEventBuffer dataEvents) {
+        for (DataEvent event : dataEvents) {
+            if (event.getType() == DataEvent.TYPE_CHANGED &&
+                    event.getDataItem().getUri().getPath().equals("/data")) {
+                DataMap dataMap = DataMapItem.fromDataItem(event.getDataItem()).getDataMap();
+                String message = dataMap.getString("message");
+                Log.d("WEAR_TRANSMISSION_SERVICE", "Message received: " + message);
+                // TODO: Process the message
+            }
+        }
     }
 
     @Override

@@ -12,7 +12,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.commons.SensorableDates;
+import com.commons.utils.SensorableDates;
 import com.sensorable.R;
 
 import java.util.ArrayList;

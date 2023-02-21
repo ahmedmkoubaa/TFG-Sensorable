@@ -1,4 +1,4 @@
-package com.commons;
+package com.commons.utils;
 
 public class DeviceType {
     public static final int MOBILE = 0;

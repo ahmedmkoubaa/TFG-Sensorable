@@ -7,7 +7,7 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
-import com.commons.SensorableConstants;
+import com.commons.utils.SensorableConstants;
 import com.commons.database.ActivityDao;
 import com.commons.database.ActivityEntity;
 import com.commons.database.ActivityStepDao;
@@ -15,7 +15,7 @@ import com.commons.database.ActivityStepEntity;
 import com.commons.database.StepsForActivitiesDao;
 import com.commons.database.StepsForActivitiesEntity;
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
-import com.sensorable.utils.MobileDatabase;
+import com.commons.database.SensorableDatabase;
 import com.sensorable.utils.MobileDatabaseBuilder;
 import com.sensorable.utils.MqttHelper;
 import com.sensorable.utils.TablesFormatter;
@@ -128,7 +128,7 @@ public class RegisterActivitiesService extends Service {
 
     // initialize data structures from the database
     private void initializeMobileDatabase() {
-        MobileDatabase database = MobileDatabaseBuilder.getDatabase(this);
+        SensorableDatabase database = MobileDatabaseBuilder.getDatabase(this);
 
         activityDao = database.activityDao();
         activityStepDao = database.activityStepDao();

@@ -57,13 +57,12 @@ public class MainActivity extends WearableActivity {
     }
 
     private void initializeServices() {
+        startService(new Intent(this, DataSenderService.class));
+
         Intent intent = new Intent(this, SensorsProviderService.class);
         intent.putExtra(SensorableConstants.SENSORS_PROVIDER_DEVICE_TYPE, WearosEnvironment.getDeviceType());
         startService(intent);
-
-        startService(new Intent(this, DataSenderService.class));
     }
-
 
     // initialize a sensors data receptor
     private void initializeSensorsDataSendingListeners() {

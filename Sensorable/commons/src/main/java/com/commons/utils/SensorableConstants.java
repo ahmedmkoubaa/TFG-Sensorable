@@ -1,5 +1,11 @@
 package com.commons.utils;
 
+import android.hardware.Sensor;
+import android.util.Pair;
+
+import java.util.Arrays;
+import java.util.List;
+
 public class SensorableConstants {
     // for time operations
     public final static int MINUTES_TO_SECONDS = 60;
@@ -42,7 +48,7 @@ public class SensorableConstants {
 
 
     // for mobile database
-    public final static String MOBILE_DATABASE_NAME = "default-mobile-database";
+    public final static String SENSORABLE_DATABASE_NAME = "default-mobile-database";
     public final static String WEAR_DATABASE_NAME = "default-wear-database";
     public final static int MOBILE_DATABASE_NUMBER_THREADS = 1;
     public final static int MOBILE_DATABASE_VERSION = 62;
@@ -68,10 +74,10 @@ public class SensorableConstants {
     public static final String MQTT_CONNECT_URL = "broker.hivemq.com";
 
     public static final String MQTT_SENSORS_INSERT = "sensorable/database/sensors/insert";
-    public static final String MQTT_REQUEST_CUSTOM_ADLS =  "sensorable/database/adls/custom/request";
-    public static final String MQQTT_INFORM_CUSTOM_ADLS =  "sensorable/database/adls/custom/inform";
-    public static final String MQTT_REQUEST_GENERIC_ADLS =  "sensorable/database/adls/generics/request";
-    public static final String MQTT_INFORM_GENERIC_ADLS =  "sensorable/database/adls/generics/inform";
+    public static final String MQTT_REQUEST_CUSTOM_ADLS = "sensorable/database/adls/custom/request";
+    public static final String MQQTT_INFORM_CUSTOM_ADLS = "sensorable/database/adls/custom/inform";
+    public static final String MQTT_REQUEST_GENERIC_ADLS = "sensorable/database/adls/generics/request";
+    public static final String MQTT_INFORM_GENERIC_ADLS = "sensorable/database/adls/generics/inform";
     public static final String MQTT_INFORM_ACTIVITIES = "sensorable/database/activities/inform";
     public static final String MQTT_REQUEST_ACTIVITIES = "sensorable/database/activities/request";
     public static final String MQTT_ACTIVITIES_INSERT = "sensorable/database/activities/insert";
@@ -92,7 +98,25 @@ public class SensorableConstants {
     public static final double DISTANCE_OF_STEP_IN_M = 0.5;
 
     // action name for intents
-    public static final String SENSORS_PROVIDER_DEVICE_TYPE = "DEVICE_TYPE" ;
+    public static final String SENSORS_PROVIDER_DEVICE_TYPE = "DEVICE_TYPE";
     public static final String SENSORS_PROVIDER_ACTION = "SENSORS_PROVIDER_ACTION";
     public static final String SENSORS_PROVIDER_LOCATION = "SENSORS_PROVIDER_LOCATION";
+    public static final String ROOT_DIRECTOTY_NAME = "sensorable";
+    public static final String FILE_EXTENSION_SEPARATOR = ".";
+    public static final String CSV_EXTENSION = "csv";
+    public static final String FILE_PATH_SEPARATOR = "/";
+
+
+    public static final List<Pair<Integer, String>> LISTENED_SENSORS = Arrays.asList(
+            new Pair(Sensor.TYPE_PROXIMITY, "TYPE_PROXIMITY"),
+            new Pair(Sensor.TYPE_HEART_RATE, "TYPE_HEART_RATE"),
+            new Pair(Sensor.TYPE_STEP_COUNTER, "TYPE_STEP_COUNTER"),
+            new Pair(Sensor.TYPE_LIGHT, "TYPE_LIGHT"),
+            new Pair(Sensor.TYPE_ACCELEROMETER, "TYPE_ACCELEROMETER"),
+            new Pair(Sensor.TYPE_LINEAR_ACCELERATION, "TYPE_LINEAR_ACCELERATION"),
+            new Pair(Sensor.TYPE_RELATIVE_HUMIDITY, "TYPE_RELATIVE_HUMIDITY"),
+            new Pair(Sensor.TYPE_AMBIENT_TEMPERATURE, "TYPE_AMBIENT_TEMPERATURE")
+    );
+
+
 }

@@ -20,7 +20,7 @@ import com.commons.database.StepsForActivitiesRegistryEntity;
 import com.sensorable.R;
 import com.sensorable.utils.ActivityStepEntityAdapter;
 import com.commons.utils.SensorableDatabase;
-import com.sensorable.utils.MobileDatabaseBuilder;
+import com.commons.utils.DatabaseBuilder;
 import com.sensorable.utils.MqttHelper;
 
 import java.util.ArrayList;
@@ -199,11 +199,11 @@ public class ActivitiesStepsRecorderActivity extends AppCompatActivity {
 
     // initialize data structures from the database
     private void initializeMobileDatabase() {
-        SensorableDatabase database = MobileDatabaseBuilder.getDatabase(this);
+        SensorableDatabase database = DatabaseBuilder.getDatabase(this);
 
         stepsDao = database.activityStepDao();
         stepsForActivitiesRegistryDao = database.stepsForActivitiesRegistryDao();
-        executor = MobileDatabaseBuilder.getExecutor();
+        executor = DatabaseBuilder.getExecutor();
     }
 
     @Override

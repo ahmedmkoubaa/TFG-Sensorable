@@ -28,7 +28,7 @@ import com.commons.database.KnownLocationEntity;
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
 import com.sensorable.utils.TablesFormatter;
 import com.commons.utils.SensorableDatabase;
-import com.sensorable.utils.MobileDatabaseBuilder;
+import com.commons.utils.DatabaseBuilder;
 import com.sensorable.utils.MqttHelper;
 import com.sensorable.utils.SensorOperations;
 
@@ -134,7 +134,7 @@ public class AdlDetectionService extends Service {
 
     // Initialize data structures from the database
     private void initializeMobileDatabase() {
-        SensorableDatabase database = MobileDatabaseBuilder.getDatabase(this);
+        SensorableDatabase database = DatabaseBuilder.getDatabase(this);
 
         eventDao = database.eventDao();
         eventForAdlDao = database.eventForAdlDao();
@@ -143,7 +143,7 @@ public class AdlDetectionService extends Service {
         knownLocationDao = database.knownLocationDao();
         adlRegistryDao = database.adlRegistryDao();
 
-        executor = MobileDatabaseBuilder.getExecutor();
+        executor = DatabaseBuilder.getExecutor();
     }
 
     // It does a query to local database and extract from it the data storing it in memory
@@ -208,7 +208,7 @@ public class AdlDetectionService extends Service {
                 registerReceiver(dataReceiver, SensorableIntentFilters.WEAR_SENSORS);
 
         LocalBroadcastManager.getInstance(this).
-                registerReceiver(dataReceiver, SensorableIntentFilters.SENSORS_PROVIDER_SENSORS);
+                registerReceiver(dataReceiver, SensorableIntentFilters.SERVICE_PROVIDER_SENSORS);
     }
 
     private void detectAdls(ArrayList<SensorTransmissionCoder.SensorData> data) {

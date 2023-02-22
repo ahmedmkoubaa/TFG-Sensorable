@@ -32,7 +32,7 @@ public class SensorablePermissions {
             Manifest.permission.SCHEDULE_EXACT_ALARM,
             Manifest.permission.SET_ALARM,
             Manifest.permission.RECEIVE_BOOT_COMPLETED,
-            Manifest.permission.BLUETOOTH_SCAN
+            Manifest.permission.BLUETOOTH_SCAN,
     };
 
     public static void requestAll(Activity requestingActivity) {

@@ -7,7 +7,9 @@ import com.commons.database.SensorMessageEntity;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.stream.Collectors;
 
 public class SensorTransmissionCoder {
     public static final String FIELDS_SEPARATOR = "~";
@@ -79,6 +81,7 @@ public class SensorTransmissionCoder {
         return decodeMessage(stringMessage);
     }
 
+
     public static SensorData decodeMessage(String message) {
         String[] splitedMessage = message.split(FIELDS_SEPARATOR);
 
@@ -136,6 +139,15 @@ public class SensorTransmissionCoder {
             }
 
             return new SensorMessageEntity(deviceType, sensorType, value[0], valueY, valueZ, timestamp, userCode);
+        }
+
+
+        public static ArrayList<SensorMessageEntity> toSensorDataMessages(ArrayList<SensorTransmissionCoder.SensorData> arrayMessage) {
+            return toSensorDataMessages(arrayMessage, null);
+        }
+
+        public static ArrayList<SensorMessageEntity> toSensorDataMessages(ArrayList<SensorTransmissionCoder.SensorData> arrayMessage, String userId) {
+            return arrayMessage.stream().map(sensorData -> sensorData.toSensorDataMessage(userId)).collect(Collectors.toCollection(ArrayList::new));
         }
 
         private void initializeSensorMessage(int deviceType, int sensorType, float[] value, long timestamp) {

@@ -18,7 +18,7 @@ import com.commons.database.BluetoothDeviceRegistryDao;
 import com.commons.database.BluetoothDeviceRegistryEntity;
 import com.commons.devicesDetection.BluetoothDevicesProvider;
 import com.commons.utils.SensorableDatabase;
-import com.sensorable.utils.MobileDatabaseBuilder;
+import com.commons.utils.DatabaseBuilder;
 
 import java.util.Date;
 import java.util.concurrent.ExecutorService;
@@ -41,11 +41,11 @@ public class BluetoothDetectionService extends Service {
     }
 
     private void initializeMobileDatabase() {
-        SensorableDatabase database = MobileDatabaseBuilder.getDatabase(this);
+        SensorableDatabase database = DatabaseBuilder.getDatabase(this);
 
         bluetoothDeviceDao = database.bluetoothDeviceDao();
         bluetoothDeviceRegistryDao = database.bluetoothDeviceRegistryDao();
-        executor = MobileDatabaseBuilder.getExecutor();
+        executor = DatabaseBuilder.getExecutor();
     }
 
     private void initializeBluetoothProvider() {

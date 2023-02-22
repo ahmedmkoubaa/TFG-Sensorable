@@ -22,7 +22,7 @@ import com.sensorable.R;
 import com.sensorable.utils.ActivityEntityAdapter;
 import com.commons.utils.LoginHelper;
 import com.commons.utils.SensorableDatabase;
-import com.sensorable.utils.MobileDatabaseBuilder;
+import com.commons.utils.DatabaseBuilder;
 
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
@@ -142,9 +142,9 @@ public class ActivitiesRegisterActivity extends AppCompatActivity {
 
     // initialize data structures from the database
     private void initializeMobileDatabase() {
-        SensorableDatabase database = MobileDatabaseBuilder.getDatabase(this);
+        SensorableDatabase database = DatabaseBuilder.getDatabase(this);
 
         activityDao = database.activityDao();
-        executor = MobileDatabaseBuilder.getExecutor();
+        executor = DatabaseBuilder.getExecutor();
     }
 }

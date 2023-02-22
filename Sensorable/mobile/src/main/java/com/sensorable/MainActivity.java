@@ -186,7 +186,7 @@ public class MainActivity extends AppCompatActivity {
                 registerReceiver(displayDataReceiver, SensorableIntentFilters.WEAR_SENSORS);
 
         LocalBroadcastManager.getInstance(this).
-                registerReceiver(displayDataReceiver, SensorableIntentFilters.SENSORS_PROVIDER_SENSORS);
+                registerReceiver(displayDataReceiver, SensorableIntentFilters.SERVICE_PROVIDER_SENSORS);
     }
 
 

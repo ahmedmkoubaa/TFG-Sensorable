@@ -16,7 +16,7 @@ import com.commons.database.StepsForActivitiesDao;
 import com.commons.database.StepsForActivitiesEntity;
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
 import com.commons.utils.SensorableDatabase;
-import com.sensorable.utils.MobileDatabaseBuilder;
+import com.commons.utils.DatabaseBuilder;
 import com.sensorable.utils.MqttHelper;
 import com.sensorable.utils.TablesFormatter;
 
@@ -128,13 +128,13 @@ public class RegisterActivitiesService extends Service {
 
     // initialize data structures from the database
     private void initializeMobileDatabase() {
-        SensorableDatabase database = MobileDatabaseBuilder.getDatabase(this);
+        SensorableDatabase database = DatabaseBuilder.getDatabase(this);
 
         activityDao = database.activityDao();
         activityStepDao = database.activityStepDao();
         stepsForActivitiesDao = database.stepsForActivitiesDao();
 
-        executor = MobileDatabaseBuilder.getExecutor();
+        executor = DatabaseBuilder.getExecutor();
     }
 
 

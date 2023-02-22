@@ -32,7 +32,7 @@ import com.sensorable.MainActivity;
 import com.sensorable.R;
 import com.sensorable.utils.KnownLocationsAdapter;
 import com.commons.utils.SensorableDatabase;
-import com.sensorable.utils.MobileDatabaseBuilder;
+import com.commons.utils.DatabaseBuilder;
 
 import org.osmdroid.config.Configuration;
 import org.osmdroid.util.GeoPoint;
@@ -138,9 +138,9 @@ public class LocationOptionsActivity extends AppCompatActivity {
     }
 
     private void initializeMobileDatabase() {
-        SensorableDatabase database = MobileDatabaseBuilder.getDatabase(this);
+        SensorableDatabase database = DatabaseBuilder.getDatabase(this);
         knownLocationDao = database.knownLocationDao();
-        executorService = MobileDatabaseBuilder.getExecutor();
+        executorService = DatabaseBuilder.getExecutor();
     }
 
     private void initializeActivityLauncher() {

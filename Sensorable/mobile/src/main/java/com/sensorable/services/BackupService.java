@@ -18,7 +18,7 @@ import com.commons.utils.SensorableConstants;
 import com.commons.utils.SensorableIntentFilters;
 import com.commons.database.SensorMessageDao;
 import com.commons.database.SensorMessageEntity;
-import com.sensorable.utils.MobileDatabaseBuilder;
+import com.commons.utils.DatabaseBuilder;
 import com.sensorable.utils.MqttHelper;
 
 import java.util.ArrayList;
@@ -67,27 +67,24 @@ public class BackupService extends Service {
                 registerReceiver(sensorDataReceiver, SensorableIntentFilters.WEAR_SENSORS);
 
         LocalBroadcastManager.getInstance(this).
-                registerReceiver(sensorDataReceiver, SensorableIntentFilters.SENSORS_PROVIDER_SENSORS);
+                registerReceiver(sensorDataReceiver, SensorableIntentFilters.SERVICE_PROVIDER_SENSORS);
     }
 
     private void saveSensorReads(ArrayList<SensorTransmissionCoder.SensorData> arrayMessage) {
         executor.execute(() -> {
-            ArrayList<SensorMessageEntity> sensorMessageEntities = new ArrayList<>();
-            for (SensorTransmissionCoder.SensorData s : arrayMessage) {
-                sensorMessageEntities.add(s.toSensorDataMessage(LoginHelper.getUserCode(this)));
-            }
-            sensorMessageDao.insertAll(sensorMessageEntities);
+            sensorMessageDao.insertAll(
+                    SensorTransmissionCoder.SensorData
+                            .toSensorDataMessages(arrayMessage, LoginHelper.getUserCode(this)));
         });
     }
 
     private void initializeMobileDatabase() {
-        sensorMessageDao = MobileDatabaseBuilder.getDatabase(BackupService.this).sensorMessageDao();
-        executor = MobileDatabaseBuilder.getExecutor();
+        sensorMessageDao = DatabaseBuilder.getDatabase(BackupService.this).sensorMessageDao();
+        executor = DatabaseBuilder.getExecutor();
     }
 
     // the service wakes up to send data and then it goes to sleep again until the alarm fires again
     private void initializeReminders() {
-
         Runnable runnable = new Runnable() {
             @Override
             public void run() {

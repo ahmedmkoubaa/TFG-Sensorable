@@ -11,6 +11,7 @@ import android.location.LocationListener;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
+import android.util.Pair;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -25,14 +26,7 @@ import java.util.ArrayList;
 
 public class SensorsProviderService extends Service {
     private final ArrayList<SensorTransmissionCoder.SensorData> sensorMessagesBuffer;
-    private final int[] listenedSensors = {
-            Sensor.TYPE_PROXIMITY,
-            Sensor.TYPE_HEART_RATE,
-            Sensor.TYPE_STEP_COUNTER,
-            Sensor.TYPE_LIGHT,
-            Sensor.TYPE_ACCELEROMETER,
-            Sensor.TYPE_LINEAR_ACCELERATION
-    };
+
 
     private SensorsProvider sensorsProvider;
 
@@ -73,8 +67,8 @@ public class SensorsProviderService extends Service {
         };
 
 
-        for (int sensorCode : listenedSensors) {
-            sensorsProvider.subscribeToSensor(sensorCode, transmissionListener, SensorManager.SENSOR_DELAY_NORMAL);
+        for (Pair<Integer, String> sensorCode : SensorableConstants.LISTENED_SENSORS) {
+            sensorsProvider.subscribeToSensor(sensorCode.first, transmissionListener, SensorManager.SENSOR_DELAY_NORMAL);
         }
 
         sensorsProvider.subscribeToGps(new LocationListener() {

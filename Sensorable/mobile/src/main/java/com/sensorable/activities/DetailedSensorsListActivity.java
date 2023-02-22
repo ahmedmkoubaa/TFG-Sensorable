@@ -217,7 +217,7 @@ public class DetailedSensorsListActivity extends AppCompatActivity {
 
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 sensorReceiver,
-                SensorableIntentFilters.SENSORS_PROVIDER_SENSORS
+                SensorableIntentFilters.SERVICE_PROVIDER_SENSORS
         );
 
         LocalBroadcastManager.getInstance(this).registerReceiver(

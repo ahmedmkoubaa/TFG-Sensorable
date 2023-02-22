@@ -17,7 +17,7 @@ import com.commons.database.KnownLocationDao;
 import com.commons.database.KnownLocationEntity;
 import com.google.android.material.textfield.TextInputEditText;
 import com.sensorable.R;
-import com.sensorable.utils.MobileDatabaseBuilder;
+import com.commons.utils.DatabaseBuilder;
 
 import org.osmdroid.events.MapEventsReceiver;
 import org.osmdroid.util.GeoPoint;
@@ -57,8 +57,8 @@ public class AddLocationActivity extends AppCompatActivity {
     }
 
     private void initializeMobileDatabase() {
-        knownLocationDao = MobileDatabaseBuilder.getDatabase(this).knownLocationDao();
-        executor = MobileDatabaseBuilder.getExecutor();
+        knownLocationDao = DatabaseBuilder.getDatabase(this).knownLocationDao();
+        executor = DatabaseBuilder.getExecutor();
     }
 
     private void initializeFieldsFromUI() {

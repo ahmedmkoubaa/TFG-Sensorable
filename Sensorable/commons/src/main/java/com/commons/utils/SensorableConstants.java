@@ -119,4 +119,5 @@ public class SensorableConstants {
     );
 
 
+    public static final int MAX_COLLECTED_DATA_EXPORT_CSV = 8192 ;
 }

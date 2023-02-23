@@ -143,9 +143,13 @@ public class BackupService extends Service {
             MqttHelper.unsubscribe(responseTopic);
         });
 
-        // Generate the string message and send
-        String payload = "[" + sensorsData.stream().map(SensorMessageEntity::toJson).collect(Collectors.joining(",")) + "]";
-        MqttHelper.publish(SensorableConstants.MQTT_SENSORS_INSERT, payload.getBytes(), responseTopic);
+        try {
+            // Generate the string message and send
+            String payload = "[" + sensorsData.stream().map(SensorMessageEntity::toJson).collect(Collectors.joining(",")) + "]";
+            MqttHelper.publish(SensorableConstants.MQTT_SENSORS_INSERT, payload.getBytes(), responseTopic);
+        } catch  (OutOfMemoryError e) {
+            e.printStackTrace();
+        }
     }
 
     @Nullable

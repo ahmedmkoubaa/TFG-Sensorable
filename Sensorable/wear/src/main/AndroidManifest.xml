@@ -20,6 +20,11 @@
         android:supportsRtl="true"
         android:theme="@android:style/Theme.DeviceDefault">
         <service
+            android:name="com.commons.services.CsvSaverService"
+            android:enabled="true"
+            android:exported="true"></service>
+
+        <service
             android:name=".services.DataSenderService"
             android:enabled="true"
             android:exported="true" />

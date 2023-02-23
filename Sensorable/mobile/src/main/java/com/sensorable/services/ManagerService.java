@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 
+import com.commons.services.CsvSaverService;
 import com.commons.utils.DeviceType;
 import com.commons.utils.SensorableConstants;
 import com.commons.services.SensorsProviderService;
@@ -20,6 +21,7 @@ public class ManagerService extends Service {
         initializeSensorsProviderService();
         initializeAdlDetectionService();
         initializeBackUpService();
+        initializeCsvSaverSerice();
 
 
         // This isn't useful yet and eventually we'll remove it
@@ -71,6 +73,10 @@ public class ManagerService extends Service {
 
     private void initializeBackUpService() {
         initializeService(BackupService.class);
+    }
+
+    private void initializeCsvSaverSerice() {
+        initializeService(CsvSaverService.class);
     }
 
     private void initializeRegisterActivitiesService() {

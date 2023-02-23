@@ -45,10 +45,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MyApplication"
         tools:replace="android:theme">
+
         <service
-            android:name=".services.CsvSaverService"
+            android:name="com.commons.services.CsvSaverService"
             android:enabled="true"
             android:exported="true"></service>
+
         <service
             android:name=".services.ManagerService"
             android:enabled="true"

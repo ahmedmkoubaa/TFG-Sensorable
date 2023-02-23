@@ -147,7 +147,9 @@ public class SensorTransmissionCoder {
         }
 
         public static ArrayList<SensorMessageEntity> toSensorDataMessages(ArrayList<SensorTransmissionCoder.SensorData> arrayMessage, String userId) {
-            return arrayMessage.stream().map(sensorData -> sensorData.toSensorDataMessage(userId)).collect(Collectors.toCollection(ArrayList::new));
+            return arrayMessage.stream()
+                    .map(sensorData -> sensorData.toSensorDataMessage(userId))
+                    .collect(Collectors.toCollection(ArrayList::new));
         }
 
         private void initializeSensorMessage(int deviceType, int sensorType, float[] value, long timestamp) {

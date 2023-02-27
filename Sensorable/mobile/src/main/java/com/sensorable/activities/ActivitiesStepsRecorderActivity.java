@@ -1,5 +1,6 @@
 package com.sensorable.activities;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
@@ -11,16 +12,17 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.commons.utils.LoginHelper;
-import com.commons.utils.SensorableConstants;
 import com.commons.database.ActivityStepDao;
 import com.commons.database.ActivityStepEntity;
 import com.commons.database.StepsForActivitiesRegistryDao;
 import com.commons.database.StepsForActivitiesRegistryEntity;
+import com.commons.utils.CsvSaver;
+import com.commons.utils.DatabaseBuilder;
+import com.commons.utils.LoginHelper;
+import com.commons.utils.SensorableConstants;
+import com.commons.utils.SensorableDatabase;
 import com.sensorable.R;
 import com.sensorable.utils.ActivityStepEntityAdapter;
-import com.commons.utils.SensorableDatabase;
-import com.commons.utils.DatabaseBuilder;
 import com.sensorable.utils.MqttHelper;
 
 import java.util.ArrayList;
@@ -33,6 +35,7 @@ import java.util.stream.Collectors;
 public class ActivitiesStepsRecorderActivity extends AppCompatActivity {
     private static StepsForActivitiesRegistryDao stepsForActivitiesRegistryDao;
     private static ActivityStepDao stepsDao;
+
 
     private static ExecutorService executor;
     private GridView stepsGrid;
@@ -105,6 +108,7 @@ public class ActivitiesStepsRecorderActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("¿Continuar?");
         builder.setMessage("Hay una actividad previa que no se finalizó ¿Desea continuar con ella?");
+
         builder.setPositiveButton("Continuar", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -115,6 +119,7 @@ public class ActivitiesStepsRecorderActivity extends AppCompatActivity {
                 executor.execute(() -> stepsArray.addAll(stepsDao.getStepsOfActivity(notEndedActivityId)));
             }
         });
+
         builder.setNegativeButton("Descartar", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -155,7 +160,6 @@ public class ActivitiesStepsRecorderActivity extends AppCompatActivity {
 
         return -1L;
     }
-
 
     private void startRecordUI() {
         startButton.setVisibility(View.GONE);
@@ -215,11 +219,19 @@ public class ActivitiesStepsRecorderActivity extends AppCompatActivity {
         }
     }
 
+    private String getUserCode() {
+        return LoginHelper.getUserCode(this);
+    }
+
+    private void saveActivityAsCSV(String userCode, StepsForActivitiesRegistryEntity activity) {
+        CsvSaver.exportActivityToCSV(userCode, activity);
+    }
+
     public static class StepsTimerRecorder {
+
         // These are reserved ids
         public static final int startId = -1;
         public static final int stopId = -2;
-
 
         public static void startRecordingSteps(final long activityId, final String userCode) {
             saveTag(activityId, startId, userCode);
@@ -230,18 +242,13 @@ public class ActivitiesStepsRecorderActivity extends AppCompatActivity {
         }
 
         public static void saveTag(long activityId, int stepId, final String userCode) {
-            long timestamp = new Date().getTime();
+            StepsForActivitiesRegistryEntity registry = new StepsForActivitiesRegistryEntity(
+                    activityId, stepId, new Date().getTime(), userCode, true
+            );
 
             // get the id of the relation between activity and step and save it into
-            executor.execute(() ->
-                    {
-                        stepsForActivitiesRegistryDao.insert(
-                                new StepsForActivitiesRegistryEntity(
-                                        activityId, stepId, timestamp, userCode, true
-                                )
-                        );
-                    }
-            );
+            executor.execute(() -> stepsForActivitiesRegistryDao.insert(registry));
+            CsvSaver.exportActivityToCSV(userCode, registry);
         }
 
         public static List<StepsForActivitiesRegistryEntity> getAll() {
@@ -257,5 +264,4 @@ public class ActivitiesStepsRecorderActivity extends AppCompatActivity {
             }
         }
     }
-
 }

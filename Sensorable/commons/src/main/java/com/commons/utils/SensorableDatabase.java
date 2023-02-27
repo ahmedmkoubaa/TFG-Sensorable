@@ -1,9 +1,8 @@
-package com.sensorable.utils;
+package com.commons.utils;
 
 import androidx.room.Database;
 import androidx.room.RoomDatabase;
 
-import com.commons.SensorableConstants;
 import com.commons.database.ActivityDao;
 import com.commons.database.ActivityEntity;
 import com.commons.database.ActivityStepDao;
@@ -41,10 +40,10 @@ import com.commons.database.StepsForActivitiesRegistryEntity;
         ActivityEntity.class,
         ActivityStepEntity.class,
         StepsForActivitiesEntity.class,
-        StepsForActivitiesRegistryEntity    .class
+        StepsForActivitiesRegistryEntity.class
 }, version = SensorableConstants.MOBILE_DATABASE_VERSION)
 
-public abstract class MobileDatabase extends RoomDatabase {
+public abstract class SensorableDatabase extends RoomDatabase {
     public abstract BluetoothDeviceDao bluetoothDeviceDao();
 
     public abstract SensorMessageDao sensorMessageDao();

@@ -15,14 +15,14 @@ import com.commons.database.BluetoothDeviceEntity;
 import com.commons.database.BluetoothDeviceRegistryDao;
 import com.commons.database.BluetoothDeviceRegistryEntity;
 import com.commons.devicesDetection.BluetoothDevicesProvider;
+import com.commons.utils.SensorableDatabase;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
 import com.sensorable.MainActivity;
 import com.sensorable.R;
 import com.sensorable.utils.BluetoothDeviceInfo;
 import com.sensorable.utils.BluetoothDeviceInfoAdapter;
-import com.sensorable.utils.MobileDatabase;
-import com.sensorable.utils.MobileDatabaseBuilder;
+import com.commons.utils.DatabaseBuilder;
 
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
@@ -49,10 +49,10 @@ public class BluetoothOptionsActivity extends AppCompatActivity {
     }
 
     private void initializeDatabase() {
-        MobileDatabase database = MobileDatabaseBuilder.getDatabase(this);
+        SensorableDatabase database = DatabaseBuilder.getDatabase(this);
         bluetoothDeviceDao = database.bluetoothDeviceDao();
         bluetoothDeviceRegistryDao = database.bluetoothDeviceRegistryDao();
-        executor = MobileDatabaseBuilder.getExecutor();
+        executor = DatabaseBuilder.getExecutor();
     }
 
     @Override

@@ -12,13 +12,13 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import com.commons.LoginHelper;
-import com.commons.SensorTransmissionCoder;
-import com.commons.SensorableConstants;
-import com.commons.SensorableIntentFilters;
+import com.commons.utils.LoginHelper;
+import com.commons.utils.SensorTransmissionCoder;
+import com.commons.utils.SensorableConstants;
+import com.commons.utils.SensorableIntentFilters;
 import com.commons.database.SensorMessageDao;
 import com.commons.database.SensorMessageEntity;
-import com.sensorable.utils.MobileDatabaseBuilder;
+import com.commons.utils.DatabaseBuilder;
 import com.sensorable.utils.MqttHelper;
 
 import java.util.ArrayList;
@@ -53,7 +53,7 @@ public class BackupService extends Service {
                     @Override
                     public void onReceive(Context context, Intent intent) {
                         Bundle b = intent.getBundleExtra(SensorableConstants.EXTRA_MESSAGE);
-                        ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage = b.getParcelableArrayList(SensorableConstants.BROADCAST_MESSAGE);
+                        ArrayList<SensorTransmissionCoder.SensorData> arrayMessage = b.getParcelableArrayList(SensorableConstants.BROADCAST_MESSAGE);
                         saveSensorReads(arrayMessage);
                     }
 
@@ -67,27 +67,24 @@ public class BackupService extends Service {
                 registerReceiver(sensorDataReceiver, SensorableIntentFilters.WEAR_SENSORS);
 
         LocalBroadcastManager.getInstance(this).
-                registerReceiver(sensorDataReceiver, SensorableIntentFilters.MOBILE_SENSORS);
+                registerReceiver(sensorDataReceiver, SensorableIntentFilters.SERVICE_PROVIDER_SENSORS);
     }
 
-    private void saveSensorReads(ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage) {
+    private void saveSensorReads(ArrayList<SensorTransmissionCoder.SensorData> arrayMessage) {
         executor.execute(() -> {
-            ArrayList<SensorMessageEntity> sensorMessageEntities = new ArrayList<>();
-            for (SensorTransmissionCoder.SensorMessage s : arrayMessage) {
-                sensorMessageEntities.add(s.toSensorDataMessage(LoginHelper.getUserCode(this)));
-            }
-            sensorMessageDao.insertAll(sensorMessageEntities);
+            sensorMessageDao.insertAll(
+                    SensorTransmissionCoder.SensorData
+                            .toSensorDataMessages(arrayMessage, LoginHelper.getUserCode(this)));
         });
     }
 
     private void initializeMobileDatabase() {
-        sensorMessageDao = MobileDatabaseBuilder.getDatabase(BackupService.this).sensorMessageDao();
-        executor = MobileDatabaseBuilder.getExecutor();
+        sensorMessageDao = DatabaseBuilder.getDatabase(BackupService.this).sensorMessageDao();
+        executor = DatabaseBuilder.getExecutor();
     }
 
     // the service wakes up to send data and then it goes to sleep again until the alarm fires again
     private void initializeReminders() {
-
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
@@ -137,7 +134,7 @@ public class BackupService extends Service {
         // Generate the responseTopic to receive the response confirmation of data correctly saved in remote database
         final String responseTopic =
                 SensorableConstants.MQTT_SENSORS_INSERT +
-                        SensorableConstants.JSON_FIELDS_SEPARATOR +
+                        SensorableConstants.MQTT_FIELDS_SEPARATOR +
                         LoginHelper.getUserCode(this) + System.currentTimeMillis();
 
         // Subscribe to the responseTopic delete users if its all correct and unsubscribe of it
@@ -146,9 +143,13 @@ public class BackupService extends Service {
             MqttHelper.unsubscribe(responseTopic);
         });
 
-        // Generate the string message and send
-        String payload = "[" + sensorsData.stream().map(SensorMessageEntity::toJson).collect(Collectors.joining(",")) + "]";
-        MqttHelper.publish(SensorableConstants.MQTT_SENSORS_INSERT, payload.getBytes(), responseTopic);
+        try {
+            // Generate the string message and send
+            String payload = "[" + sensorsData.stream().map(SensorMessageEntity::toJson).collect(Collectors.joining(",")) + "]";
+            MqttHelper.publish(SensorableConstants.MQTT_SENSORS_INSERT, payload.getBytes(), responseTopic);
+        } catch  (OutOfMemoryError e) {
+            e.printStackTrace();
+        }
     }
 
     @Nullable

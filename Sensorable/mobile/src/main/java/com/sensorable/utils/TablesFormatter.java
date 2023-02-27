@@ -1,9 +1,7 @@
 package com.sensorable.utils;
 
-import android.util.Log;
-
-import com.commons.OperatorType;
-import com.commons.SensorableConstants;
+import com.commons.utils.OperatorType;
+import com.commons.utils.SensorableConstants;
 import com.commons.database.ActivityEntity;
 import com.commons.database.ActivityStepEntity;
 import com.commons.database.AdlEntity;

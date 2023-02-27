@@ -1,22 +1,20 @@
-package com.sensorable.utils;
+package com.commons.utils;
 
 import android.content.Context;
 
 import androidx.room.Room;
 
-import com.commons.SensorableConstants;
-
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class MobileDatabaseBuilder {
-    private static MobileDatabase database;
-    public static MobileDatabase getDatabase(Context context) {
+public class DatabaseBuilder {
+    private static SensorableDatabase database;
+    public static SensorableDatabase getDatabase(Context context) {
         if (database == null) {
             database = Room.databaseBuilder(
                     context,
-                    MobileDatabase.class,
-                    SensorableConstants.MOBILE_DATABASE_NAME
+                    SensorableDatabase.class,
+                    SensorableConstants.SENSORABLE_DATABASE_NAME
             )
                     .fallbackToDestructiveMigration()
                     .build();

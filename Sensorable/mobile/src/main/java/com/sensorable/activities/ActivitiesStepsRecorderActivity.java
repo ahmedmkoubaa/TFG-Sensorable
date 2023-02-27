@@ -11,16 +11,16 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.commons.LoginHelper;
-import com.commons.SensorableConstants;
+import com.commons.utils.LoginHelper;
+import com.commons.utils.SensorableConstants;
 import com.commons.database.ActivityStepDao;
 import com.commons.database.ActivityStepEntity;
 import com.commons.database.StepsForActivitiesRegistryDao;
 import com.commons.database.StepsForActivitiesRegistryEntity;
 import com.sensorable.R;
 import com.sensorable.utils.ActivityStepEntityAdapter;
-import com.sensorable.utils.MobileDatabase;
-import com.sensorable.utils.MobileDatabaseBuilder;
+import com.commons.utils.SensorableDatabase;
+import com.commons.utils.DatabaseBuilder;
 import com.sensorable.utils.MqttHelper;
 
 import java.util.ArrayList;
@@ -199,11 +199,11 @@ public class ActivitiesStepsRecorderActivity extends AppCompatActivity {
 
     // initialize data structures from the database
     private void initializeMobileDatabase() {
-        MobileDatabase database = MobileDatabaseBuilder.getDatabase(this);
+        SensorableDatabase database = DatabaseBuilder.getDatabase(this);
 
         stepsDao = database.activityStepDao();
         stepsForActivitiesRegistryDao = database.stepsForActivitiesRegistryDao();
-        executor = MobileDatabaseBuilder.getExecutor();
+        executor = DatabaseBuilder.getExecutor();
     }
 
     @Override

@@ -3,7 +3,7 @@ package com.sensorable.utils;
 
 import android.util.Log;
 
-import com.commons.SensorableConstants;
+import com.commons.utils.SensorableConstants;
 import com.hivemq.client.mqtt.MqttClientState;
 import com.hivemq.client.mqtt.datatypes.MqttQos;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5AsyncClient;
@@ -11,7 +11,6 @@ import com.hivemq.client.mqtt.mqtt5.Mqtt5Client;
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
 import com.hivemq.client.mqtt.mqtt5.message.subscribe.Mqtt5RetainHandling;
 import com.hivemq.client.mqtt.mqtt5.message.unsubscribe.Mqtt5Unsubscribe;
-import com.hivemq.client.mqtt.mqtt5.message.unsubscribe.unsuback.Mqtt5UnsubAck;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -61,8 +60,6 @@ public class MqttHelper {
     }
 
     public static void subscribe(String topic, Consumer<Mqtt5Publish> callback) {
-
-
         client.toAsync()
                 .subscribeWith()
                 .topicFilter(topic)

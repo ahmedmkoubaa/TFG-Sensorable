@@ -19,11 +19,11 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import com.commons.LoginHelper;
-import com.commons.SensorTransmissionCoder;
-import com.commons.SensorableConstants;
-import com.commons.SensorableIntentFilters;
-import com.commons.SensorablePermissions;
+import com.commons.utils.LoginHelper;
+import com.commons.utils.SensorTransmissionCoder;
+import com.commons.utils.SensorableConstants;
+import com.commons.utils.SensorableIntentFilters;
+import com.commons.utils.SensorablePermissions;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
 import com.sensorable.activities.ActivitiesRegisterActivity;
@@ -40,7 +40,7 @@ import java.util.NoSuchElementException;
 
 
 public class MainActivity extends AppCompatActivity {
-    private final ArrayList<SensorTransmissionCoder.SensorMessage> sensorDataBuffer = new ArrayList<>();
+    private final ArrayList<SensorTransmissionCoder.SensorData> sensorDataBuffer = new ArrayList<>();
     private final int stepTarget = 5000;
     private Button userStateSummary;
     private ProgressBar useStateProgressBar;
@@ -139,7 +139,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onReceive(Context context, Intent intent) {
                         Bundle b = intent.getBundleExtra(SensorableConstants.EXTRA_MESSAGE);
-                        ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage = b.getParcelableArrayList(SensorableConstants.BROADCAST_MESSAGE);
+                        ArrayList<SensorTransmissionCoder.SensorData> arrayMessage = b.getParcelableArrayList(SensorableConstants.BROADCAST_MESSAGE);
 
 
                         // to display the average heart rate, we use streams
@@ -186,8 +186,9 @@ public class MainActivity extends AppCompatActivity {
                 registerReceiver(displayDataReceiver, SensorableIntentFilters.WEAR_SENSORS);
 
         LocalBroadcastManager.getInstance(this).
-                registerReceiver(displayDataReceiver, SensorableIntentFilters.MOBILE_SENSORS);
+                registerReceiver(displayDataReceiver, SensorableIntentFilters.SERVICE_PROVIDER_SENSORS);
     }
+
 
     private String getMessageBySteps(int steps) {
         String msg = null;

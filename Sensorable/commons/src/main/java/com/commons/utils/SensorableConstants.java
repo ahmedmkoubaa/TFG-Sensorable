@@ -1,4 +1,10 @@
-package com.commons;
+package com.commons.utils;
+
+import android.hardware.Sensor;
+import android.util.Pair;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class SensorableConstants {
     // for time operations
@@ -28,17 +34,22 @@ public class SensorableConstants {
     public final static String JSON_TABLES_SEPARATOR = "#";
     public final static String JSON_FIELDS_SEPARATOR = "\\|";
     public final static String JSON_ROWS_SEPARATOR = "\\}\\{";
+    public final static String MQTT_FIELDS_SEPARATOR = "/";
 
     // code number to identify gps as a sensor
     public final static int SENSOR_GPS = 2411;
 
+    // Umbrals and limits of data to send
     public final static int COLLECTED_SENSOR_DATA_SIZE = 1024;
     public final static int WEAR_BUFFER_SIZE = 1024;
     public final static int EMPATICA_BUFFER_SIZE = 128;
     public final static int SENSORS_PROVIDER_SERVICE_BUFFER_SIZE = 512;
+    public static final int MAX_WEAR_OS_COLLECTED_DATA = 512;
+
 
     // for mobile database
-    public final static String MOBILE_DATABASE_NAME = "default-mobile-database";
+    public final static String SENSORABLE_DATABASE_NAME = "default-mobile-database";
+    public final static String WEAR_DATABASE_NAME = "default-wear-database";
     public final static int MOBILE_DATABASE_NUMBER_THREADS = 1;
     public final static int MOBILE_DATABASE_VERSION = 62;
 
@@ -49,7 +60,7 @@ public class SensorableConstants {
     public final static long TIME_SINCE_LAST_ADL_DETECTION = 5 * MINUTES_TO_SECONDS * SECONDS_TO_MILLIS;
     public final static long TIME_SINCE_LAST_BLUETOOTH_DETECTION = 30 * MINUTES_TO_SECONDS * SECONDS_TO_MILLIS; // in milliseconds (those are 30 minutes)
     public final static int SCHEDULE_BLUETOOTH_DISCOVERY = 5 * SECONDS_TO_MILLIS; // in milliseconds
-    public final static int SCHEDULE_DATABASE_BACKUP = 5 * MINUTES_TO_SECONDS * SECONDS_TO_MILLIS; // in milliseconds
+    public final static int SCHEDULE_DATABASE_BACKUP = 5000; // 5 * MINUTES_TO_SECONDS * SECONDS_TO_MILLIS; // in milliseconds
     public static final int SCHEDULE_LOGGER_REFRESH = 10 * SECONDS_TO_MILLIS;
     public final static int TIME_SINCE_LAST_HEART_CHART_UPDATE = 5 * SECONDS_TO_MILLIS;
 
@@ -63,10 +74,10 @@ public class SensorableConstants {
     public static final String MQTT_CONNECT_URL = "broker.hivemq.com";
 
     public static final String MQTT_SENSORS_INSERT = "sensorable/database/sensors/insert";
-    public static final String MQTT_REQUEST_CUSTOM_ADLS =  "sensorable/database/adls/custom/request";
-    public static final String MQQTT_INFORM_CUSTOM_ADLS =  "sensorable/database/adls/custom/inform";
-    public static final String MQTT_REQUEST_GENERIC_ADLS =  "sensorable/database/adls/generics/request";
-    public static final String MQTT_INFORM_GENERIC_ADLS =  "sensorable/database/adls/generics/inform";
+    public static final String MQTT_REQUEST_CUSTOM_ADLS = "sensorable/database/adls/custom/request";
+    public static final String MQQTT_INFORM_CUSTOM_ADLS = "sensorable/database/adls/custom/inform";
+    public static final String MQTT_REQUEST_GENERIC_ADLS = "sensorable/database/adls/generics/request";
+    public static final String MQTT_INFORM_GENERIC_ADLS = "sensorable/database/adls/generics/inform";
     public static final String MQTT_INFORM_ACTIVITIES = "sensorable/database/activities/inform";
     public static final String MQTT_REQUEST_ACTIVITIES = "sensorable/database/activities/request";
     public static final String MQTT_ACTIVITIES_INSERT = "sensorable/database/activities/insert";
@@ -85,4 +96,28 @@ public class SensorableConstants {
 
     // for sensors shown in screen
     public static final double DISTANCE_OF_STEP_IN_M = 0.5;
+
+    // action name for intents
+    public static final String SENSORS_PROVIDER_DEVICE_TYPE = "DEVICE_TYPE";
+    public static final String SENSORS_PROVIDER_ACTION = "SENSORS_PROVIDER_ACTION";
+    public static final String SENSORS_PROVIDER_LOCATION = "SENSORS_PROVIDER_LOCATION";
+    public static final String ROOT_DIRECTOTY_NAME = "sensorable";
+    public static final String FILE_EXTENSION_SEPARATOR = ".";
+    public static final String CSV_EXTENSION = "csv";
+    public static final String FILE_PATH_SEPARATOR = "/";
+
+
+    public static final List<Pair<Integer, String>> LISTENED_SENSORS = Arrays.asList(
+            new Pair(Sensor.TYPE_PROXIMITY, "TYPE_PROXIMITY"),
+            new Pair(Sensor.TYPE_HEART_RATE, "TYPE_HEART_RATE"),
+            new Pair(Sensor.TYPE_STEP_COUNTER, "TYPE_STEP_COUNTER"),
+            new Pair(Sensor.TYPE_LIGHT, "TYPE_LIGHT"),
+            new Pair(Sensor.TYPE_ACCELEROMETER, "TYPE_ACCELEROMETER"),
+            new Pair(Sensor.TYPE_LINEAR_ACCELERATION, "TYPE_LINEAR_ACCELERATION"),
+            new Pair(Sensor.TYPE_RELATIVE_HUMIDITY, "TYPE_RELATIVE_HUMIDITY"),
+            new Pair(Sensor.TYPE_AMBIENT_TEMPERATURE, "TYPE_AMBIENT_TEMPERATURE")
+    );
+
+
+    public static final int MAX_COLLECTED_DATA_EXPORT_CSV = 8192 ;
 }

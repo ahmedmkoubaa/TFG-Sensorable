@@ -13,7 +13,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
@@ -22,8 +21,8 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.commons.SensorablePermissions;
-import com.commons.SensorsProvider;
+import com.commons.utils.SensorablePermissions;
+import com.commons.utils.SensorsProvider;
 import com.commons.database.KnownLocationDao;
 import com.commons.database.KnownLocationEntity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -32,8 +31,8 @@ import com.google.android.material.navigation.NavigationBarView;
 import com.sensorable.MainActivity;
 import com.sensorable.R;
 import com.sensorable.utils.KnownLocationsAdapter;
-import com.sensorable.utils.MobileDatabase;
-import com.sensorable.utils.MobileDatabaseBuilder;
+import com.commons.utils.SensorableDatabase;
+import com.commons.utils.DatabaseBuilder;
 
 import org.osmdroid.config.Configuration;
 import org.osmdroid.util.GeoPoint;
@@ -139,9 +138,9 @@ public class LocationOptionsActivity extends AppCompatActivity {
     }
 
     private void initializeMobileDatabase() {
-        MobileDatabase database = MobileDatabaseBuilder.getDatabase(this);
+        SensorableDatabase database = DatabaseBuilder.getDatabase(this);
         knownLocationDao = database.knownLocationDao();
-        executorService = MobileDatabaseBuilder.getExecutor();
+        executorService = DatabaseBuilder.getExecutor();
     }
 
     private void initializeActivityLauncher() {

@@ -1,11 +1,11 @@
-package com.sensorable;
+package com.sensorable.utils;
 
 import android.app.Activity;
 
 import androidx.annotation.NonNull;
 
-import com.commons.SensorTransmissionCoder;
-import com.commons.SensorableConstants;
+import com.commons.utils.SensorTransmissionCoder;
+import com.commons.utils.SensorableConstants;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -15,6 +15,7 @@ import com.google.android.gms.wearable.CapabilityInfo;
 import com.google.android.gms.wearable.Node;
 import com.google.android.gms.wearable.Wearable;
 
+
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -22,34 +23,42 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class WearSensorDataSender {
+    private final Activity context;
     private static final String WEAR_DATA_RECEPTION = "wear_data_reception";
     private static final String WEAR_DATA_RECEPTION_MESSAGE_PATH = "/wear_data_reception";
-    private final Activity context;
-    private final ExecutorService executorService = Executors.newFixedThreadPool(1);
-    private final ArrayList<SensorTransmissionCoder.SensorMessage> sensorsBuffer = new ArrayList<>();
+    private final ExecutorService executorThread = Executors.newFixedThreadPool(1);
+    private final ArrayList<SensorTransmissionCoder.SensorData> sensorsBuffer = new ArrayList<>();
 
     public WearSensorDataSender(Activity context) {
         this.context = context;
     }
 
     public void sendMessage(int device_type, int sensorType, float[] value) {
-        sendMessage(new SensorTransmissionCoder.SensorMessage(device_type, sensorType, value));
+        sendMessage(new SensorTransmissionCoder.SensorData(device_type, sensorType, value));
     }
 
-    public void sendMessage(final SensorTransmissionCoder.SensorMessage message) {
+    public void sendMessage(final SensorTransmissionCoder.SensorData message) {
         sensorsBuffer.add(message);
+        transmitData();
+    }
 
+    public void sendMessage(final ArrayList<SensorTransmissionCoder.SensorData> sensorArray) {
+        sensorsBuffer.addAll(sensorArray);
+        transmitData();
+    }
+
+    private void transmitData() {
         if (sensorsBuffer.size() == SensorableConstants.WEAR_BUFFER_SIZE) {
-            final ArrayList<SensorTransmissionCoder.SensorMessage> sensorsBackUpBuffer = new ArrayList<>(sensorsBuffer);
+            final ArrayList<SensorTransmissionCoder.SensorData> sensorsBackUpBuffer = new ArrayList<>(sensorsBuffer);
             sensorsBuffer.clear();
 
             String sensorsToSend = "";
-            for (SensorTransmissionCoder.SensorMessage s : sensorsBackUpBuffer) {
+            for (SensorTransmissionCoder.SensorData s : sensorsBackUpBuffer) {
                 sensorsToSend += s.toString() + SensorTransmissionCoder.DATA_SEPARATOR;
             }
 
             final String finalSensorsToSend = sensorsToSend;
-            executorService.execute(new Runnable() {
+            executorThread.execute(new Runnable() {
                 @Override
                 public void run() {
                     CapabilityInfo capabilityInfo = null;
@@ -60,9 +69,7 @@ public class WearSensorDataSender {
                                 .getCapabilityClient(context)
                                 .getCapability(WEAR_DATA_RECEPTION, CapabilityClient.FILTER_REACHABLE)
                         );
-                    } catch (ExecutionException e) {
-                        e.printStackTrace();
-                    } catch (InterruptedException e) {
+                    } catch (ExecutionException | InterruptedException e) {
                         e.printStackTrace();
                     }
 
@@ -105,8 +112,6 @@ public class WearSensorDataSender {
                 }
             });
         }
-
-
     }
 
     private String pickBestNodeId(Set<Node> nodes) {
@@ -120,5 +125,4 @@ public class WearSensorDataSender {
         }
         return bestNodeId;
     }
-
 }

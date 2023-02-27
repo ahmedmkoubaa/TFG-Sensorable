@@ -12,9 +12,9 @@ import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import com.commons.SensorTransmissionCoder;
-import com.commons.SensorableConstants;
-import com.commons.SensorableIntentFilters;
+import com.commons.utils.SensorTransmissionCoder;
+import com.commons.utils.SensorableConstants;
+import com.commons.utils.SensorableIntentFilters;
 import com.commons.database.AdlDao;
 import com.commons.database.AdlEntity;
 import com.commons.database.AdlRegistryDao;
@@ -27,8 +27,8 @@ import com.commons.database.KnownLocationDao;
 import com.commons.database.KnownLocationEntity;
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
 import com.sensorable.utils.TablesFormatter;
-import com.sensorable.utils.MobileDatabase;
-import com.sensorable.utils.MobileDatabaseBuilder;
+import com.commons.utils.SensorableDatabase;
+import com.commons.utils.DatabaseBuilder;
 import com.sensorable.utils.MqttHelper;
 import com.sensorable.utils.SensorOperations;
 
@@ -39,7 +39,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 
 public class AdlDetectionService extends Service {
-    private final ArrayList<SensorTransmissionCoder.SensorMessage> sensorDataBuffer = new ArrayList<>();
+    private final ArrayList<SensorTransmissionCoder.SensorData> sensorDataBuffer = new ArrayList<>();
     private final ArrayList<EventEntity> events = new ArrayList<>();
     private final ArrayList<EventForAdlEntity> eventsForAdls = new ArrayList<>();
     private final ArrayList<AdlEntity> adls = new ArrayList<>();
@@ -134,7 +134,7 @@ public class AdlDetectionService extends Service {
 
     // Initialize data structures from the database
     private void initializeMobileDatabase() {
-        MobileDatabase database = MobileDatabaseBuilder.getDatabase(this);
+        SensorableDatabase database = DatabaseBuilder.getDatabase(this);
 
         eventDao = database.eventDao();
         eventForAdlDao = database.eventForAdlDao();
@@ -143,7 +143,7 @@ public class AdlDetectionService extends Service {
         knownLocationDao = database.knownLocationDao();
         adlRegistryDao = database.adlRegistryDao();
 
-        executor = MobileDatabaseBuilder.getExecutor();
+        executor = DatabaseBuilder.getExecutor();
     }
 
     // It does a query to local database and extract from it the data storing it in memory
@@ -189,7 +189,7 @@ public class AdlDetectionService extends Service {
             @Override
             public void onReceive(Context context, Intent intent) {
                 Bundle b = intent.getBundleExtra(SensorableConstants.EXTRA_MESSAGE);
-                ArrayList<SensorTransmissionCoder.SensorMessage> arrayMessage = b.getParcelableArrayList(SensorableConstants.BROADCAST_MESSAGE);
+                ArrayList<SensorTransmissionCoder.SensorData> arrayMessage = b.getParcelableArrayList(SensorableConstants.BROADCAST_MESSAGE);
 
                 sensorDataBuffer.addAll(arrayMessage);
                 if (sensorDataBuffer.size() > SensorableConstants.COLLECTED_SENSOR_DATA_SIZE) {
@@ -208,12 +208,12 @@ public class AdlDetectionService extends Service {
                 registerReceiver(dataReceiver, SensorableIntentFilters.WEAR_SENSORS);
 
         LocalBroadcastManager.getInstance(this).
-                registerReceiver(dataReceiver, SensorableIntentFilters.MOBILE_SENSORS);
+                registerReceiver(dataReceiver, SensorableIntentFilters.SERVICE_PROVIDER_SENSORS);
     }
 
-    private void detectAdls(ArrayList<SensorTransmissionCoder.SensorMessage> data) {
+    private void detectAdls(ArrayList<SensorTransmissionCoder.SensorData> data) {
         // first step to detect adl is filtering the received extra larga amount of data
-        HashMap<Long, ArrayList<SensorTransmissionCoder.SensorMessage>> filteredData = filterData(data);
+        HashMap<Long, ArrayList<SensorTransmissionCoder.SensorData>> filteredData = filterData(data);
 
         // second step is evaluate only events and reuse this evaluations
         HashMap<Integer, Boolean> evaluatedEvents = evaluateEvents(filteredData);
@@ -222,7 +222,7 @@ public class AdlDetectionService extends Service {
         evaluateAdls(evaluatedEvents);
     }
 
-    private HashMap<Integer, Boolean> evaluateEvents(HashMap<Long, ArrayList<SensorTransmissionCoder.SensorMessage>> filteredData) {
+    private HashMap<Integer, Boolean> evaluateEvents(HashMap<Long, ArrayList<SensorTransmissionCoder.SensorData>> filteredData) {
         HashMap<Integer, Boolean> evaluatedEvents = new HashMap<>();
         SensorOperations.SensorOperation operation;
 
@@ -231,7 +231,7 @@ public class AdlDetectionService extends Service {
 
                 // Now, we look into the sensor readings and use sensor that we want to
                 // generate conditions and later shoot rules
-                for (SensorTransmissionCoder.SensorMessage s : filteredData.get(timestamp)) {
+                for (SensorTransmissionCoder.SensorData s : filteredData.get(timestamp)) {
 
                     // evaluate the events
                     // TODO remember to check the device type
@@ -335,37 +335,37 @@ public class AdlDetectionService extends Service {
         });
     }
 
-    private HashMap<Long, ArrayList<SensorTransmissionCoder.SensorMessage>> filterData(ArrayList<SensorTransmissionCoder.SensorMessage> data) {
+    private HashMap<Long, ArrayList<SensorTransmissionCoder.SensorData>> filterData(ArrayList<SensorTransmissionCoder.SensorData> data) {
         long floorTimestamp;
 
-        HashMap<Long, ArrayList<SensorTransmissionCoder.SensorMessage>>
+        HashMap<Long, ArrayList<SensorTransmissionCoder.SensorData>>
                 categorization = new HashMap<>();
 
         // iterate data sensor to categorize each sensor read per timestamp
-        for (SensorTransmissionCoder.SensorMessage newSensorMessage : data) {
-            floorTimestamp = newSensorMessage.getTimestamp() / SensorableConstants.ADL_FILTER_TIME;
+        for (SensorTransmissionCoder.SensorData newSensorData : data) {
+            floorTimestamp = newSensorData.getTimestamp() / SensorableConstants.ADL_FILTER_TIME;
 
 
             // if the categorization for these timestamp exists
             if (categorization.containsKey(floorTimestamp)) {
-                ArrayList<SensorTransmissionCoder.SensorMessage>
+                ArrayList<SensorTransmissionCoder.SensorData>
                         arrayByTimestamp = categorization.get(floorTimestamp);
 
                 boolean found = false;
-                ArrayList<SensorTransmissionCoder.SensorMessage> copyArray = new ArrayList<>(arrayByTimestamp);
+                ArrayList<SensorTransmissionCoder.SensorData> copyArray = new ArrayList<>(arrayByTimestamp);
 
                 // We want only the last sensor read from each categorization per timestamp
-                for (SensorTransmissionCoder.SensorMessage oldSensorMessage : arrayByTimestamp) {
+                for (SensorTransmissionCoder.SensorData oldSensorData : arrayByTimestamp) {
 
                     // we want to know if we have in the same stage (categorization) a repeated sensor data
-                    if (oldSensorMessage.getDeviceType() == newSensorMessage.getDeviceType()
-                            && oldSensorMessage.getSensorType() == newSensorMessage.getSensorType()) {
+                    if (oldSensorData.getDeviceType() == newSensorData.getDeviceType()
+                            && oldSensorData.getSensorType() == newSensorData.getSensorType()) {
 
                         // if the current value of this sensor from this device is older than the new
                         // then we replace it removing the old and inserting the new
-                        if (oldSensorMessage.getTimestamp() < newSensorMessage.getTimestamp()) {
-                            copyArray.remove(oldSensorMessage);
-                            copyArray.add(newSensorMessage);
+                        if (oldSensorData.getTimestamp() < newSensorData.getTimestamp()) {
+                            copyArray.remove(oldSensorData);
+                            copyArray.add(newSensorData);
 
                             found = true;
                         }
@@ -373,14 +373,14 @@ public class AdlDetectionService extends Service {
                 }
 
                 if (!found) {
-                    copyArray.add(newSensorMessage);
+                    copyArray.add(newSensorData);
                 }
 
                 categorization.replace(floorTimestamp, copyArray);
 
             } else {
-                ArrayList<SensorTransmissionCoder.SensorMessage> newArray = new ArrayList<>();
-                newArray.add(newSensorMessage);
+                ArrayList<SensorTransmissionCoder.SensorData> newArray = new ArrayList<>();
+                newArray.add(newSensorData);
                 categorization.put(floorTimestamp, newArray);
             }
         }

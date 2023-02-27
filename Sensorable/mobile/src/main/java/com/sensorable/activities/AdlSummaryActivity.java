@@ -19,8 +19,8 @@ import com.sensorable.MainActivity;
 import com.sensorable.R;
 import com.sensorable.utils.DetectedAdlInfo;
 import com.sensorable.utils.DetectedAdlInfoAdapter;
-import com.sensorable.utils.MobileDatabase;
-import com.sensorable.utils.MobileDatabaseBuilder;
+import com.commons.utils.SensorableDatabase;
+import com.commons.utils.DatabaseBuilder;
 
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
@@ -43,10 +43,10 @@ public class AdlSummaryActivity extends AppCompatActivity {
     }
 
     private void initializeMobileDatabase() {
-        MobileDatabase database = MobileDatabaseBuilder.getDatabase(this);
+        SensorableDatabase database = DatabaseBuilder.getDatabase(this);
         adlRegistryDao = database.adlRegistryDao();
         adlDao = database.adlDao();
-        executor = MobileDatabaseBuilder.getExecutor();
+        executor = DatabaseBuilder.getExecutor();
 
         Log.i("DETECTED_ADL", "initialized mobile database");
     }

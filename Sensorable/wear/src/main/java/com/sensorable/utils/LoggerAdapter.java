@@ -1,4 +1,4 @@
-package com.sensorable;
+package com.sensorable.utils;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.commons.database.BluetoothDeviceDao;
+import com.sensorable.R;
 
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;

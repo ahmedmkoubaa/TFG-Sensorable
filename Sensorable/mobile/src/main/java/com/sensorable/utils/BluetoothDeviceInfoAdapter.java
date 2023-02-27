@@ -11,7 +11,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.commons.SensorableDates;
+import com.commons.utils.DatabaseBuilder;
+import com.commons.utils.SensorableDates;
 import com.commons.database.BluetoothDeviceDao;
 import com.commons.database.BluetoothDeviceEntity;
 import com.sensorable.R;
@@ -34,8 +35,8 @@ public class BluetoothDeviceInfoAdapter extends ArrayAdapter<BluetoothDeviceInfo
     }
 
     private void initializeDatabase() {
-        bluetoothDeviceDao = MobileDatabaseBuilder.getDatabase(context).bluetoothDeviceDao();
-        executor = MobileDatabaseBuilder.getExecutor();
+        bluetoothDeviceDao = DatabaseBuilder.getDatabase(context).bluetoothDeviceDao();
+        executor = DatabaseBuilder.getExecutor();
     }
 
     @NonNull

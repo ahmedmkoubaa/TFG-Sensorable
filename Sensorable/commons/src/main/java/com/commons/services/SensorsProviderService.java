@@ -1,4 +1,4 @@
-package com.sensorable.services;
+package com.commons.services;
 
 import android.app.Service;
 import android.content.Intent;
@@ -11,29 +11,22 @@ import android.location.LocationListener;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
-import android.widget.Toast;
+import android.util.Pair;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import com.commons.DeviceType;
-import com.commons.SensorTransmissionCoder;
-import com.commons.SensorableConstants;
-import com.commons.SensorsProvider;
+import com.commons.utils.DeviceType;
+import com.commons.utils.SensorTransmissionCoder;
+import com.commons.utils.SensorableConstants;
+import com.commons.utils.SensorsProvider;
 
 import java.util.ArrayList;
 
 public class SensorsProviderService extends Service {
-    private final ArrayList<SensorTransmissionCoder.SensorMessage> sensorMessagesBuffer;
-    private final int[] listenedSensors = {
-            Sensor.TYPE_PROXIMITY,
-            Sensor.TYPE_HEART_RATE,
-            Sensor.TYPE_STEP_COUNTER,
-            Sensor.TYPE_LIGHT,
-            Sensor.TYPE_ACCELEROMETER,
-            Sensor.TYPE_LINEAR_ACCELERATION
-    };
+    private final ArrayList<SensorTransmissionCoder.SensorData> sensorMessagesBuffer;
+
 
     private SensorsProvider sensorsProvider;
 
@@ -43,20 +36,23 @@ public class SensorsProviderService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        initializeSensorsProvider();
+
+        initializeSensorsProvider(intent.getIntExtra(SensorableConstants.SENSORS_PROVIDER_DEVICE_TYPE, -1));
 
         Log.i("ADL_DETECTION_SERVICE", "initialized adl detection service");
         return super.onStartCommand(intent, flags, startId);
     }
 
-    private void initializeSensorsProvider() {
+    private void initializeSensorsProvider(final int deviceTypeFromIntent) {
+        final int deviceType = deviceTypeFromIntent;
+
         sensorsProvider = new SensorsProvider(this);
         SensorEventListener transmissionListener = new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent sensorEvent) {
-                SensorTransmissionCoder.SensorMessage msg =
-                        new SensorTransmissionCoder.SensorMessage(
-                                DeviceType.MOBILE,
+                SensorTransmissionCoder.SensorData msg =
+                        new SensorTransmissionCoder.SensorData(
+                                deviceType,
                                 sensorEvent.sensor.getType(),
                                 sensorEvent.values
                         );
@@ -71,10 +67,9 @@ public class SensorsProviderService extends Service {
         };
 
 
-        for (int sensorCode : listenedSensors) {
-            sensorsProvider.subscribeToSensor(sensorCode, transmissionListener, SensorManager.SENSOR_DELAY_NORMAL);
+        for (Pair<Integer, String> sensorCode : SensorableConstants.LISTENED_SENSORS) {
+            sensorsProvider.subscribeToSensor(sensorCode.first, transmissionListener, SensorManager.SENSOR_DELAY_NORMAL);
         }
-
 
         sensorsProvider.subscribeToGps(new LocationListener() {
             @Override
@@ -97,8 +92,8 @@ public class SensorsProviderService extends Service {
         });
     }
 
-
     private void broadcastGPSLocation(Location location) {
+        // broadcast the location as a location to a custom intent filter
         Intent intent = new Intent(SensorableConstants.SENSORS_PROVIDER_SENDS_LOCATION);
 
         Bundle bundle = new Bundle();
@@ -107,8 +102,9 @@ public class SensorsProviderService extends Service {
         intent.putExtra(SensorableConstants.EXTRA_MESSAGE, bundle);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
 
-        SensorTransmissionCoder.SensorMessage msg =
-                new SensorTransmissionCoder.SensorMessage(
+        // broadcast the locations as a sensor to save it in the bd and to use it in the cloud
+        SensorTransmissionCoder.SensorData msg =
+                new SensorTransmissionCoder.SensorData(
                         DeviceType.MOBILE,
                         SensorableConstants.SENSOR_GPS,
                         new float[]{
@@ -121,7 +117,7 @@ public class SensorsProviderService extends Service {
         broadcastSensorMessages(msg);
     }
 
-    private void broadcastSensorMessages(SensorTransmissionCoder.SensorMessage msg) {
+    private void broadcastSensorMessages(SensorTransmissionCoder.SensorData msg) {
         sensorMessagesBuffer.add(msg);
         if (sensorMessagesBuffer.size() >= SensorableConstants.SENSORS_PROVIDER_SERVICE_BUFFER_SIZE) {
             Intent intent = new Intent(SensorableConstants.SENSORS_PROVIDER_SENDS_SENSORS);
@@ -138,7 +134,7 @@ public class SensorsProviderService extends Service {
     }
 
     private void broadcastSensorMessages(int sensorType, float[] values) {
-        broadcastSensorMessages(new SensorTransmissionCoder.SensorMessage(DeviceType.MOBILE, sensorType, values));
+        broadcastSensorMessages(new SensorTransmissionCoder.SensorData(DeviceType.MOBILE, sensorType, values));
     }
 
     @Nullable

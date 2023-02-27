@@ -12,7 +12,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.commons.SensorableConstants;
+import com.commons.utils.SensorableConstants;
 import com.commons.database.ActivityDao;
 import com.commons.database.ActivityEntity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -20,9 +20,9 @@ import com.google.android.material.navigation.NavigationBarView;
 import com.sensorable.MainActivity;
 import com.sensorable.R;
 import com.sensorable.utils.ActivityEntityAdapter;
-import com.commons.LoginHelper;
-import com.sensorable.utils.MobileDatabase;
-import com.sensorable.utils.MobileDatabaseBuilder;
+import com.commons.utils.LoginHelper;
+import com.commons.utils.SensorableDatabase;
+import com.commons.utils.DatabaseBuilder;
 
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
@@ -142,9 +142,9 @@ public class ActivitiesRegisterActivity extends AppCompatActivity {
 
     // initialize data structures from the database
     private void initializeMobileDatabase() {
-        MobileDatabase database = MobileDatabaseBuilder.getDatabase(this);
+        SensorableDatabase database = DatabaseBuilder.getDatabase(this);
 
         activityDao = database.activityDao();
-        executor = MobileDatabaseBuilder.getExecutor();
+        executor = DatabaseBuilder.getExecutor();
     }
 }

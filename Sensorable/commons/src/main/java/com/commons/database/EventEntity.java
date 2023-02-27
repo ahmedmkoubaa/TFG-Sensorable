@@ -5,7 +5,7 @@ import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
-import com.commons.OperatorType;
+import com.commons.utils.OperatorType;
 
 @Entity
 public class EventEntity {

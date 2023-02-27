@@ -8,18 +8,17 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.IBinder;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
-import com.commons.SensorableConstants;
+import com.commons.utils.SensorableConstants;
 import com.commons.database.BluetoothDeviceDao;
 import com.commons.database.BluetoothDeviceEntity;
 import com.commons.database.BluetoothDeviceRegistryDao;
 import com.commons.database.BluetoothDeviceRegistryEntity;
 import com.commons.devicesDetection.BluetoothDevicesProvider;
-import com.sensorable.utils.MobileDatabase;
-import com.sensorable.utils.MobileDatabaseBuilder;
+import com.commons.utils.SensorableDatabase;
+import com.commons.utils.DatabaseBuilder;
 
 import java.util.Date;
 import java.util.concurrent.ExecutorService;
@@ -42,11 +41,11 @@ public class BluetoothDetectionService extends Service {
     }
 
     private void initializeMobileDatabase() {
-        MobileDatabase database = MobileDatabaseBuilder.getDatabase(this);
+        SensorableDatabase database = DatabaseBuilder.getDatabase(this);
 
         bluetoothDeviceDao = database.bluetoothDeviceDao();
         bluetoothDeviceRegistryDao = database.bluetoothDeviceRegistryDao();
-        executor = MobileDatabaseBuilder.getExecutor();
+        executor = DatabaseBuilder.getExecutor();
     }
 
     private void initializeBluetoothProvider() {

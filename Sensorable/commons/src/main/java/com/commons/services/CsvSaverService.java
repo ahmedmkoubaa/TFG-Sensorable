@@ -41,7 +41,6 @@ public class CsvSaverService extends Service {
 
     private void initializeReceiver() {
         // To receive data and store it using local database
-
         final BroadcastReceiver dataReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -111,13 +110,10 @@ public class CsvSaverService extends Service {
 
             for (SensorMessageEntity sensorMessage : sensorMessages) {
                 String[] row = {
-                        String.valueOf(sensorMessage.deviceType),
-                        String.valueOf(sensorMessage.sensorType),
                         String.valueOf(sensorMessage.valuesX),
                         String.valueOf(sensorMessage.valuesY),
                         String.valueOf(sensorMessage.valuesZ),
                         String.valueOf(sensorMessage.timestamp),
-                        sensorMessage.userId
                 };
                 writer.writeNext(row);
             }

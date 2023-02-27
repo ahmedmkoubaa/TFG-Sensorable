@@ -12,7 +12,7 @@ import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.ToggleButton;
 
-import com.commons.services.CsvSaverService;
+import com.commons.services.CsvSensorsSaverService;
 import com.commons.utils.DeviceType;
 import com.commons.utils.SensorableConstants;
 import com.commons.utils.SensorablePermissions;
@@ -64,7 +64,7 @@ public class MainActivity extends WearableActivity {
         intent.putExtra(SensorableConstants.SENSORS_PROVIDER_DEVICE_TYPE, WearosEnvironment.getDeviceType());
         startService(intent);
 
-        startService(new Intent(this, CsvSaverService.class));
+        startService(new Intent(this, CsvSensorsSaverService.class));
     }
 
     // initialize a sensors data receptor

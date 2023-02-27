@@ -20,7 +20,7 @@
         android:supportsRtl="true"
         android:theme="@android:style/Theme.DeviceDefault">
         <service
-            android:name="com.commons.services.CsvSaverService"
+            android:name="com.commons.services.CsvSensorsSaverService"
             android:enabled="true"
             android:exported="true"></service>
 

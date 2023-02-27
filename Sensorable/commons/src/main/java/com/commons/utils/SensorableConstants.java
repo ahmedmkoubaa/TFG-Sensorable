@@ -10,7 +10,7 @@ public class SensorableConstants {
     // for time operations
     public final static int MINUTES_TO_SECONDS = 60;
     public final static int SECONDS_TO_MILLIS = 1000;
-    public static final double BACKUP_PART_SIZE = 20000;
+    public static final double BACKUP_PART_SIZE = 10000;
 
     // for requests
     public final static int REQUEST_PERMISSIONS_CODE = 1;
@@ -120,4 +120,6 @@ public class SensorableConstants {
 
 
     public static final int MAX_COLLECTED_DATA_EXPORT_CSV = 8192 ;
+    public static final String ACTIVITIES_REGISTRY_PATH = "ACTIVITIES_REGISTRY";
+    public static final String ACTIVITIES_FILE_NAME = "ACTIVITIES";
 }

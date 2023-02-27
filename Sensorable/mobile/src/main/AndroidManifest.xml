@@ -47,7 +47,7 @@
         tools:replace="android:theme">
 
         <service
-            android:name="com.commons.services.CsvSaverService"
+            android:name="com.commons.services.CsvSensorsSaverService"
             android:enabled="true"
             android:exported="true"></service>
 

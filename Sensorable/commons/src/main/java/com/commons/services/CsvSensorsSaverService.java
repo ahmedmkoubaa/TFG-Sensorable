@@ -5,7 +5,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -13,16 +12,13 @@ import androidx.core.util.Pair;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.commons.database.SensorMessageEntity;
+import com.commons.utils.CsvSaver;
 import com.commons.utils.DeviceType;
 import com.commons.utils.LoginHelper;
 import com.commons.utils.SensorTransmissionCoder;
 import com.commons.utils.SensorableConstants;
 import com.commons.utils.SensorableIntentFilters;
-import com.opencsv.CSVWriter;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -30,9 +26,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-public class CsvSaverService extends Service {
-
+public class CsvSensorsSaverService extends Service {
     private final ArrayList<SensorMessageEntity> sensorBufferToExportCSV = new ArrayList();
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         initializeReceiver();
@@ -83,46 +79,12 @@ public class CsvSaverService extends Service {
                 if (!filteredArray.isEmpty()) {
                     // pass the base path using the usercode and the deviceType
                     // then pass the sensor name stored in sensor.second to have a file name
-                    String userCode =  Objects.toString(LoginHelper.getUserCode(this), "NULL");
-                    String basePath = userCode + SensorableConstants.FILE_PATH_SEPARATOR +  device.second;
-                    exportToCsv(filteredArray,  basePath, sensor.second);
+                    String userCode = Objects.toString(LoginHelper.getUserCode(this), "NULL");
+                    String basePath = userCode + SensorableConstants.FILE_PATH_SEPARATOR + device.second;
+                    CsvSaver.exportSensorsToCsv(filteredArray, basePath, sensor.second);
                 }
             });
         });
-    }
-
-    // It receives the data and the path of the file where it's necessary to store the data
-    // if the file path doesn't exists it creates it to save the data as a CSV
-    public void exportToCsv(List<SensorMessageEntity> sensorMessages, final String path, final String fileName) {
-        File exportDir = new File(Environment.getExternalStorageDirectory(), SensorableConstants.ROOT_DIRECTOTY_NAME + SensorableConstants.FILE_PATH_SEPARATOR + path) ;
-        exportDir.mkdirs();
-
-        File exportFile = new File(exportDir.getAbsolutePath(), fileName + SensorableConstants.FILE_EXTENSION_SEPARATOR + SensorableConstants.CSV_EXTENSION);
-
-        try {
-            exportFile.createNewFile();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            CSVWriter writer = new CSVWriter(new FileWriter(exportFile));
-
-            for (SensorMessageEntity sensorMessage : sensorMessages) {
-                String[] row = {
-                        String.valueOf(sensorMessage.valuesX),
-                        String.valueOf(sensorMessage.valuesY),
-                        String.valueOf(sensorMessage.valuesZ),
-                        String.valueOf(sensorMessage.timestamp),
-                };
-                writer.writeNext(row);
-            }
-            writer.close();
-
-        } catch (IOException e) {
-            Log.e("CSV SAVER SERVICE", "FAILURE SAVING DATA" + e.getMessage());
-            deleteDirectory(exportDir);
-        }
     }
 
     // It gets dynamically the device types and returns a list of pairs
@@ -145,23 +107,6 @@ public class CsvSaverService extends Service {
         return arrayFields;
     }
 
-
-    // Deletes all directories recursively beginning from passed directory
-    public static boolean deleteDirectory(File directory) {
-        if (directory.exists()) {
-            File[] files = directory.listFiles();
-            if (files != null) {
-                for (File file : files) {
-                    if (file.isDirectory()) {
-                        deleteDirectory(file);
-                    } else {
-                        file.delete();
-                    }
-                }
-            }
-        }
-        return directory.delete();
-    }
 
     @Override
     public IBinder onBind(Intent intent) {

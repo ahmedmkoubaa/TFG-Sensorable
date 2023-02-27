@@ -6,7 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 
-import com.commons.services.CsvSaverService;
+import com.commons.services.CsvSensorsSaverService;
 import com.commons.utils.DeviceType;
 import com.commons.utils.SensorableConstants;
 import com.commons.services.SensorsProviderService;
@@ -76,7 +76,7 @@ public class ManagerService extends Service {
     }
 
     private void initializeCsvSaverSerice() {
-        initializeService(CsvSaverService.class);
+        initializeService(CsvSensorsSaverService.class);
     }
 
     private void initializeRegisterActivitiesService() {

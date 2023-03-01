@@ -41,10 +41,10 @@ public class SensorableConstants {
 
     // Umbrals and limits of data to send
     public final static int COLLECTED_SENSOR_DATA_SIZE = 1024;
-    public final static int WEAR_BUFFER_SIZE = 1024;
+    public final static int WEAR_SENDING_BUFFER_SIZE = 1024;
     public final static int EMPATICA_BUFFER_SIZE = 128;
     public final static int SENSORS_PROVIDER_SERVICE_BUFFER_SIZE = 512;
-    public static final int MAX_WEAR_OS_COLLECTED_DATA = 512;
+    public static final int MAX_WEAR_OS_COLLECTED_DATA = 2056;
 
 
     // for mobile database

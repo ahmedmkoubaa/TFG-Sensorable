@@ -13,12 +13,16 @@ import android.widget.ListView;
 import android.widget.ToggleButton;
 
 import com.commons.services.CsvSensorsSaverService;
+import com.commons.utils.Actions;
 import com.commons.utils.DeviceType;
 import com.commons.utils.SensorableConstants;
 import com.commons.utils.SensorablePermissions;
 import com.commons.utils.SensorsProvider;
 import com.commons.services.SensorsProviderService;
+import com.commons.utils.ServiceState;
+import com.commons.utils.ServiceStatePreferences;
 import com.sensorable.services.DataSenderService;
+import com.sensorable.services.WearForegroundService;
 import com.sensorable.utils.LoggerAdapter;
 import com.sensorable.utils.SensorableLogger;
 import com.sensorable.utils.WearSensorDataSender;
@@ -57,6 +61,16 @@ public class MainActivity extends WearableActivity {
         initializeSensorsDataSendingListeners();
     }
 
+    private void changeServiceState(Actions action) {
+        if (ServiceStatePreferences.getServiceState(this) == ServiceState.STOPPED && action == Actions.STOP) {
+            return;
+        }
+
+        Intent intent = new Intent(this, WearForegroundService.class);
+        intent.setAction(action.name()); // Set the action to be performed (Start or Stop)
+        startForegroundService(intent); // Start a foreground service
+    }
+
     private void initializeServices() {
         startService(new Intent(this, DataSenderService.class));
 
@@ -64,7 +78,7 @@ public class MainActivity extends WearableActivity {
         intent.putExtra(SensorableConstants.SENSORS_PROVIDER_DEVICE_TYPE, WearosEnvironment.getDeviceType());
         startService(intent);
 
-        startService(new Intent(this, CsvSensorsSaverService.class));
+        changeServiceState(Actions.START);
     }
 
     // initialize a sensors data receptor
@@ -117,15 +131,5 @@ public class MainActivity extends WearableActivity {
                 WearosEnvironment.setDeviceType(isChecked ? DeviceType.WEAROS_RIGHT_HAND : DeviceType.WEAROS_LEFT_HAND);
             }
         });
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
     }
 }

@@ -48,7 +48,7 @@ public class WearTransmissionService extends WearableListenerService {
     private void sendMessageToActivity(SensorTransmissionCoder.SensorData msg) {
 
         sensorMessagesBuffer.add(msg);
-        if (sensorMessagesBuffer.size() >= SensorableConstants.WEAR_BUFFER_SIZE) {
+        if (sensorMessagesBuffer.size() >= SensorableConstants.WEAR_SENDING_BUFFER_SIZE) {
             Intent intent = new Intent(SensorableConstants.WEAR_SENDS_SENSOR_DATA);
             // You can also include some extra data.
 

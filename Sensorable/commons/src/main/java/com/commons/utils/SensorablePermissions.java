@@ -33,6 +33,7 @@ public class SensorablePermissions {
             Manifest.permission.SET_ALARM,
             Manifest.permission.RECEIVE_BOOT_COMPLETED,
             Manifest.permission.BLUETOOTH_SCAN,
+            Manifest.permission.FOREGROUND_SERVICE
     };
 
     public static void requestAll(Activity requestingActivity) {

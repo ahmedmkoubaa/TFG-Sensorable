@@ -24,6 +24,7 @@ import com.commons.utils.SensorTransmissionCoder;
 import com.commons.utils.SensorableConstants;
 import com.commons.utils.SensorableIntentFilters;
 import com.commons.utils.SensorablePermissions;
+import com.commons.utils.SensorableServicesManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
 import com.sensorable.activities.ActivitiesRegisterActivity;
@@ -224,9 +225,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initializeManagerService() {
-        startService(new Intent(this, ManagerService.class));
+        SensorableServicesManager.initializeService(this, ManagerService.class);
     }
-
 
     private void initializeAttributesFromUI() {
         userStateSummary = (Button) findViewById(R.id.userStateSummary);

@@ -51,7 +51,6 @@ public class WearForegroundService extends Service {
     private final String TAG = "WearForegroundService::lock";
 
     private final ArrayList<SensorTransmissionCoder.SensorData> sensorDataBuffer = new ArrayList<>();
-    private final ArrayList<SensorTransmissionCoder.SensorData> csvSensorsBuffer = new ArrayList<>();
 
     private boolean isServiceStarted = false;
     private SensorableDatabase database;
@@ -67,7 +66,6 @@ public class WearForegroundService extends Service {
 
         initializeDatabase();
     }
-
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -112,16 +110,13 @@ public class WearForegroundService extends Service {
                         );
 
                 sensorSender.sendMessage(newSensorEvent);
-
                 exportData(newSensorEvent);
-
             }
 
             @Override
             public void onAccuracyChanged(Sensor sensor, int i) {
             }
         };
-
 
         for (int sensorCode : listenedSensors) {
             sensorsProvider.subscribeToSensor(sensorCode, listenerDataSender, SensorManager.SENSOR_DELAY_NORMAL);
@@ -170,6 +165,7 @@ public class WearForegroundService extends Service {
                 "Endless Service notifications channel",
                 NotificationManager.IMPORTANCE_HIGH
         );
+
         channel.setDescription("Endless Service channel");
         channel.enableLights(true);
         channel.setLightColor(Color.RED);
@@ -209,7 +205,6 @@ public class WearForegroundService extends Service {
 
         // Start the sensors and do the needed function
         doForegroundJob();
-
     }
 
 

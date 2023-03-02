@@ -33,15 +33,20 @@ public class EmpaticaTransmissionService extends Service implements EmpaDataDele
     public int onStartCommand(Intent intent, int flags, int startId) {
 
         try {
-            // Create a new EmpaDeviceManager. MainActivity is both its data and status delegate.
-            deviceManager = new EmpaDeviceManager(this, this, this);
+           if (deviceManager == null) {
+               // Create a new EmpaDeviceManager. MainActivity is both its data and status delegate.
+               deviceManager = new EmpaDeviceManager(this, this, this);
 
-            // Initialize the Device Manager using your API key. You need to have Internet access at this point.
-            deviceManager.authenticateWithAPIKey(EMPATICA_API_KEY);
+               // Initialize the Device Manager using your API key. You need to have Internet access at this point.
+               deviceManager.authenticateWithAPIKey(EMPATICA_API_KEY);
+           }
 
         } catch (UnsatisfiedLinkError e) {
             Log.e("EMPATICA_TRANSMISSION_SERVICE", "error linking the empatica api");
+        } catch (NoClassDefFoundError e) {
+            Log.e("EMPATICA_TRANSMISSION_SERVICE", "error importing the EmpaDeviceManager");
         }
+
         // Initialize array buffer to send a bunch of messages instead of doing a single sending per sensor read
         sensorMessagesBuffer = new ArrayList<>();
 

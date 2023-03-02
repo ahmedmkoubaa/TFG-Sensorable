@@ -147,8 +147,9 @@ public class BackupService extends Service {
             // Generate the string message and send
             String payload = "[" + sensorsData.stream().map(SensorMessageEntity::toJson).collect(Collectors.joining(",")) + "]";
             MqttHelper.publish(SensorableConstants.MQTT_SENSORS_INSERT, payload.getBytes(), responseTopic);
-        } catch  (OutOfMemoryError e) {
+        } catch  (OutOfMemoryError | Exception e) {
             e.printStackTrace();
+            Log.e("BACK_UP_SERVICE", "An error happened again");
         }
     }
 

@@ -6,25 +6,18 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.util.Log;
 
-import androidx.core.util.Pair;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.commons.database.SensorMessageEntity;
 import com.commons.utils.CsvSaver;
-import com.commons.utils.DeviceType;
 import com.commons.utils.LoginHelper;
 import com.commons.utils.SensorTransmissionCoder;
 import com.commons.utils.SensorableConstants;
 import com.commons.utils.SensorableIntentFilters;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 public class CsvSensorsSaverService extends Service {
     private final ArrayList<SensorMessageEntity> sensorBufferToExportCSV = new ArrayList();

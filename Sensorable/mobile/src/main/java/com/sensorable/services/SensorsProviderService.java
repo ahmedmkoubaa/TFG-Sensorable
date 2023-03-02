@@ -1,4 +1,4 @@
-package com.commons.services;
+package com.sensorable.services;
 
 import android.app.Service;
 import android.content.Intent;
@@ -25,26 +25,20 @@ import com.commons.utils.SensorsProvider;
 import java.util.ArrayList;
 
 public class SensorsProviderService extends Service {
-    private final ArrayList<SensorTransmissionCoder.SensorData> sensorMessagesBuffer;
-
-
+    private final ArrayList<SensorTransmissionCoder.SensorData> sensorMessagesBuffer = new ArrayList<>();
     private SensorsProvider sensorsProvider;
 
-    public SensorsProviderService() {
-        sensorMessagesBuffer = new ArrayList<>();
-    }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        initializeSensorsProvider(intent.getIntExtra(SensorableConstants.SENSORS_PROVIDER_DEVICE_TYPE, -1));
+        initializeSensorsProvider();
 
         Log.i("ADL_DETECTION_SERVICE", "initialized adl detection service");
         return super.onStartCommand(intent, flags, startId);
     }
 
-    private void initializeSensorsProvider(final int deviceTypeFromIntent) {
-        final int deviceType = deviceTypeFromIntent;
+    private void initializeSensorsProvider() {
 
         sensorsProvider = new SensorsProvider(this);
         SensorEventListener transmissionListener = new SensorEventListener() {
@@ -52,7 +46,7 @@ public class SensorsProviderService extends Service {
             public void onSensorChanged(SensorEvent sensorEvent) {
                 SensorTransmissionCoder.SensorData msg =
                         new SensorTransmissionCoder.SensorData(
-                                deviceType,
+                                DeviceType.MOBILE,
                                 sensorEvent.sensor.getType(),
                                 sensorEvent.values
                         );
@@ -135,6 +129,11 @@ public class SensorsProviderService extends Service {
 
     private void broadcastSensorMessages(int sensorType, float[] values) {
         broadcastSensorMessages(new SensorTransmissionCoder.SensorData(DeviceType.MOBILE, sensorType, values));
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
     }
 
     @Nullable

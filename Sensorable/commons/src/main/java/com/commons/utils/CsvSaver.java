@@ -3,6 +3,8 @@ package com.commons.utils;
 import android.os.Environment;
 import android.util.Log;
 
+import androidx.core.util.Pair;
+
 import com.commons.database.SensorMessageEntity;
 import com.commons.database.StepsForActivitiesRegistryEntity;
 import com.opencsv.CSVWriter;
@@ -10,10 +12,14 @@ import com.opencsv.CSVWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class CsvSaver {
-
     // It receives the data and the path of the file where it's necessary to store the data
     // if the file path doesn't exists it creates it to save the data as a CSV
     public static void exportSensorsToCsv(List<SensorMessageEntity> sensorMessages, final String path, final String fileName) {
@@ -103,5 +109,49 @@ public class CsvSaver {
         exportFile.createNewFile();
 
         return exportFile;
+    }
+
+    // Created the data structure and files organization in order to save
+    // the CSV. It creates a default folder for the system and then creates
+    // folders with the user_id and into that folders a folder for each device type
+    // and into this folders a regular csv file for each sensor type.
+    public static void exportToCsv(final List<SensorMessageEntity> sensorMessages, final String userCode) {
+        // filter by device type and by sensor type dynamically using the already defined data types
+        getDevicesNames().stream().forEach(device -> {
+            SensorableConstants.LISTENED_SENSORS.forEach(sensor -> {
+                ArrayList<SensorMessageEntity> filteredArray = sensorMessages.stream()
+                        .filter(sensorMessage -> sensorMessage.deviceType == device.first)
+                        .filter(sensorMessage -> sensorMessage.sensorType == sensor.first)
+                        .collect(Collectors.toCollection(ArrayList::new));
+
+                if (!filteredArray.isEmpty()) {
+                    // pass the base path using the usercode and the deviceType
+                    // then pass the sensor name stored in sensor.second to have a file name
+
+                    String basePath = userCode + SensorableConstants.FILE_PATH_SEPARATOR + device.second;
+                    CsvSaver.exportSensorsToCsv(filteredArray, basePath, sensor.second);
+                }
+            });
+        });
+    }
+
+    // It gets dynamically the device types and returns a list of pairs
+    // where the first element is the device code and the second the device name
+    private static ArrayList<Pair<Integer, String>> getDevicesNames() {
+        ArrayList<Pair<Integer, String>> arrayFields = new ArrayList<>();
+
+        // Get the names of the static fields in the MyClass class
+        Field[] fields = DeviceType.class.getDeclaredFields();
+        for (Field field : fields) {
+            if (Modifier.isStatic(field.getModifiers())) {
+                try {
+                    arrayFields.add(new Pair(field.get(null), field.getName()));
+                } catch (IllegalAccessException e) {
+                    Log.e("EXPORT CSV", "HAS FAILED BECAUSE OF A NULL FIELD VALUE");
+                }
+            }
+        }
+
+        return arrayFields;
     }
 }

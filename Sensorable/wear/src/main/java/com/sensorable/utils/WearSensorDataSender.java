@@ -1,6 +1,6 @@
 package com.sensorable.utils;
 
-import android.app.Activity;
+import android.content.Context;
 
 import androidx.annotation.NonNull;
 
@@ -23,13 +23,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class WearSensorDataSender {
-    private final Activity context;
+    private final Context context;
     private static final String WEAR_DATA_RECEPTION = "wear_data_reception";
     private static final String WEAR_DATA_RECEPTION_MESSAGE_PATH = "/wear_data_reception";
     private final ExecutorService executorThread = Executors.newFixedThreadPool(1);
     private final ArrayList<SensorTransmissionCoder.SensorData> sensorsBuffer = new ArrayList<>();
 
-    public WearSensorDataSender(Activity context) {
+    public WearSensorDataSender(Context context) {
         this.context = context;
     }
 
@@ -48,9 +48,9 @@ public class WearSensorDataSender {
     }
 
     private void transmitData() {
-        if (sensorsBuffer.size() == SensorableConstants.WEAR_BUFFER_SIZE) {
+        if (sensorsBuffer.size() == SensorableConstants.WEAR_SENDING_BUFFER_SIZE) {
             final ArrayList<SensorTransmissionCoder.SensorData> sensorsBackUpBuffer = new ArrayList<>(sensorsBuffer);
-            sensorsBuffer.clear();
+            sensorsBuffer.removeAll(sensorsBackUpBuffer);
 
             String sensorsToSend = "";
             for (SensorTransmissionCoder.SensorData s : sensorsBackUpBuffer) {

@@ -10,6 +10,7 @@
     <uses-permission android:name="android.permission.BODY_SENSORS" />
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <uses-feature android:name="android.hardware.type.watch" />
 
@@ -20,17 +21,16 @@
         android:supportsRtl="true"
         android:theme="@android:style/Theme.DeviceDefault">
         <service
+            android:name=".services.WearForegroundService"
+            android:enabled="true"
+            android:exported="false">
+        </service>
+        <service
             android:name="com.commons.services.CsvSensorsSaverService"
             android:enabled="true"
-            android:exported="true"></service>
-
+            android:exported="true" />
         <service
             android:name=".services.DataSenderService"
-            android:enabled="true"
-            android:exported="true" />
-
-        <service
-            android:name="com.commons.services.SensorsProviderService"
             android:enabled="true"
             android:exported="true" />
 

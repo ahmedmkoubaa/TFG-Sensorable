@@ -71,7 +71,7 @@
             android:enabled="true"
             android:exported="true" />
         <service
-            android:name="com.commons.services.SensorsProviderService"
+            android:name=".services.SensorsProviderService"
             android:enabled="true"
             android:exported="true" />
         <service

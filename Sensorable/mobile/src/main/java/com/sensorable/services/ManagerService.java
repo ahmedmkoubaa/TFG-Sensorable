@@ -1,15 +1,13 @@
 package com.sensorable.services;
 
-import android.app.ActivityManager;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 
 import com.commons.services.CsvSensorsSaverService;
 import com.commons.utils.DeviceType;
 import com.commons.utils.SensorableConstants;
-import com.commons.services.SensorsProviderService;
+import com.commons.utils.SensorableServicesManager;
 
 public class ManagerService extends Service {
 
@@ -21,7 +19,7 @@ public class ManagerService extends Service {
         initializeSensorsProviderService();
         initializeAdlDetectionService();
         initializeBackUpService();
-        initializeCsvSaverSerice();
+        initializeCsvSaverService();
 
 
         // This isn't useful yet and eventually we'll remove it
@@ -32,24 +30,13 @@ public class ManagerService extends Service {
         return super.onStartCommand(intent, flags, startId);
     }
 
-    public boolean isMyServiceRunning(Class<?> serviceClass) {
-        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-            if (serviceClass.getName().equals(service.service.getClassName())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private void initializeService(Class<?> serviceClass) {
-        initializeService(new Intent(this, serviceClass));
+        SensorableServicesManager.initializeService(this, serviceClass);
     }
 
     private void initializeService(Intent intent) {
-        if (!isMyServiceRunning(intent.getClass())) {
-            startService(intent);
-        }
+        SensorableServicesManager.initializeService(this, intent);
+
     }
 
     private void initializeWearOsTransmissionService() {
@@ -62,8 +49,6 @@ public class ManagerService extends Service {
 
     private void initializeSensorsProviderService() {
         Intent intent = new Intent(this, SensorsProviderService.class);
-        intent.putExtra(SensorableConstants.SENSORS_PROVIDER_DEVICE_TYPE, DeviceType.MOBILE);
-
         initializeService(intent);
     }
 
@@ -75,7 +60,7 @@ public class ManagerService extends Service {
         initializeService(BackupService.class);
     }
 
-    private void initializeCsvSaverSerice() {
+    private void initializeCsvSaverService() {
         initializeService(CsvSensorsSaverService.class);
     }
 
